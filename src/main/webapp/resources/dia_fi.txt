@@ -267,6 +267,7 @@ embedFonts=Upota fontteja
 embedImages=Upota kuvia
 mainEmbedNotice=Liitä tämä sivulle
 electrical=Sähköpiirros
+electric=Electric
 ellipse=Soikio
 embedNotice=Lisää tämä sivun loppuun
 enterGroup=Siirry ryhmään

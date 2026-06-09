@@ -267,6 +267,7 @@ embedFonts=Incorporar fontes
 embedImages=Incorporar imagens
 mainEmbedNotice=Colar esse conteúdo na página
 electrical=Elétrico
+electric=Electric
 ellipse=Elipse
 embedNotice=Cole esse conteúdo uma vez no fim da página
 enterGroup=Entrar no grupo

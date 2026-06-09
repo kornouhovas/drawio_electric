@@ -267,6 +267,7 @@ embedFonts=Nhúng phông chữ
 embedImages=Nhúng hình ảnh
 mainEmbedNotice=Dán cái này vào trong trang
 electrical=Điện
+electric=Electric
 ellipse=Hình elip
 embedNotice=Dán cái này một lần vào cuối trang
 enterGroup=Vào nhóm

@@ -267,6 +267,7 @@ embedFonts=ฝังแบบอักษร
 embedImages=ฝังรูปภาพ
 mainEmbedNotice=วางสิ่งนี้ลงในหน้ากระดาษ
 electrical=ไฟฟ้า
+electric=Electric
 ellipse=วงรี
 embedNotice=วางส่วนนี้เมื่อถึงส่วนท้ายของหน้า
 enterGroup=เข้าสู่กลุ่ม

@@ -267,6 +267,7 @@ embedFonts=Integra caratteri
 embedImages=Integra immagini
 mainEmbedNotice=Incolla nella pagina
 electrical=Elettrico
+electric=Electric
 ellipse=Ellisse
 embedNotice=Incolla questo una sola volta alla fine della pagina
 enterGroup=Entra nel gruppo

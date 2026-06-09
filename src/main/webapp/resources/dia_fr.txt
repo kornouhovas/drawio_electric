@@ -267,6 +267,7 @@ embedFonts=Intégrer les polices
 embedImages=Intégrer les images
 mainEmbedNotice=Coller cet élément dans la page
 electrical=Électricité
+electric=Electric
 ellipse=Ellipse
 embedNotice=Coller cet élément à la fin de la page
 enterGroup=Entrer dans le groupe

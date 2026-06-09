@@ -267,6 +267,7 @@ embedFonts=ፎንቶችን አካት
 embedImages=ምስሎችን አካት
 mainEmbedNotice=ይህን ወደ ገፁ ይለጥፉ
 electrical=ኤሌክትሪክ
+electric=Electric
 ellipse=ኤሊፕስ
 embedNotice=ይህን በገፁ መጨረሻ ላይ አንድ ጊዜ ይለጥፉ
 enterGroup=ቡድን ይግቡ

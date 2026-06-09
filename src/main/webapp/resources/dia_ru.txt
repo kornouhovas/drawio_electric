@@ -267,6 +267,7 @@ embedFonts=Встроить шрифты
 embedImages=Встроить изображения
 mainEmbedNotice=Вставьте это на страницу
 electrical=Электрические схемы
+electric=Electric
 ellipse=Эллипс
 embedNotice=Вставьте это один раз в конец страницы
 enterGroup=Войти в группу

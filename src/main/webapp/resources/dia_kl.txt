@@ -267,6 +267,7 @@ embedFonts=Fontit ilanngukkit
 embedImages=Assiit ilanngukkit
 mainEmbedNotice=Una qupperni ilivitiluk
 electrical=Innaallagissoq
+electric=Electric
 ellipse=Ellipsi
 embedNotice=Una qupperneq naalerneraniitsoq aamma ilivitiluk
 enterGroup=Kattuffiup iluanut iserneq

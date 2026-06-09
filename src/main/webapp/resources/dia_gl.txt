@@ -267,6 +267,7 @@ embedFonts=Integrar tipos de letra
 embedImages=Integrar imaxes
 mainEmbedNotice=Pegar isto na páxina
 electrical=Eléctrico
+electric=Electric
 ellipse=Elipse
 embedNotice=Pegar isto unha vez ao final da páxina
 enterGroup=Entrar no grupo

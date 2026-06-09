@@ -267,6 +267,7 @@ embedFonts=Bädda in typsnitt
 embedImages=Bädda in bilder
 mainEmbedNotice=Klistra in detta på sidan
 electrical=Elektrisk
+electric=Electric
 ellipse=Ellips
 embedNotice=Klistra in detta en gång i slutet av sidan
 enterGroup=Gå in i grupp

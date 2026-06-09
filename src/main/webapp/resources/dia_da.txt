@@ -267,6 +267,7 @@ embedFonts=Integrer skrifttyper
 embedImages=Integrer billeder
 mainEmbedNotice=Indsæt dette på siden
 electrical=Elektrisk
+electric=Electric
 ellipse=Ellipse
 embedNotice=Tilføj dette en gang ved slutningen af siden
 enterGroup=Gå ind i gruppe

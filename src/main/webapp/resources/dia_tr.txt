@@ -267,6 +267,7 @@ embedFonts=Fontları Dahil Et
 embedImages=Görselleri dahil et
 mainEmbedNotice=Bunu sayfaya yapıştırın
 electrical=Elektriksel
+electric=Electric
 ellipse=Elips
 embedNotice=Bunu sayfa sonuna ekleyin
 enterGroup=Gruba Gir

@@ -267,6 +267,7 @@ embedFonts=글꼴 포함
 embedImages=이미지 포함
 mainEmbedNotice=아래 내용을 페이지에 붙여넣기합니다.
 electrical=전기
+electric=Electric
 ellipse=타원
 embedNotice=아래 내용을 페이지 하단에 한 번 붙여넣기합니다.
 enterGroup=그룹 들어가기

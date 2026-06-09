@@ -267,6 +267,7 @@ embedFonts=Benamkan Fon
 embedImages=Imej Benam
 mainEmbedNotice=Tampal ini pada halaman
 electrical=Elektrik
+electric=Electric
 ellipse=Elips
 embedNotice=Tampal ini sekali di hujung muka surat
 enterGroup=Masuk Kumpulan

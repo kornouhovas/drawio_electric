@@ -267,6 +267,7 @@ embedFonts=Pachika Fonti
 embedImages=Pachika Picha
 mainEmbedNotice=Bandika hii kwenye ukurasa
 electrical=Umeme
+electric=Electric
 ellipse=Duaradufu
 embedNotice=Bandika hii mara moja mwishoni mwa ukurasa
 enterGroup=Ingia Kundi

@@ -267,6 +267,7 @@ embedFonts=Schriftarten einbetten
 embedImages=Bilder einbetten
 mainEmbedNotice=Fügen Sie dies in die Seite ein
 electrical=Elektrisch
+electric=Electric
 ellipse=Ellipse
 embedNotice=Fügen Sie dies einmal am Ende der Seite ein
 enterGroup=In Gruppe hinein

@@ -267,6 +267,7 @@ embedFonts=Txertatu letra motak
 embedImages=Txertatu irudiak
 mainEmbedNotice=Itsatsi hau orrian
 electrical=Elektrikoa
+electric=Electric
 ellipse=Elipsea
 embedNotice=Itsatsi hau behin orriaren bukaeran
 enterGroup=Sartu taldean

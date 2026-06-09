@@ -267,6 +267,7 @@ embedFonts=Ugradi fontove
 embedImages=Ugradi slike
 mainEmbedNotice=Zalijepi ovo na stranicu
 electrical=Električno
+electric=Electric
 ellipse=Elipsa
 embedNotice=Zalijepi ovo jednom na kraju stranice
 enterGroup=Uđi u grupu

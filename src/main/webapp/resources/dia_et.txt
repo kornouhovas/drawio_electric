@@ -267,6 +267,7 @@ embedFonts=Manusta fondid
 embedImages=Manusta pildid
 mainEmbedNotice=Kleebi sellele lehele
 electrical=Elektriline
+electric=Electric
 ellipse=Ellips
 embedNotice=Kleebi see üks kord lehe lõppu
 enterGroup=Sisene rühma

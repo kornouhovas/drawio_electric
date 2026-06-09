@@ -267,6 +267,7 @@ embedFonts=ఫాంట్‌లను పొందుపరచు
 embedImages=చిత్రాలను పొందుపరచు
 mainEmbedNotice=పేజీలో దీన్ని అతికించండి
 electrical=ఎలక్ట్రికల్
+electric=Electric
 ellipse=దీర్ఘవృత్తం
 embedNotice=పేజీ చివరలో దీన్ని ఒకసారి అతికించండి
 enterGroup=గ్రూప్‌లో ప్రవేశించు

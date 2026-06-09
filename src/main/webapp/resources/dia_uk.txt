@@ -267,6 +267,7 @@ embedFonts=Вбудувати шрифти
 embedImages=Вбудувати зображення
 mainEmbedNotice=Вставити це на сторінку
 electrical=Електричне
+electric=Electric
 ellipse=Еліпс
 embedNotice=Вставити це 1 раз у кінці сторінки
 enterGroup=Ввійти в групу

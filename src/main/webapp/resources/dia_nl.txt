@@ -266,6 +266,7 @@ embedFonts=Lettertypen insluiten
 embedImages=Afbeeldingen Insluiten
 mainEmbedNotice=Dit op de pagina plakken
 electrical=Elektrisch
+electric=Electric
 ellipse=Ellips
 embedNotice=Dit eenmalig aan het einde van de pagina plakken
 enterGroup=Groep Invullen

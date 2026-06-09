@@ -267,6 +267,7 @@ embedFonts=Betűkészletek beágyazása
 embedImages=Képek beágyazása
 mainEmbedNotice=Illessze be ezt az oldalba
 electrical=Elektromos
+electric=Electric
 ellipse=Ellipszis
 embedNotice=Illessze be ezt egyszer az oldal végére
 enterGroup=Belépés a csoportba

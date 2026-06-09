@@ -266,6 +266,7 @@ embedFonts=embedFonts
 embedImages=embedImages
 mainEmbedNotice=mainEmbedNotice
 electrical=electrical
+electric=Electric
 ellipse=ellipse
 embedNotice=embedNotice
 enterGroup=enterGroup

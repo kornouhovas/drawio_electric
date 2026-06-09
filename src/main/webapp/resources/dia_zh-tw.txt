@@ -267,6 +267,7 @@ embedFonts=嵌入字型
 embedImages=嵌入圖片
 mainEmbedNotice=將此貼入頁面
 electrical=電路
+electric=Electric
 ellipse=橢圓形
 embedNotice=貼上至本頁頁尾處
 enterGroup=進入群組

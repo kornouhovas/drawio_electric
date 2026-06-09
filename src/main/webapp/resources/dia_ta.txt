@@ -267,6 +267,7 @@ embedFonts=எழுத்துருக்களை உட்பொதி
 embedImages=படங்களை உட்பொதிக்கவும்
 mainEmbedNotice=இதை பக்கத்தில் ஒட்டு
 electrical=மின்னியல்
+electric=Electric
 ellipse=நீள்வட்டம்
 embedNotice=பக்கத்தின் முடிவில் இதை ஒரு முறை ஒட்டு
 enterGroup=குழுவை உள்ளிடு

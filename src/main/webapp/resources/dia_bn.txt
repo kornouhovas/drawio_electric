@@ -267,6 +267,7 @@ embedFonts=ফন্ট এম্বেড করুন
 embedImages=ছবি এম্বেড করুন
 mainEmbedNotice=এটি পৃষ্ঠায় পেস্ট করুন
 electrical=ইলেকট্রিক্যাল
+electric=Electric
 ellipse=উপবৃত্ত
 embedNotice=এটি পৃষ্ঠার শেষে একবার পেস্ট করুন
 enterGroup=গ্রুপে প্রবেশ করুন

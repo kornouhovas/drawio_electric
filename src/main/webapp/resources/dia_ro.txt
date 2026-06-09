@@ -267,6 +267,7 @@ embedFonts=Fonturi încorporate
 embedImages=Încorporează imagini
 mainEmbedNotice=Lipește asta în pagină
 electrical=Electric
+electric=Electric
 ellipse=Elipsă
 embedNotice=Lipește asta o singură dată la finalul paginii
 enterGroup=Intră în grup

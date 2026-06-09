@@ -263,6 +263,7 @@ embedFonts=‫הטמע גופנים‬
 embedImages=‫שבץ תמונות‬
 mainEmbedNotice=‫הדבק בתוך העמוד‬
 electrical=‫חשמלי‬
+electric=Electric
 ellipse=Ellipse
 embedNotice=‫הדבק פעם אחת בסוף העמוד‬
 enterGroup=‫הזן קבוצה‬

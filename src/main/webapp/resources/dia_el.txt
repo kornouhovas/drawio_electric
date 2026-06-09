@@ -267,6 +267,7 @@ embedFonts=Ενσωμάτωση Γραμματοσειρών
 embedImages=Ενσωμάτωση Εικόνων
 mainEmbedNotice=Επικολλήστε αυτό στη σελίδα
 electrical=Ηλεκτρολογικά
+electric=Electric
 ellipse=Έλλειψη
 embedNotice=Επικολλήστε το μια φορά, στο τέλος της σελίδας
 enterGroup=Εισαγωγή στην Ομάδα

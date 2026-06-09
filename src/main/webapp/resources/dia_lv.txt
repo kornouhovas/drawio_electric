@@ -267,6 +267,7 @@ embedFonts=Ievietot fontus
 embedImages=Ievietot attēlus
 mainEmbedNotice=Ielikt šo lapā
 electrical=Elektriskas shēmas
+electric=Electric
 ellipse=Elipse
 embedNotice=Ielīmējiet to vienreiz lapas beigās
 enterGroup=Ieiet grupā

@@ -267,6 +267,7 @@ embedFonts=Vložiť písma
 embedImages=Vložiť obrázky
 mainEmbedNotice=Vložte toto do stránky
 electrical=Elektrotechnika
+electric=Electric
 ellipse=Elipsa
 embedNotice=Vložte toto raz na koniec stránky
 enterGroup=Vstúpiť do skupiny

@@ -267,6 +267,7 @@ embedFonts=Osadź czcionki
 embedImages=Osadź obrazy
 mainEmbedNotice=Wklej na stronie
 electrical=Elektryczne
+electric=Electric
 ellipse=Elipsa
 embedNotice=Wklej na końcu strony
 enterGroup=Wejdź do grupy

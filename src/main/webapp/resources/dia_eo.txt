@@ -267,6 +267,7 @@ embedFonts=Enkorpigi tiparojn
 embedImages=Enkorpigi bildojn
 mainEmbedNotice=Algluu ĉi tion en la paĝon
 electrical=Elektra
+electric=Electric
 ellipse=Elipso
 embedNotice=Algluu ĉi tion unufoje ĉe la fino de la paĝo
 enterGroup=Eniri grupon

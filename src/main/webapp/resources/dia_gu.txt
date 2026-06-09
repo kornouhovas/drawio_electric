@@ -267,6 +267,7 @@ embedFonts=ફોન્ટ્સ એમ્બેડ કરો
 embedImages=છબીઓ એમ્બેડ કરો
 mainEmbedNotice=આને પૃષ્ઠમાં પેસ્ટ કરો
 electrical=ઇલેક્ટ્રિકલ
+electric=Electric
 ellipse=લંબગોળ
 embedNotice=આને પૃષ્ઠના અંતે એક વાર પેસ્ટ કરો
 enterGroup=જૂથમાં પ્રવેશો

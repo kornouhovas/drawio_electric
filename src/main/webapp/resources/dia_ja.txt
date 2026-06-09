@@ -267,6 +267,7 @@ embedFonts=フォントを埋め込む
 embedImages=画像を埋め込む
 mainEmbedNotice=ページにペーストする
 electrical=電気
+electric=Electric
 ellipse=楕円
 embedNotice=ページの最後にこれを一度ペーストする
 enterGroup=グループに入る

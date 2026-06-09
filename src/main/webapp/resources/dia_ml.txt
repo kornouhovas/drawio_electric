@@ -267,6 +267,7 @@ embedFonts=ഫോണ്ടുകൾ ഉൾച്ചേർക്കുക
 embedImages=ചിത്രങ്ങൾ ഉൾച്ചേർക്കുക
 mainEmbedNotice=ഇത് പേജിൽ പേസ്റ്റ് ചെയ്യുക
 electrical=ഇലക്ട്രിക്കൽ
+electric=Electric
 ellipse=എലിപ്സ്
 embedNotice=പേജിന്റെ അവസാനം ഇത് ഒരു തവണ പേസ്റ്റ് ചെയ്യുക
 enterGroup=ഗ്രൂപ്പിൽ പ്രവേശിക്കുക

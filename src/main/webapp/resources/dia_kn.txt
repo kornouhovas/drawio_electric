@@ -267,6 +267,7 @@ embedFonts=ಫಾಂಟ್‌ಗಳನ್ನು ಎಂಬೆಡ್ ಮಾಡಿ
 embedImages=ಚಿತ್ರಗಳನ್ನು ಎಂಬೆಡ್ ಮಾಡಿ
 mainEmbedNotice=ಇದನ್ನು ಪುಟಕ್ಕೆ ಅಂಟಿಸಿ
 electrical=ವಿದ್ಯುತ್
+electric=Electric
 ellipse=ದೀರ್ಘವೃತ್ತ
 embedNotice=ಇದನ್ನು ಪುಟದ ಕೊನೆಯಲ್ಲಿ ಒಮ್ಮೆ ಅಂಟಿಸಿ
 enterGroup=ಗುಂಪನ್ನು ಪ್ರವೇಶಿಸಿ

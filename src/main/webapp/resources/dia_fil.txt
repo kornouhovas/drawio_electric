@@ -267,6 +267,7 @@ embedFonts=Ilangkap ang mga Font
 embedImages=Ilangkap ang mga imahe
 mainEmbedNotice=Idikit ito sa loob ng pahina
 electrical=Elektrikal
+electric=Electric
 ellipse=Elips
 embedNotice=Idikit ito ng isang beses sa dulo ng pahina
 enterGroup=Pumasok sa Grupo

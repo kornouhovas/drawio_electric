@@ -267,6 +267,7 @@ embedFonts=Tanamkan Fonta
 embedImages=Tanamkan Gambar
 mainEmbedNotice=Tempelkan ke halaman ini
 electrical=Elektrik
+electric=Electric
 ellipse=Elips
 embedNotice=Tempelkan satu kali di akhir halaman
 enterGroup=Masuk Grup

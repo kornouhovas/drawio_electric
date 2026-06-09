@@ -267,6 +267,7 @@ embedFonts=फॉन्ट एम्बेड करा
 embedImages=प्रतिमा एम्बेड करा
 mainEmbedNotice=हे पृष्ठावर पेस्ट करा
 electrical=विद्युत
+electric=Electric
 ellipse=लंबवर्तुळ
 embedNotice=हे पृष्ठाच्या शेवटी एकदा पेस्ट करा
 enterGroup=गटात प्रवेश करा

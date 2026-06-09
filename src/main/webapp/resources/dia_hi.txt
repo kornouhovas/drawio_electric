@@ -267,6 +267,7 @@ embedFonts=फ़ॉन्ट एम्बेड करें
 embedImages=छवियाँ एम्बेड करें
 mainEmbedNotice=इसे पेज में पेस्ट करें
 electrical=इलेक्ट्रिकल
+electric=Electric
 ellipse=दीर्घवृत्त
 embedNotice=इसे पेज के अंत में एक बार पेस्ट करें
 enterGroup=समूह में प्रवेश करें

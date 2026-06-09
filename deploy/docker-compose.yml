@@ -1,0 +1,32 @@
+services:
+  drawio-electric:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: drawio-electric:local
+    container_name: drawio-electric
+    restart: unless-stopped
+    expose:
+      - "8080"
+    environment:
+      EXPORT_URL: "http://drawio-electric-export:8000"
+    volumes:
+      - /opt/drawio_electric/deploy/PreConfig.js:/usr/local/tomcat/webapps/draw/js/PreConfig.js:ro
+    networks:
+      - drawio_default
+
+  drawio-electric-export:
+    build:
+      context: .
+      dockerfile: export-server.Dockerfile
+    image: drawio-electric-export:local
+    container_name: drawio-electric-export
+    restart: unless-stopped
+    expose:
+      - "8000"
+    networks:
+      - drawio_default
+
+networks:
+  drawio_default:
+    external: true

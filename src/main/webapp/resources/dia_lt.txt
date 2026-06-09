@@ -267,6 +267,7 @@ embedFonts=Įterpti šriftus
 embedImages=Įterpti paveikslėlius
 mainEmbedNotice=Įklijuokite tai į puslapį
 electrical=Elektros
+electric=Electric
 ellipse=Elipsė
 embedNotice=Įklijuokite tai vieną kartą puslapio pabaigoje
 enterGroup=Įeiti į grupę

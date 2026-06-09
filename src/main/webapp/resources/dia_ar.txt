@@ -263,6 +263,7 @@ embedFonts=‫تضمين الخطوط‬
 embedImages=‫تضمين الصور‬
 mainEmbedNotice=‫أضف هذا داخل الصفحة‬
 electrical=‫الكهربائية‬
+electric=Electric
 ellipse=‫بيضاوي‬
 embedNotice=‫أضف هذا مرة واحدة في نهاية الصفحة‬
 enterGroup=‫ادخل التصنيف‬

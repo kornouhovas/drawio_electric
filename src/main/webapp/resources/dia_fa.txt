@@ -267,6 +267,7 @@ embedFonts=‫جاسازی فونت‌ها‬
 embedImages=‫جاسازی تصاویر‬
 mainEmbedNotice=‫این را در صفحه جایگذاری کنید‬
 electrical=‫الکتریکی‬
+electric=Electric
 ellipse=‫بیضی‬
 embedNotice=‫این را یک بار در انتهای صفحه جایگذاری کنید‬
 enterGroup=‫ورود به گروه‬

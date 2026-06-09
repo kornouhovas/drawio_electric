@@ -552,6 +552,7 @@ OUTPUT FILES (in src/main/webapp/js/):
 				<file name="mxFreehand.js" />
 				<file name="P2PCollab.js" />
 				<file name="Simple.js" />
+				<file name="Electric.js" />
 			</sources>
 		</jscomp>
 
@@ -614,6 +615,7 @@ OUTPUT FILES (in src/main/webapp/js/):
 		<jscomp compilationLevel="simple" debug="false" forceRecompile="true" output="${basedir}/.tmp-simple.js">
 			<sources dir="${war.dir}/js/diagramly">
 				<file name="Simple.js" />
+				<file name="Electric.js" />
 			</sources>
 		</jscomp>
 		<concat destfile="${war.dir}/js/atlas.min.js" fixlastline="yes" append="yes">

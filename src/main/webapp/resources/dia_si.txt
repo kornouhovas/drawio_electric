@@ -267,6 +267,7 @@ embedFonts=අකුරු කාවැද්දීම
 embedImages=පින්තූර කාවැද්දීම
 mainEmbedNotice=මෙය පිටුවට අලවන්න
 electrical=විදුලි
+electric=Electric
 ellipse=ඉලිප්සය
 embedNotice=මෙය පිටුවේ අවසානයේ එක් වරක් අලවන්න
 enterGroup=සමූහයට ඇතුළු වන්න

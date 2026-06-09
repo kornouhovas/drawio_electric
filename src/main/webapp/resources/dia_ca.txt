@@ -267,6 +267,7 @@ embedFonts=Incrusta fonts
 embedImages=Incrusta imatges
 mainEmbedNotice=Enganxa-ho a la pàgina
 electrical=Elèctric
+electric=Electric
 ellipse=El·lipse
 embedNotice=Enganxa-ho una vegada al final de la pàgina
 enterGroup=Introduïu el grup
