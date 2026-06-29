@@ -93,11 +93,10 @@ SetElectricPageMode.prototype.execute = function()
 			'.geEditor.geElectricModes>.geHsplit{grid-column:3;}' +
 			'.geEditor.geElectricModes>.geDiagramContainer{grid-column:4;}' +
 			'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer{grid-column:5;}' +
-			'.geElectricModeButton{box-sizing:border-box;width:34px;min-height:42px;border:1px solid transparent;border-radius:5px;background:transparent;color:light-dark(var(--text-color),var(--dark-text-color));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 1px;font:inherit;font-size:8px;line-height:10px;cursor:pointer;overflow:hidden;}' +
+			'.geElectricModeButton{box-sizing:border-box;width:34px;min-height:30px;border:1px solid transparent;border-radius:5px;background:transparent;color:light-dark(var(--text-color),var(--dark-text-color));display:flex;align-items:center;justify-content:center;padding:3px;cursor:pointer;overflow:hidden;}' +
 			'.geElectricModeButton:hover{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
 			'.geElectricModeButton.geActive{background:light-dark(var(--accent-color),var(--dark-accent-color));border-color:light-dark(var(--primary-hover-color),var(--dark-active-accent-color));color:light-dark(var(--accent-text-color),var(--dark-accent-text-color));}' +
 			'.geElectricModeIcon{width:16px;height:16px;flex:0 0 16px;background-repeat:no-repeat;background-position:center;background-size:16px 16px;opacity:.9;}' +
-			'.geElectricModeLabel{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
 			'html body.geDarkMode .geElectricModeIcon{filter:invert(1);}'
 		));
 
@@ -208,11 +207,6 @@ SetElectricPageMode.prototype.execute = function()
 		icon.className = 'geElectricModeIcon';
 		icon.style.backgroundImage = 'url("' + mode.icon + '")';
 		button.appendChild(icon);
-
-		var label = document.createElement('span');
-		label.className = 'geElectricModeLabel';
-		mxUtils.write(label, mode.label);
-		button.appendChild(label);
 
 		mxEvent.addListener(button, 'click', mxUtils.bind(this, function(evt)
 		{
