@@ -41,6 +41,8 @@ Editor.electricModes = [
 	}
 ];
 
+Editor.electricSidebarToggleIcon = Editor.createElectricModeIcon('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M9 5v14"/></svg>');
+
 function SetElectricPageMode(ui, page, modeId)
 {
 	this.ui = ui;
@@ -93,9 +95,15 @@ SetElectricPageMode.prototype.execute = function()
 			'.geEditor.geElectricModes>.geHsplit{grid-column:3;}' +
 			'.geEditor.geElectricModes>.geDiagramContainer{grid-column:4;}' +
 			'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer{grid-column:5;}' +
+			'.geEditor.geElectricModes.geElectricShapesCollapsed{grid-template-columns:40px 0 0 1fr min-content;}' +
+			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geSidebarContainer:not(.geFormatContainer),.geEditor.geElectricModes.geElectricShapesCollapsed>.geHsplit{display:none!important;}' +
+			'.geEditor.geElectricModes.geElectricShapesCollapsed .geElectricModeButton[data-electric-mode]{display:none;}' +
+			'.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="View"],.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Вид"]{display:none!important;}' +
+			'.geElectricToolbarViewButton{display:none!important;}' +
 			'.geElectricModeButton{box-sizing:border-box;width:34px;min-height:30px;border:1px solid transparent;border-radius:5px;background:transparent;color:light-dark(var(--text-color),var(--dark-text-color));display:flex;align-items:center;justify-content:center;padding:3px;cursor:pointer;overflow:hidden;}' +
 			'.geElectricModeButton:hover{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
 			'.geElectricModeButton.geActive{background:light-dark(var(--accent-color),var(--dark-accent-color));border-color:light-dark(var(--primary-hover-color),var(--dark-active-accent-color));color:light-dark(var(--accent-text-color),var(--dark-accent-text-color));}' +
+			'.geElectricSidebarToggleButton{margin-bottom:2px;}' +
 			'.geElectricModeIcon{width:16px;height:16px;flex:0 0 16px;background-repeat:no-repeat;background-position:center;background-size:16px 16px;opacity:.9;}' +
 			'html body.geDarkMode .geElectricModeIcon{filter:invert(1);}'
 		));
@@ -141,7 +149,12 @@ SetElectricPageMode.prototype.execute = function()
 	EditorUi.prototype.refresh = function(sizeDidChange)
 	{
 		refresh.apply(this, arguments);
+		if (Editor.isElectricTheme())
+		{
+			this.hideElectricToolbarViewButton();
+		}
 		this.updateElectricModePanel();
+		this.updateElectricLeftPanelState();
 	};
 
 	EditorUi.prototype.destroy = function()
@@ -194,6 +207,108 @@ SetElectricPageMode.prototype.execute = function()
 		}
 	};
 
+	EditorUi.prototype.getElectricToolbarViewButton = function()
+	{
+		var buttons = (this.toolbarContainer != null) ?
+			this.toolbarContainer.getElementsByTagName('a') : [];
+
+		for (var i = 0; i < buttons.length; i++)
+		{
+			var title = buttons[i].getAttribute('title') || '';
+
+			var viewTitle = mxResources.get('view') || 'View';
+
+			if (title.indexOf(viewTitle) == 0 || title.indexOf('View') == 0)
+			{
+				return buttons[i];
+			}
+		}
+
+		return null;
+	};
+
+	EditorUi.prototype.hideElectricToolbarViewButton = function()
+	{
+		var button = this.getElectricToolbarViewButton();
+
+		if (button != null && this.electricToolbarViewButton == null)
+		{
+			this.electricToolbarViewButton = button;
+			this.electricToolbarViewButtonDisplay = button.style.display;
+			button.classList.add('geElectricToolbarViewButton');
+		}
+	};
+
+	EditorUi.prototype.restoreElectricToolbarViewButton = function()
+	{
+		if (this.electricToolbarViewButton != null)
+		{
+			this.electricToolbarViewButton.classList.remove('geElectricToolbarViewButton');
+			this.electricToolbarViewButton.style.display =
+				this.electricToolbarViewButtonDisplay || '';
+			this.electricToolbarViewButton = null;
+			this.electricToolbarViewButtonDisplay = null;
+		}
+	};
+
+	EditorUi.prototype.toggleElectricLeftPanel = function(visible)
+	{
+		var next = (visible != null) ? visible : !this.isShapesPanelVisible();
+		this.electricLeftPanelCollapsed = !next;
+		this.updateElectricLeftPanelState();
+		this.toggleShapesPanel(next);
+	};
+
+	EditorUi.prototype.createElectricSidebarToggleButton = function()
+	{
+		var button = document.createElement('button');
+		button.setAttribute('type', 'button');
+		button.className = 'geElectricModeButton geElectricSidebarToggleButton';
+
+		var icon = document.createElement('span');
+		icon.className = 'geElectricModeIcon';
+		icon.style.backgroundImage = 'url("' + Editor.electricSidebarToggleIcon + '")';
+		button.appendChild(icon);
+
+		mxEvent.addListener(button, 'click', mxUtils.bind(this, function(evt)
+		{
+			this.toggleElectricLeftPanel();
+			mxEvent.consume(evt);
+		}));
+
+		return button;
+	};
+
+	EditorUi.prototype.updateElectricLeftPanelState = function()
+	{
+		if (this.container == null)
+		{
+			return;
+		}
+
+		var collapsed = (this.electricLeftPanelCollapsed != null) ?
+			this.electricLeftPanelCollapsed : !this.isShapesPanelVisible();
+
+		if (collapsed)
+		{
+			this.container.classList.add('geElectricShapesCollapsed');
+		}
+		else
+		{
+			this.container.classList.remove('geElectricShapesCollapsed');
+		}
+
+		if (this.electricSidebarToggleButton != null)
+		{
+			var title = (collapsed) ? 'Показать левую панель' :
+				'Скрыть левую панель';
+			this.electricSidebarToggleButton.setAttribute('title', title);
+			this.electricSidebarToggleButton.setAttribute('aria-label', title);
+			this.electricSidebarToggleButton.setAttribute('aria-expanded',
+				(!collapsed).toString());
+		}
+	};
+
 	EditorUi.prototype.createElectricModeButton = function(mode)
 	{
 		var button = document.createElement('button');
@@ -223,6 +338,8 @@ SetElectricPageMode.prototype.execute = function()
 		panel.className = 'geElectricModePanel';
 		panel.setAttribute('role', 'navigation');
 		panel.setAttribute('aria-label', 'Electric modes');
+		this.electricSidebarToggleButton = this.createElectricSidebarToggleButton();
+		panel.appendChild(this.electricSidebarToggleButton);
 
 		for (var i = 0; i < Editor.electricModes.length; i++)
 		{
@@ -241,6 +358,20 @@ SetElectricPageMode.prototype.execute = function()
 
 		Editor.ensureElectricModeStyles();
 		this.installElectricModeListeners();
+		this.hideElectricToolbarViewButton();
+		window.setTimeout(mxUtils.bind(this, function()
+		{
+			if (Editor.isElectricTheme())
+			{
+				this.hideElectricToolbarViewButton();
+			}
+		}), 0);
+
+		if (this.electricLeftPanelCollapsed == null)
+		{
+			this.electricLeftPanelCollapsed = false;
+		}
+
 		this.container.classList.add('geElectricModes');
 
 		if (this.electricModePanel == null)
@@ -250,6 +381,7 @@ SetElectricPageMode.prototype.execute = function()
 		}
 
 		this.updateElectricModePanel();
+		this.updateElectricLeftPanelState();
 	};
 
 	EditorUi.prototype.removeElectricModePanel = function()
@@ -257,7 +389,11 @@ SetElectricPageMode.prototype.execute = function()
 		if (this.container != null)
 		{
 			this.container.classList.remove('geElectricModes');
+			this.container.classList.remove('geElectricShapesCollapsed');
 		}
+
+		this.restoreElectricToolbarViewButton();
+		this.electricLeftPanelCollapsed = null;
 
 		if (this.electricModePanel != null)
 		{
@@ -267,6 +403,7 @@ SetElectricPageMode.prototype.execute = function()
 			}
 
 			this.electricModePanel = null;
+			this.electricSidebarToggleButton = null;
 		}
 	};
 
@@ -278,7 +415,7 @@ SetElectricPageMode.prototype.execute = function()
 		}
 
 		var modeId = this.getElectricModeIdForPage(this.currentPage);
-		var buttons = this.electricModePanel.getElementsByTagName('button');
+		var buttons = this.electricModePanel.querySelectorAll('button[data-electric-mode]');
 
 		for (var i = 0; i < buttons.length; i++)
 		{
@@ -307,6 +444,14 @@ SetElectricPageMode.prototype.execute = function()
 		this.electricModeRefreshHandler = mxUtils.bind(this, function()
 		{
 			this.updateElectricModePanel();
+			this.updateElectricLeftPanelState();
+		});
+
+		this.electricShapesPanelHandler = mxUtils.bind(this, function()
+		{
+			this.electricLeftPanelCollapsed = null;
+			this.updateElectricModePanel();
+			this.updateElectricLeftPanelState();
 		});
 
 		this.editor.addListener('fileLoaded', this.electricModeRefreshHandler);
@@ -316,6 +461,7 @@ SetElectricPageMode.prototype.execute = function()
 		this.editor.addListener('pagesPatched', this.electricModeRefreshHandler);
 		this.editor.addListener('electricModeChanged', this.electricModeRefreshHandler);
 		this.addListener('currentThemeChanged', this.electricModeRefreshHandler);
+		this.addListener('shapesPanelChanged', this.electricShapesPanelHandler);
 		this.electricModeListenersInstalled = true;
 	};
 
@@ -324,10 +470,12 @@ SetElectricPageMode.prototype.execute = function()
 		if (this.electricModeListenersInstalled && this.editor != null)
 		{
 			this.editor.removeListener(this.electricModeRefreshHandler);
+			this.removeListener(this.electricShapesPanelHandler);
 			this.removeListener(this.electricModeRefreshHandler);
 		}
 
 		this.electricModeListenersInstalled = false;
 		this.electricModeRefreshHandler = null;
+		this.electricShapesPanelHandler = null;
 	};
 })();
