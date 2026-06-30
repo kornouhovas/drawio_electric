@@ -14,6 +14,7 @@ Editor.isElectricTheme = function(theme)
 
 Editor.electricModeAttribute = 'electricMode';
 Editor.defaultElectricMode = 'general';
+Editor.electricLeftPanelTransitionDelay = 0.16;
 
 Editor.createElectricModeIcon = function(svg)
 {
@@ -87,15 +88,16 @@ SetElectricPageMode.prototype.execute = function()
 		style.setAttribute('id', 'geElectricModeStyles');
 		style.setAttribute('type', 'text/css');
 		style.appendChild(document.createTextNode(
-			'.geEditor.geElectricModes{grid-template-columns:40px min-content min-content 1fr min-content;}' +
-			'.geEditor.geElectricModes>.geElectricModePanel{grid-column:1;grid-row:3;box-sizing:border-box;width:40px;min-height:0;border-right:1px solid light-dark(var(--border-color),var(--dark-border-color));background:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 3px;overflow:hidden;z-index:3;}' +
-			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer){grid-column:2;}' +
-			'.geEditor.geElectricModes>.geHsplit{grid-column:3;}' +
+			'.geEditor.geElectricModes{grid-template-columns:min-content min-content min-content 1fr min-content;}' +
+			'.geEditor.geElectricModes>.geElectricModePanel{grid-column:1;grid-row:3;box-sizing:border-box;width:40px;min-width:0;min-height:0;border-right:1px solid light-dark(var(--border-color),var(--dark-border-color));background:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 3px;overflow:hidden;z-index:3;transition:width .16s ease-in-out,padding .16s ease-in-out,border-color .16s ease-in-out;}' +
+			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer){grid-column:2;min-width:0!important;transition:width .16s ease-in-out;}' +
+			'.geEditor.geElectricModes>.geHsplit{grid-column:3;transition:opacity .16s ease-in-out;}' +
 			'.geEditor.geElectricModes>.geDiagramContainer{grid-column:4;}' +
 			'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer{grid-column:5;}' +
-			'.geEditor.geElectricModes.geElectricShapesCollapsed{grid-template-columns:0 0 0 1fr min-content;}' +
-			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geElectricModePanel,.geEditor.geElectricModes.geElectricShapesCollapsed>.geSidebarContainer:not(.geFormatContainer),.geEditor.geElectricModes.geElectricShapesCollapsed>.geHsplit{display:none!important;}' +
-			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geDiagramContainer{margin-left:0!important;}' +
+			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geElectricModePanel{width:0!important;padding-left:0!important;padding-right:0!important;border-right-width:0!important;pointer-events:none;}' +
+			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geElectricModePanel .geElectricModeButton{opacity:0;pointer-events:none;}' +
+			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geSidebarContainer:not(.geFormatContainer){width:0!important;min-width:0!important;border-right-width:0!important;pointer-events:none;}' +
+			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geHsplit{opacity:0!important;pointer-events:none;}' +
 			'.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a.geElectricToolbarViewButton,.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[data-electric-toolbar-toggle="1"],.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Скрыть левую панель"],.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Показать левую панель"]{box-sizing:border-box!important;display:flex!important;width:34px!important;min-width:34px!important;height:30px!important;margin:4px 3px 4px -13px!important;padding:3px!important;align-items:center!important;justify-content:center!important;}' +
 			'.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[data-electric-toolbar-toggle="1"]+.geSeparator,.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Скрыть левую панель"]+.geSeparator,.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Показать левую панель"]+.geSeparator{margin-left:0!important;}' +
 			'.geElectricModeButton{box-sizing:border-box;width:34px;min-height:30px;border:1px solid transparent;border-radius:5px;background:transparent;color:light-dark(var(--text-color),var(--dark-text-color));display:flex;align-items:center;justify-content:center;padding:3px;cursor:pointer;overflow:hidden;}' +
@@ -317,10 +319,60 @@ SetElectricPageMode.prototype.execute = function()
 
 	EditorUi.prototype.toggleElectricLeftPanel = function(visible)
 	{
-		var next = (visible != null) ? visible : !this.isShapesPanelVisible();
+		var next = (visible != null) ? visible :
+			(this.electricLeftPanelCollapsed === true);
 		this.electricLeftPanelCollapsed = !next;
 		this.updateElectricLeftPanelState();
-		this.toggleShapesPanel(next);
+		this.refreshElectricLeftPanelTransition();
+	};
+
+	EditorUi.prototype.refreshElectricLeftPanelTransition = function()
+	{
+		var delay = ((Editor.electricLeftPanelTransitionDelay != null) ?
+			Editor.electricLeftPanelTransitionDelay :
+			((Editor.transitionDelay != null) ? Editor.transitionDelay : 0.1)) * 1000;
+		var end = Date.now() + delay + 80;
+		var hasRuler = this.diagramContainer != null &&
+			this.diagramContainer.getElementsByClassName('geRuler').length > 0;
+
+		if (!hasRuler)
+		{
+			window.setTimeout(mxUtils.bind(this, function()
+			{
+				this.refresh(true);
+			}), delay + 20);
+
+			return;
+		}
+
+		if (this.electricLeftPanelRefreshRunning)
+		{
+			return;
+		}
+
+		this.electricLeftPanelRefreshRunning = true;
+
+		var update = mxUtils.bind(this, function()
+		{
+			if (this.container == null || !Editor.isElectricTheme())
+			{
+				this.electricLeftPanelRefreshRunning = false;
+				return;
+			}
+
+			this.refresh(true);
+
+			if (Date.now() < end)
+			{
+				window.requestAnimationFrame(update);
+			}
+			else
+			{
+				this.electricLeftPanelRefreshRunning = false;
+			}
+		});
+
+		window.requestAnimationFrame(update);
 	};
 
 	EditorUi.prototype.updateElectricLeftPanelState = function()
