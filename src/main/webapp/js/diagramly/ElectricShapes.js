@@ -123,6 +123,18 @@
 		return mxUtils.htmlEntities(value || '');
 	};
 
+	Editor.trimElectricText = function(value, max)
+	{
+		value = (value != null) ? String(value).replace(/\s+/g, ' ').trim() : '';
+
+		if (max != null && value.length > max)
+		{
+			return value.substring(0, Math.max(0, max - 1)) + '…';
+		}
+
+		return value;
+	};
+
 	Editor.getElectricShapeLabel = function(entry)
 	{
 		var data = entry.data || {};
@@ -161,71 +173,205 @@
 	{
 		if (entry.kind == 'terminal')
 		{
-			return {width: 54, height: 76, thumbWidth: 38, thumbHeight: 34};
+			return {width: 44, height: 112, thumbWidth: 24, thumbHeight: 50};
 		}
+
+		var thumbHeight = 54;
+		var ratio = (entry.height > 0) ? entry.width / entry.height : 0.3;
 
 		return {
 			width: Math.max(20, entry.width),
 			height: Math.max(40, entry.height),
-			thumbWidth: 32,
-			thumbHeight: 30
+			thumbWidth: Math.max(24, Math.min(52, Math.round(thumbHeight * ratio))),
+			thumbHeight: thumbHeight
 		};
+	};
+
+	Editor.getElectricPoleCount = function(entry)
+	{
+		var marking = Editor.getElectricShapeValue(entry, 'Маркировка');
+		var modularity = Editor.getElectricShapeValue(entry, 'Модульность');
+
+		if (/4P/.test(marking))
+		{
+			return 4;
+		}
+		else if (/3P/.test(marking))
+		{
+			return 3;
+		}
+		else if (/2P|1P\+N/.test(marking))
+		{
+			return 2;
+		}
+
+		var match = /(\d+)M/.exec(modularity);
+
+		return (match != null) ? Math.max(1, parseInt(match[1], 10)) : 1;
+	};
+
+	Editor.getElectricPreviewTextRows = function(entry)
+	{
+		var data = entry.data || {};
+
+		if (entry.kind == 'terminal')
+		{
+			return [
+				Editor.trimElectricText(data['Серия'] || 'UT', 12),
+				Editor.trimElectricText(data['Сечение'] || data['Тип'] || entry.title, 12),
+				Editor.trimElectricText(data['Цвет'] || data['Номинал'] || '', 12)
+			];
+		}
+		else if (entry.kind == 'psu')
+		{
+			return [
+				Editor.trimElectricText(data['Модель'] || entry.title, 14),
+				Editor.trimElectricText(data['Выход'] || '', 16),
+				Editor.trimElectricText(data['Мощность'] || '', 10)
+			];
+		}
+
+		var marking = data['Маркировка'] || entry.title;
+		var rating = Editor.getElectricRating(entry);
+
+		return [
+			Editor.trimElectricText(data['Серия'] || 'EKF', 12),
+			Editor.trimElectricText(rating, 10),
+			Editor.trimElectricText(marking, 16)
+		];
+	};
+
+	Editor.getElectricSvgTextLine = function(value, x, y, size, weight, anchor)
+	{
+		return '<text x="' + x + '" y="' + y +
+			'" font-family="Arial,sans-serif" font-size="' + size +
+			'" font-weight="' + (weight || '400') + '" text-anchor="' +
+			(anchor || 'middle') + '" fill="#111827">' +
+			Editor.getElectricSvgText(value) + '</text>';
+	};
+
+	Editor.createElectricModuleFaceSvg = function(entry, x, y, w, h, compact)
+	{
+		var ratio = (entry.height > 0) ? entry.width / entry.height : 0.3;
+		var minW = (entry.kind == 'terminal') ? 24 : 30;
+		var faceW = Math.max(minW, Math.min(w - 6,
+			h * Math.max(0.18, Math.min(0.72, ratio))));
+		var faceH = h - 4;
+		var faceX = x + (w - faceW) / 2;
+		var faceY = y + 2;
+		var rows = Editor.getElectricPreviewTextRows(entry);
+		var svg = '';
+
+		if (entry.kind == 'terminal')
+		{
+			var colors = Editor.getElectricTerminalColor(entry);
+			var isPlate = /Заглуш|аксесс/i.test(Editor.getElectricShapeValue(entry, 'Тип') + ' ' + entry.section);
+
+			svg += '<rect x="' + faceX + '" y="' + faceY + '" width="' +
+				faceW + '" height="' + faceH + '" rx="3" fill="' + colors.fill +
+				'" stroke="' + colors.stroke + '" stroke-width="1.3"/>';
+			svg += '<path d="M' + (faceX + faceW * 0.5) + ' ' + (faceY + 6) +
+				'v' + (faceH - 12) + '" stroke="' + colors.accent +
+				'" stroke-width="' + Math.max(2, faceW * 0.1) +
+				'" stroke-linecap="round" opacity="0.9"/>';
+
+			if (!isPlate)
+			{
+				svg += '<rect x="' + (faceX + faceW * 0.18) + '" y="' +
+					(faceY + faceH * 0.11) + '" width="' + (faceW * 0.64) +
+					'" height="' + Math.max(8, faceH * 0.16) +
+					'" rx="2" fill="#ffffff" stroke="#64748b" stroke-width="0.8"/>';
+				svg += '<rect x="' + (faceX + faceW * 0.18) + '" y="' +
+					(faceY + faceH * 0.72) + '" width="' + (faceW * 0.64) +
+					'" height="' + Math.max(8, faceH * 0.16) +
+					'" rx="2" fill="#ffffff" stroke="#64748b" stroke-width="0.8"/>';
+			}
+
+			svg += Editor.getElectricSvgTextLine(rows[0], faceX + faceW / 2,
+				faceY + faceH * 0.48, compact ? 7 : 8, '700');
+			svg += Editor.getElectricSvgTextLine(rows[1], faceX + faceW / 2,
+				faceY + faceH * 0.61, compact ? 6 : 7, '700');
+		}
+		else if (entry.kind == 'psu')
+		{
+			svg += '<rect x="' + faceX + '" y="' + faceY + '" width="' +
+				faceW + '" height="' + faceH +
+				'" fill="#f8fafc" stroke="#111827" stroke-width="1.3"/>';
+			svg += '<rect x="' + faceX + '" y="' + faceY + '" width="' +
+				faceW + '" height="' + Math.max(7, faceH * 0.11) +
+				'" fill="#e5e7eb" stroke="#cbd5e1" stroke-width="0.5"/>';
+			svg += '<rect x="' + faceX + '" y="' + (faceY + faceH * 0.86) +
+				'" width="' + faceW + '" height="' + (faceH * 0.14) +
+				'" fill="#e5e7eb" stroke="#cbd5e1" stroke-width="0.5"/>';
+			svg += Editor.getElectricSvgTextLine('MW', faceX + faceW * 0.18,
+				faceY + faceH * 0.22, compact ? 7 : 9, '700');
+			svg += Editor.getElectricSvgTextLine(rows[0], faceX + faceW / 2,
+				faceY + faceH * 0.43, compact ? 7 : 9, '700');
+			svg += Editor.getElectricSvgTextLine(rows[1], faceX + faceW / 2,
+				faceY + faceH * 0.58, compact ? 5.5 : 7, '400');
+			svg += Editor.getElectricSvgTextLine(rows[2], faceX + faceW / 2,
+				faceY + faceH * 0.72, compact ? 6 : 8, '700');
+		}
+		else
+		{
+			var isRcbo = entry.kind == 'rcbo';
+			var poles = Editor.getElectricPoleCount(entry);
+			var bandH = Math.max(6, faceH * 0.11);
+
+			svg += '<rect x="' + faceX + '" y="' + faceY + '" width="' +
+				faceW + '" height="' + faceH +
+				'" fill="#f8f8f8" stroke="#111827" stroke-width="1.3"/>';
+			svg += '<rect x="' + faceX + '" y="' + faceY + '" width="' +
+				faceW + '" height="' + bandH + '" fill="#ededed" stroke="#c7c7c7" stroke-width="0.45"/>';
+			svg += '<rect x="' + faceX + '" y="' + (faceY + faceH - bandH) +
+				'" width="' + faceW + '" height="' + bandH +
+				'" fill="#ededed" stroke="#c7c7c7" stroke-width="0.45"/>';
+
+			for (var i = 1; i < poles; i++)
+			{
+				var px = faceX + faceW * i / poles;
+				svg += '<path d="M' + px + ' ' + faceY + 'v' + faceH +
+					'" stroke="#9ca3af" stroke-width="0.6"/>';
+			}
+
+			svg += '<rect x="' + (faceX + faceW * 0.1) + '" y="' +
+				(faceY + faceH * 0.16) + '" width="' + (faceW * 0.25) +
+				'" height="' + Math.max(4, faceH * 0.045) +
+				'" fill="#e41f26"/>';
+			svg += '<rect x="' + (faceX + faceW * 0.16) + '" y="' +
+				(faceY + faceH * 0.58) + '" width="' + (faceW * 0.68) +
+				'" height="' + (faceH * 0.12) +
+				'" fill="#a9a49a" stroke="#7c786e" stroke-width="0.5"/>';
+			svg += Editor.getElectricSvgTextLine(rows[0], faceX + faceW / 2,
+				faceY + faceH * 0.32, compact ? 6 : 8, '700');
+			svg += Editor.getElectricSvgTextLine(rows[1], faceX + faceW / 2,
+				faceY + faceH * 0.48, compact ? 8 : 11, '700');
+			svg += Editor.getElectricSvgTextLine(rows[2], faceX + faceW / 2,
+				faceY + faceH * 0.82, compact ? 5.5 : 7, '700');
+
+			if (isRcbo)
+			{
+				svg += '<circle cx="' + (faceX + faceW * 0.78) + '" cy="' +
+					(faceY + faceH * 0.22) + '" r="' + Math.max(3, faceW * 0.055) +
+					'" fill="#ffffff" stroke="#111827" stroke-width="0.8"/>';
+				svg += '<rect x="' + (faceX + faceW * 0.2) + '" y="' +
+					(faceY + faceH * 0.38) + '" width="' + (faceW * 0.6) +
+					'" height="' + (faceH * 0.08) +
+					'" rx="3" fill="#ffe45c" stroke="#b88900" stroke-width="0.5"/>';
+			}
+		}
+
+		return svg;
 	};
 
 	Editor.getElectricLibraryPreviewTile = function(entry, x, y, w, h)
 	{
 		var label = Editor.getElectricShapeLabel(entry);
-		var body = '';
+		var body = Editor.createElectricModuleFaceSvg(entry, x + 4, y + 3,
+			w - 8, h - 25, true);
 
-		if (entry.kind == 'terminal')
-		{
-			var colors = Editor.getElectricTerminalColor(entry);
-			body += '<rect x="' + (x + w * 0.31) + '" y="' + (y + 7) +
-				'" width="' + (w * 0.38) + '" height="' + (h - 24) +
-				'" rx="3" fill="' + colors.fill + '" stroke="' + colors.stroke +
-				'" stroke-width="1.6"/>';
-			body += '<rect x="' + (x + w * 0.37) + '" y="' + (y + 15) +
-				'" width="' + (w * 0.26) + '" height="10" rx="2" fill="#ffffff" stroke="#64748b"/>';
-			body += '<rect x="' + (x + w * 0.37) + '" y="' + (y + h - 32) +
-				'" width="' + (w * 0.26) + '" height="10" rx="2" fill="#ffffff" stroke="#64748b"/>';
-			body += '<path d="M' + (x + w * 0.5) + ' ' + (y + 29) + 'v' +
-				(h - 64) + '" stroke="' + colors.accent + '" stroke-width="3" stroke-linecap="round"/>';
-		}
-		else if (entry.kind == 'psu')
-		{
-			body += '<rect x="' + (x + 12) + '" y="' + (y + 7) +
-				'" width="' + (w - 24) + '" height="' + (h - 24) +
-				'" rx="3" fill="#f8fafc" stroke="#111827" stroke-width="1.6"/>';
-			body += '<rect x="' + (x + 12) + '" y="' + (y + 7) +
-				'" width="' + (w - 24) + '" height="10" fill="#e5e7eb"/>';
-			body += '<text x="' + (x + w / 2) + '" y="' + (y + 34) +
-				'" font-family="Arial,sans-serif" font-size="10" font-weight="700" text-anchor="middle" fill="#111827">MW</text>';
-			body += '<path d="M' + (x + 20) + ' ' + (y + h - 30) + 'h' +
-				(w - 40) + '" stroke="#64748b" stroke-width="2"/>';
-		}
-		else
-		{
-			var isRcbo = entry.kind == 'rcbo';
-			var bw = isRcbo ? w * 0.58 : w * 0.44;
-			var bx = x + (w - bw) / 2;
-			body += '<rect x="' + bx + '" y="' + (y + 7) +
-				'" width="' + bw + '" height="' + (h - 24) +
-				'" rx="3" fill="#f8f8f8" stroke="#111827" stroke-width="1.6"/>';
-			body += '<rect x="' + (bx + bw * 0.18) + '" y="' + (y + 17) +
-				'" width="' + (bw * 0.42) + '" height="6" fill="#ef4444"/>';
-			body += '<rect x="' + (bx + bw * 0.22) + '" y="' + (y + 33) +
-				'" width="' + (bw * 0.56) + '" height="14" rx="2" fill="#9ca3af" stroke="#4b5563"/>';
-
-			if (isRcbo)
-			{
-				body += '<circle cx="' + (bx + bw * 0.78) + '" cy="' + (y + 22) +
-					'" r="4" fill="#ffffff" stroke="#111827"/>';
-			}
-		}
-
-		body += '<text x="' + (x + w / 2) + '" y="' + (y + h - 4) +
-			'" font-family="Arial,sans-serif" font-size="8.5" text-anchor="middle" fill="#111827">' +
-			Editor.getElectricSvgText(label).substring(0, 26) + '</text>';
+		body += Editor.getElectricSvgTextLine(
+			Editor.trimElectricText(label, 18), x + w / 2, y + h - 7, 7.5, '700');
 
 		return body;
 	};
@@ -233,9 +379,9 @@
 	Editor.getElectricLibraryPreview = function(library)
 	{
 		var items = library.items || [];
-		var cols = Math.min(10, Math.max(4, Math.ceil(Math.sqrt(items.length * 1.45))));
-		var tileW = 62;
-		var tileH = 78;
+		var cols = Math.min(8, Math.max(4, Math.ceil(Math.sqrt(items.length * 1.25))));
+		var tileW = 82;
+		var tileH = 104;
 		var pad = 24;
 		var headerH = 40;
 		var rows = Math.ceil(items.length / cols);
@@ -350,20 +496,30 @@
 		var type = Editor.getElectricShapeValue(entry, 'Тип');
 		var section = Editor.getElectricShapeValue(entry, 'Сечение');
 		var colors = Editor.getElectricTerminalColor(entry);
+		var rows = Editor.getElectricPreviewTextRows(entry);
+		var isPlate = /Заглуш|аксесс/i.test(type + ' ' + entry.section);
 
 		Editor.createElectricCell(group, '', 0, 0, w, h,
 			'rounded=1;whiteSpace=wrap;html=1;fillColor=' + colors.fill +
 			';strokeColor=' + colors.stroke + ';strokeWidth=1.1;arcSize=8;');
-		Editor.createElectricCell(group, '', w * 0.18, h * 0.1, w * 0.64, h * 0.22,
-			'rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#64748b;strokeWidth=0.8;arcSize=18;');
-		Editor.createElectricCell(group, '', w * 0.18, h * 0.68, w * 0.64, h * 0.22,
-			'rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#64748b;strokeWidth=0.8;arcSize=18;');
+
+		if (!isPlate)
+		{
+			Editor.createElectricCell(group, '', w * 0.18, h * 0.1, w * 0.64, h * 0.18,
+				'rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#64748b;strokeWidth=0.8;arcSize=18;');
+			Editor.createElectricCell(group, '', w * 0.18, h * 0.72, w * 0.64, h * 0.18,
+				'rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#64748b;strokeWidth=0.8;arcSize=18;');
+		}
+
 		Editor.createElectricCell(group, '', w * 0.45, h * 0.34, w * 0.1, h * 0.28,
 			'rounded=1;whiteSpace=wrap;html=1;fillColor=' + colors.accent +
 			';strokeColor=none;arcSize=40;');
-		Editor.createElectricText(group, 'UT', w * 0.08, h * 0.41, w * 0.84, h * 0.12, Math.max(7, w * 0.14), true, 'center');
-		Editor.createElectricText(group, section || type || Editor.getElectricShapeValue(entry, 'Модель'),
-			w * 0.06, h * 0.52, w * 0.88, h * 0.1, Math.max(5, w * 0.085), false, 'center');
+		Editor.createElectricText(group, rows[0], w * 0.08, h * 0.39, w * 0.84,
+			h * 0.1, Math.max(6, w * 0.13), true, 'center');
+		Editor.createElectricText(group, section || rows[1], w * 0.06, h * 0.51,
+			w * 0.88, h * 0.09, Math.max(5, w * 0.095), true, 'center');
+		Editor.createElectricText(group, rows[2] || type, w * 0.06, h * 0.61,
+			w * 0.88, h * 0.08, Math.max(4, w * 0.075), false, 'center');
 	};
 
 	Editor.createElectricPsuPreview = function(entry, group, w, h)
@@ -448,6 +604,53 @@
 		}
 
 		return lines.join('\n');
+	};
+
+	Editor.fitElectricShapeTooltip = function(sidebar)
+	{
+		if (sidebar.tooltip == null || sidebar.tooltipTitle == null)
+		{
+			return;
+		}
+
+		var margin = 8;
+		var maxHeight = Math.max(220, window.innerHeight - 2 * margin);
+		var maxWidth = Math.max(240, Math.min(sidebar.maxTooltipWidth,
+			window.innerWidth - 2 * margin));
+		var minWidth = Math.min(maxWidth, 260);
+		var graphBounds = sidebar.graph2.getGraphBounds();
+		var graphHeight = graphBounds.height + 2 * sidebar.tooltipBorder;
+		var titleMax = Math.max(90, Math.min(180, maxHeight - graphHeight - 8));
+
+		sidebar.tooltipTitle.style.maxHeight = titleMax + 'px';
+		sidebar.tooltipTitle.style.overflowY = 'auto';
+		sidebar.tooltipTitle.style.overflowX = 'hidden';
+		sidebar.tooltip.style.overflow = 'hidden';
+		sidebar.tooltip.style.width = Math.min(maxWidth,
+			Math.max(minWidth, parseFloat(sidebar.tooltip.style.width) || 0,
+				sidebar.tooltipTitle.scrollWidth + 8)) + 'px';
+
+		var titleHeight = Math.min(sidebar.tooltipTitle.scrollHeight, titleMax) + 10;
+		var totalHeight = Math.min(maxHeight, graphHeight + titleHeight);
+		sidebar.tooltip.style.height = totalHeight + 'px';
+		sidebar.tooltipTitle.style.marginTop = (2 - titleHeight) + 'px';
+
+		var rect = sidebar.tooltip.getBoundingClientRect();
+		var left = parseFloat(sidebar.tooltip.style.left) || rect.left;
+		var top = parseFloat(sidebar.tooltip.style.top) || rect.top;
+
+		if (left + rect.width > window.innerWidth - margin)
+		{
+			left = window.innerWidth - rect.width - margin;
+		}
+
+		if (top + totalHeight > window.innerHeight - margin)
+		{
+			top = window.innerHeight - totalHeight - margin;
+		}
+
+		sidebar.tooltip.style.left = Math.max(margin, left) + 'px';
+		sidebar.tooltip.style.top = Math.max(margin, top) + 'px';
 	};
 
 	Sidebar.prototype.createElectricShapeItem = function(entry)
@@ -596,36 +799,41 @@
 			this.tooltipTitle.innerText = '';
 			this.tooltipTitle.style.boxSizing = 'border-box';
 			this.tooltipTitle.style.textAlign = 'left';
-			this.tooltipTitle.style.whiteSpace = 'normal';
-			this.tooltipTitle.style.fontSize = '11px';
-			this.tooltipTitle.style.lineHeight = '1.35';
-			this.tooltipTitle.style.padding = '7px 8px 0 8px';
+				this.tooltipTitle.style.whiteSpace = 'normal';
+				this.tooltipTitle.style.fontSize = '11px';
+				this.tooltipTitle.style.lineHeight = '1.35';
+				this.tooltipTitle.style.padding = '7px 8px 0 8px';
+				this.tooltipTitle.style.width = '100%';
+				this.tooltipTitle.style.minWidth = '244px';
 
-			var titleDiv = document.createElement('div');
-			titleDiv.style.fontWeight = 'bold';
-			titleDiv.style.textAlign = 'center';
-			titleDiv.style.marginBottom = '5px';
+				var titleDiv = document.createElement('div');
+				titleDiv.style.fontWeight = 'bold';
+				titleDiv.style.textAlign = 'center';
+				titleDiv.style.marginBottom = '5px';
 			mxUtils.write(titleDiv, lines[0] || '');
 			this.tooltipTitle.appendChild(titleDiv);
 
 			for (var i = 1; i < lines.length; i++)
 			{
-				var row = document.createElement('div');
-				row.style.display = 'flex';
-				row.style.gap = '8px';
-				row.style.justifyContent = 'space-between';
+					var row = document.createElement('div');
+					row.style.display = 'flex';
+					row.style.gap = '8px';
+					row.style.justifyContent = 'space-between';
+					row.style.alignItems = 'flex-start';
+					row.style.marginTop = '2px';
 
-				var parts = lines[i].split(': ');
-				var key = document.createElement('span');
-				key.style.color = '#6b7280';
-				key.style.flex = '0 0 auto';
-				mxUtils.write(key, parts[0]);
+					var parts = lines[i].split(': ');
+					var key = document.createElement('span');
+					key.style.color = '#6b7280';
+					key.style.flex = '0 0 96px';
+					mxUtils.write(key, parts[0]);
 
-				var value = document.createElement('span');
-				value.style.color = '#111827';
-				value.style.textAlign = 'right';
-				value.style.overflowWrap = 'anywhere';
-				mxUtils.write(value, parts.slice(1).join(': '));
+					var value = document.createElement('span');
+					value.style.color = '#111827';
+					value.style.flex = '1 1 auto';
+					value.style.textAlign = 'left';
+					value.style.overflowWrap = 'anywhere';
+					mxUtils.write(value, parts.slice(1).join(': '));
 
 				row.appendChild(key);
 				row.appendChild(value);
@@ -637,9 +845,10 @@
 			var width = parseFloat(this.tooltip.style.width);
 			this.tooltip.style.width = Math.min(this.maxTooltipWidth,
 				Math.max(width, this.tooltipTitle.scrollWidth + 8)) + 'px';
-			this.tooltip.style.height = (bounds.height + 2 *
-				this.tooltipBorder + titleHeight) + 'px';
-			this.tooltipTitle.style.marginTop = (2 - titleHeight) + 'px';
-		}
-	};
+				this.tooltip.style.height = (bounds.height + 2 *
+					this.tooltipBorder + titleHeight) + 'px';
+				this.tooltipTitle.style.marginTop = (2 - titleHeight) + 'px';
+				Editor.fitElectricShapeTooltip(this);
+			}
+		};
 })();
