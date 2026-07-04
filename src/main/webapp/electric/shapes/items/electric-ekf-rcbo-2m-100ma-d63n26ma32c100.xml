@@ -1,0 +1,67 @@
+<mxGraphModel><root><mxCell id="0" /><mxCell id="1" parent="0" /><mxCell id="drawn_D63N26MA32C100_device" connectable="0" parent="1" style="group;html=1;" value="" vertex="1">
+          <mxGeometry height="314.961" width="141.732" x="0" y="0" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_body_4456" parent="drawn_D63N26MA32C100_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f8f8;gradientColor=#d9d9d9;gradientDirection=south;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="314.961" width="141.732" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_terminal_band_4457" parent="drawn_D63N26MA32C100_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f2f2f2;strokeColor=#c7c7c7;strokeWidth=0.45;" value="" vertex="1">
+          <mxGeometry height="17" width="141.732" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_screw_4458" parent="drawn_D63N26MA32C100_device" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffffff;strokeColor=#555555;strokeWidth=0.75;" value="" vertex="1">
+          <mxGeometry height="8.4" width="8.4" x="31.233" y="5" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_slot_4459" parent="drawn_D63N26MA32C100_device" style="shape=line;html=1;strokeColor=#777777;strokeWidth=0.7;" value="" vertex="1">
+          <mxGeometry width="6" x="32.433" y="9.2" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_terminal_notch_4460" parent="drawn_D63N26MA32C100_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d8d8d8;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="4" width="10" x="30.433" y="12" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_screw_4461" parent="drawn_D63N26MA32C100_device" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffffff;strokeColor=#555555;strokeWidth=0.75;" value="" vertex="1">
+          <mxGeometry height="8.4" width="8.4" x="102.099" y="5" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_slot_4462" parent="drawn_D63N26MA32C100_device" style="shape=line;html=1;strokeColor=#777777;strokeWidth=0.7;" value="" vertex="1">
+          <mxGeometry width="6" x="103.299" y="9.2" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_terminal_notch_4463" parent="drawn_D63N26MA32C100_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d8d8d8;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="4" width="10" x="101.299" y="12" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_top_curve_4464" parent="drawn_D63N26MA32C100_device" style="arc;html=1;startAngle=0;endAngle=180;strokeColor=#9a9a9a;strokeWidth=1;fillColor=none;" value="" vertex="1">
+          <mxGeometry height="16" width="56.693" x="42.52" y="13" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_upper_plate_4465" parent="drawn_D63N26MA32C100_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#d0d0d0;strokeWidth=0.35;" value="" vertex="1">
+          <mxGeometry height="22" width="141.732" y="18" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_logo_box_4466" parent="drawn_D63N26MA32C100_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e41f26;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="10" width="10" x="7" y="44" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_logo_text_4467" parent="drawn_D63N26MA32C100_device" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontStyle=1;fontColor=#222222;" value="EKF" vertex="1">
+          <mxGeometry height="12" width="34" x="19" y="43" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_series_4468" parent="drawn_D63N26MA32C100_device" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=6;fontStyle=1;fontColor=#555555;" value="АВДТ-63N" vertex="1">
+          <mxGeometry height="12" width="129.732" x="7" y="60" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_rating_4469" parent="drawn_D63N26MA32C100_device" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#111111;" value="C32" vertex="1">
+          <mxGeometry height="22" width="63.779" x="7" y="82" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_leakage_4470" parent="drawn_D63N26MA32C100_device" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=6;fontColor=#333333;" value="IΔn 100мА A" vertex="1">
+          <mxGeometry height="12" width="99.212" x="7" y="104" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_test_4471" parent="drawn_D63N26MA32C100_device" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#bdb8ad;strokeColor=#8b867c;strokeWidth=0.5;fontSize=8;fontColor=#ffffff;fontStyle=1;" value="T" vertex="1">
+          <mxGeometry height="20" width="20" x="113.732" y="74" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_schema_4472" parent="drawn_D63N26MA32C100_device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=5;fontColor=#333333;" value="N 1 3 5&lt;br&gt;│ │ │ │&lt;br&gt;2 4 6 N" vertex="1">
+          <mxGeometry height="34" width="53.858" x="59.527" y="84" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_handle_shadow_4473" parent="drawn_D63N26MA32C100_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#6f6b60;strokeColor=#7e796e;strokeWidth=0.3;" value="" vertex="1">
+          <mxGeometry height="18.425" width="113.386" x="14.173" y="182.205" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_handle_4474" parent="drawn_D63N26MA32C100_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#a9a49a;strokeColor=#7c786e;strokeWidth=0.4;fontSize=6;fontColor=#ffffff;fontStyle=1;align=center;verticalAlign=middle;" value="OFF" vertex="1">
+          <mxGeometry height="40.945" width="66.866" x="2" y="163.78" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_handle_4475" parent="drawn_D63N26MA32C100_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#a9a49a;strokeColor=#7c786e;strokeWidth=0.4;fontSize=6;fontColor=#ffffff;fontStyle=1;align=center;verticalAlign=middle;" value="OFF" vertex="1">
+          <mxGeometry height="40.945" width="66.866" x="72.866" y="163.78" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_lower_plate_4476" parent="drawn_D63N26MA32C100_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#d0d0d0;strokeWidth=0.35;" value="" vertex="1">
+          <mxGeometry height="20" width="141.732" y="256.961" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_terminal_band_4477" parent="drawn_D63N26MA32C100_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f2f2f2;strokeColor=#c7c7c7;strokeWidth=0.45;" value="" vertex="1">
+          <mxGeometry height="17" width="141.732" y="297.961" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_screw_4478" parent="drawn_D63N26MA32C100_device" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffffff;strokeColor=#555555;strokeWidth=0.75;" value="" vertex="1">
+          <mxGeometry height="8.4" width="8.4" x="31.233" y="302.961" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_slot_4479" parent="drawn_D63N26MA32C100_device" style="shape=line;html=1;strokeColor=#777777;strokeWidth=0.7;" value="" vertex="1">
+          <mxGeometry width="6" x="32.433" y="307.161" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_terminal_notch_4480" parent="drawn_D63N26MA32C100_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d8d8d8;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="4" width="10" x="30.433" y="298.961" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_screw_4481" parent="drawn_D63N26MA32C100_device" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffffff;strokeColor=#555555;strokeWidth=0.75;" value="" vertex="1">
+          <mxGeometry height="8.4" width="8.4" x="102.099" y="302.961" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_slot_4482" parent="drawn_D63N26MA32C100_device" style="shape=line;html=1;strokeColor=#777777;strokeWidth=0.7;" value="" vertex="1">
+          <mxGeometry width="6" x="103.299" y="307.161" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_terminal_notch_4483" parent="drawn_D63N26MA32C100_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d8d8d8;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="4" width="10" x="101.299" y="298.961" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_module_divider_4484" parent="drawn_D63N26MA32C100_device" style="shape=line;html=1;strokeColor=#c5c5c5;strokeWidth=0.45;" value="" vertex="1">
+          <mxGeometry height="314.961" x="70.866" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_terminal_label_top_N" parent="drawn_D63N26MA32C100_device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=7;fontStyle=1;fontColor=#222222;spacing=0;spacingTop=0;spacingBottom=0;overflow=hidden;" value="N" vertex="1"><mxGeometry x="30.433" y="20" width="10" height="10" as="geometry" /></mxCell><mxCell id="drawn_D63N26MA32C100_device_terminal_label_top_L" parent="drawn_D63N26MA32C100_device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=7;fontStyle=1;fontColor=#222222;spacing=0;spacingTop=0;spacingBottom=0;overflow=hidden;" value="L" vertex="1"><mxGeometry x="101.299" y="20" width="10" height="10" as="geometry" /></mxCell><mxCell id="drawn_D63N26MA32C100_device_terminal_label_bottom_N" parent="drawn_D63N26MA32C100_device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=7;fontStyle=1;fontColor=#222222;spacing=0;spacingTop=0;spacingBottom=0;overflow=hidden;" value="N" vertex="1"><mxGeometry x="30.433" y="280" width="10" height="10" as="geometry" /></mxCell><mxCell id="drawn_D63N26MA32C100_device_terminal_label_bottom_L" parent="drawn_D63N26MA32C100_device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=7;fontStyle=1;fontColor=#222222;spacing=0;spacingTop=0;spacingBottom=0;overflow=hidden;" value="L" vertex="1"><mxGeometry x="101.299" y="280" width="10" height="10" as="geometry" /></mxCell><mxCell id="drawn_D63N26MA32C100_device_frame_4485" parent="drawn_D63N26MA32C100_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=0.35;" value="" vertex="1">
+          <mxGeometry height="314.961" width="141.732" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_editable_marking" parent="drawn_D63N26MA32C100_device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#111111;whiteSpace=wrap;spacing=0;spacingTop=0;spacingBottom=0;overflow=hidden;" value="АВДТ-63N&lt;br&gt;1P+N C32&lt;br&gt;100мА A" vertex="1">
+          <mxGeometry height="55" width="133.732" x="4" y="206" as="geometry" />
+        </mxCell><mxCell id="drawn_D63N26MA32C100_device_line_tag" value="QFD " style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE45C;strokeColor=#B88900;strokeWidth=0.8;fontColor=#111111;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=4;arcSize=35;autosize=1;resizable=1;" vertex="1" parent="drawn_D63N26MA32C100_device">
+          <mxGeometry as="geometry" x="45.866" y="123" width="50" height="30" />
+        </mxCell></root></mxGraphModel>

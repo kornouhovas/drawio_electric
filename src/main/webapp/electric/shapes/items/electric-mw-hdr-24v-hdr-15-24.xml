@@ -1,0 +1,51 @@
+<mxGraphModel><root><mxCell id="0" /><mxCell id="1" parent="0" /><mxCell id="mw_HDR_15_24_device" parent="1" style="group;html=1;" value="" vertex="1">
+          <mxGeometry height="354.331" width="68.898" x="0" y="0" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_body" parent="mw_HDR_15_24_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#626663;strokeColor=#222;strokeWidth=0.8;" value="" vertex="1">
+          <mxGeometry height="354.331" width="68.898" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_top_cap" parent="mw_HDR_15_24_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#30383a;strokeColor=none;strokeWidth=0;" value="" vertex="1">
+          <mxGeometry height="38" width="68.898" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_top_band" parent="mw_HDR_15_24_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#41484a;strokeColor=#171b1c;strokeWidth=0.6;" value="" vertex="1">
+          <mxGeometry height="17" width="68.898" y="38" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_label_panel" parent="mw_HDR_15_24_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#5e625f;strokeColor=none;strokeWidth=0;" value="" vertex="1">
+          <mxGeometry height="250.331" width="68.898" y="56" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_bottom_band" parent="mw_HDR_15_24_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#41484a;strokeColor=#171b1c;strokeWidth=0.6;" value="" vertex="1">
+          <mxGeometry height="17" width="68.898" y="280.331" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_bottom_cap" parent="mw_HDR_15_24_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#4b504e;strokeColor=none;strokeWidth=0;" value="" vertex="1">
+          <mxGeometry height="57" width="68.898" y="297.331" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_din_slot" parent="mw_HDR_15_24_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f0f0f0;strokeColor=#222;strokeWidth=0.5;" value="" vertex="1">
+          <mxGeometry height="6" width="22.047" x="23.425" y="344.331" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_top_term_0" parent="mw_HDR_15_24_device" style="ellipse;whiteSpace=wrap;html=1;fillColor=#050606;strokeColor=none;strokeWidth=0.5;" value="" vertex="1">
+          <mxGeometry height="8.4" width="8.4" x="20.603" y="18" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_top_lab_0" parent="mw_HDR_15_24_device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=4.5;fontColor=#d9d0a2;whiteSpace=wrap;spacing=0;overflow=hidden;" value="-V" vertex="1">
+          <mxGeometry height="10" width="20" x="14.803" y="30" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_top_term_1" parent="mw_HDR_15_24_device" style="ellipse;whiteSpace=wrap;html=1;fillColor=#050606;strokeColor=none;strokeWidth=0.5;" value="" vertex="1">
+          <mxGeometry height="8.4" width="8.4" x="39.894" y="18" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_top_lab_1" parent="mw_HDR_15_24_device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=4.5;fontColor=#d9d0a2;whiteSpace=wrap;spacing=0;overflow=hidden;" value="+V" vertex="1">
+          <mxGeometry height="10" width="20" x="34.094" y="30" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_bottom_term_0" parent="mw_HDR_15_24_device" style="ellipse;whiteSpace=wrap;html=1;fillColor=#050606;strokeColor=none;strokeWidth=0.5;" value="" vertex="1">
+          <mxGeometry height="8.4" width="8.4" x="19.225" y="332.331" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_bottom_lab_0" parent="mw_HDR_15_24_device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=6;fontColor=#e7e7e7;whiteSpace=wrap;spacing=0;overflow=hidden;" value="L" vertex="1">
+          <mxGeometry height="14" width="24" x="11.425" y="312.331" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_bottom_term_1" parent="mw_HDR_15_24_device" style="ellipse;whiteSpace=wrap;html=1;fillColor=#050606;strokeColor=none;strokeWidth=0.5;" value="" vertex="1">
+          <mxGeometry height="8.4" width="8.4" x="34.383" y="332.331" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_bottom_lab_1" parent="mw_HDR_15_24_device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=6;fontColor=#e7e7e7;whiteSpace=wrap;spacing=0;overflow=hidden;" value="N" vertex="1">
+          <mxGeometry height="14" width="24" x="26.583" y="312.331" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_logo_box" parent="mw_HDR_15_24_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#777b78;strokeColor=#9b9b86;strokeWidth=0.5;" value="" vertex="1">
+          <mxGeometry height="25" width="25" x="8" y="72" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_logo_mw" parent="mw_HDR_15_24_device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=7;fontColor=#d8d0bb;whiteSpace=wrap;spacing=0;overflow=hidden;fontStyle=1;" value="MW" vertex="1">
+          <mxGeometry height="13" width="21" x="10" y="72" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_logo_text" parent="mw_HDR_15_24_device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=4.5;fontColor=#d8d0bb;whiteSpace=wrap;spacing=0;overflow=hidden;fontStyle=1;" value="MEAN WELL" vertex="1">
+          <mxGeometry height="10" width="21" x="10" y="84" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_model" parent="mw_HDR_15_24_device" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=6.5;fontColor=#d8d0bb;whiteSpace=wrap;spacing=0;overflow=hidden;fontStyle=1;" value="HDR-15-24" vertex="1">
+          <mxGeometry height="25" width="25.898" x="37" y="72" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_input" parent="mw_HDR_15_24_device" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=4.5;fontColor=#d7d7d7;whiteSpace=wrap;spacing=0;overflow=hidden;" value="INPUT: 85-264VAC" vertex="1">
+          <mxGeometry height="18" width="52.898" x="8" y="104" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_output" parent="mw_HDR_15_24_device" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=4.5;fontColor=#d7d7d7;whiteSpace=wrap;spacing=0;overflow=hidden;" value="OUTPUT: 24V DC 0.63A" vertex="1">
+          <mxGeometry height="18" width="52.898" x="8" y="124" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_power" parent="mw_HDR_15_24_device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=6;fontColor=#f7df25;whiteSpace=wrap;spacing=0;overflow=hidden;fontStyle=1;" value="15.2W" vertex="1">
+          <mxGeometry height="24" width="50" x="10.898" y="242.331" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_frame" parent="mw_HDR_15_24_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000;strokeWidth=0.8;" value="" vertex="1">
+          <mxGeometry height="354.331" width="68.898" as="geometry" />
+        </mxCell><mxCell id="mw_HDR_15_24_device_line_tag" parent="mw_HDR_15_24_device" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE45C;strokeColor=#B88900;strokeWidth=0.8;fontColor=#111111;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=4;arcSize=35;autosize=1;resizable=1;" value="PS " vertex="1">
+          <mxGeometry height="30" width="50" x="9.449" y="142" as="geometry" />
+        </mxCell></root></mxGraphModel>

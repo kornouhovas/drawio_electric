@@ -1,0 +1,81 @@
+<mxGraphModel><root><mxCell id="0" /><mxCell id="1" parent="0" /><mxCell id="drawn_mcb4763_6_3_25D_pro_device" connectable="0" parent="1" style="group;html=1;" value="" vertex="1">
+          <mxGeometry height="314.961" width="212.598" x="0" y="0" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_body_459" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f8f8;gradientColor=#d9d9d9;gradientDirection=south;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="314.961" width="212.598" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_terminal_band_460" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f2f2f2;strokeColor=#c7c7c7;strokeWidth=0.45;" value="" vertex="1">
+          <mxGeometry height="17" width="212.598" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_screw_461" parent="drawn_mcb4763_6_3_25D_pro_device" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffffff;strokeColor=#555555;strokeWidth=0.75;" value="" vertex="1">
+          <mxGeometry height="8.4" width="8.4" x="31.233" y="5" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_slot_462" parent="drawn_mcb4763_6_3_25D_pro_device" style="shape=line;html=1;strokeColor=#777777;strokeWidth=0.7;" value="" vertex="1">
+          <mxGeometry width="6" x="32.433" y="9.2" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_terminal_notch_463" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d8d8d8;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="4" width="10" x="30.433" y="12" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_screw_464" parent="drawn_mcb4763_6_3_25D_pro_device" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffffff;strokeColor=#555555;strokeWidth=0.75;" value="" vertex="1">
+          <mxGeometry height="8.4" width="8.4" x="102.099" y="5" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_slot_465" parent="drawn_mcb4763_6_3_25D_pro_device" style="shape=line;html=1;strokeColor=#777777;strokeWidth=0.7;" value="" vertex="1">
+          <mxGeometry width="6" x="103.299" y="9.2" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_terminal_notch_466" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d8d8d8;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="4" width="10" x="101.299" y="12" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_screw_467" parent="drawn_mcb4763_6_3_25D_pro_device" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffffff;strokeColor=#555555;strokeWidth=0.75;" value="" vertex="1">
+          <mxGeometry height="8.4" width="8.4" x="172.965" y="5" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_slot_468" parent="drawn_mcb4763_6_3_25D_pro_device" style="shape=line;html=1;strokeColor=#777777;strokeWidth=0.7;" value="" vertex="1">
+          <mxGeometry width="6" x="174.165" y="9.2" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_terminal_notch_469" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d8d8d8;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="4" width="10" x="172.165" y="12" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_top_curve_470" parent="drawn_mcb4763_6_3_25D_pro_device" style="arc;html=1;startAngle=0;endAngle=180;strokeColor=#9a9a9a;strokeWidth=1;fillColor=none;" value="" vertex="1">
+          <mxGeometry height="16" width="85.039" x="63.779" y="13" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_upper_plate_471" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#d0d0d0;strokeWidth=0.35;" value="" vertex="1">
+          <mxGeometry height="22" width="212.598" y="18" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_logo_box_472" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e41f26;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="10" width="10" x="7" y="44" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_logo_text_473" parent="drawn_mcb4763_6_3_25D_pro_device" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontStyle=1;fontColor=#222222;" value="EKF" vertex="1">
+          <mxGeometry height="12" width="34" x="19" y="43" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_series_band_474" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#3b3b3b;strokeColor=none;fontSize=5;fontColor=#ffffff;fontStyle=1;align=center;verticalAlign=middle;" value="ВА 47-63" vertex="1">
+          <mxGeometry height="8" width="212.598" y="70" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_green_mark_475" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#16b84e;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="3" width="38.268" x="2" y="70" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_rating_476" parent="drawn_mcb4763_6_3_25D_pro_device" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;fontColor=#111111;" value="D25" vertex="1">
+          <mxGeometry height="22" width="116.929" x="5" y="82" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_mini_schema_477" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#808080;strokeWidth=0.35;fontSize=5;fontColor=#555555;align=center;verticalAlign=middle;" value="6000&lt;br&gt;3" vertex="1">
+          <mxGeometry height="18" width="18" x="188.598" y="84" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_handle_shadow_478" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#6f6b60;strokeColor=#7e796e;strokeWidth=0.3;" value="" vertex="1">
+          <mxGeometry height="18.425" width="170.078" x="21.26" y="182.205" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_handle_479" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#a9a49a;strokeColor=#7c786e;strokeWidth=0.4;fontSize=6;fontColor=#ffffff;fontStyle=1;align=center;verticalAlign=middle;" value="OFF" vertex="1">
+          <mxGeometry height="40.945" width="66.866" x="2" y="163.78" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_handle_480" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#a9a49a;strokeColor=#7c786e;strokeWidth=0.4;fontSize=6;fontColor=#ffffff;fontStyle=1;align=center;verticalAlign=middle;" value="OFF" vertex="1">
+          <mxGeometry height="40.945" width="66.866" x="72.866" y="163.78" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_handle_481" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#a9a49a;strokeColor=#7c786e;strokeWidth=0.4;fontSize=6;fontColor=#ffffff;fontStyle=1;align=center;verticalAlign=middle;" value="OFF" vertex="1">
+          <mxGeometry height="40.945" width="66.866" x="143.732" y="163.78" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_lower_plate_482" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#d0d0d0;strokeWidth=0.35;" value="" vertex="1">
+          <mxGeometry height="20" width="212.598" y="256.961" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_terminal_band_483" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f2f2f2;strokeColor=#c7c7c7;strokeWidth=0.45;" value="" vertex="1">
+          <mxGeometry height="17" width="212.598" y="297.961" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_screw_484" parent="drawn_mcb4763_6_3_25D_pro_device" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffffff;strokeColor=#555555;strokeWidth=0.75;" value="" vertex="1">
+          <mxGeometry height="8.4" width="8.4" x="31.233" y="302.961" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_slot_485" parent="drawn_mcb4763_6_3_25D_pro_device" style="shape=line;html=1;strokeColor=#777777;strokeWidth=0.7;" value="" vertex="1">
+          <mxGeometry width="6" x="32.433" y="307.161" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_terminal_notch_486" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d8d8d8;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="4" width="10" x="30.433" y="298.961" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_screw_487" parent="drawn_mcb4763_6_3_25D_pro_device" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffffff;strokeColor=#555555;strokeWidth=0.75;" value="" vertex="1">
+          <mxGeometry height="8.4" width="8.4" x="102.099" y="302.961" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_slot_488" parent="drawn_mcb4763_6_3_25D_pro_device" style="shape=line;html=1;strokeColor=#777777;strokeWidth=0.7;" value="" vertex="1">
+          <mxGeometry width="6" x="103.299" y="307.161" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_terminal_notch_489" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d8d8d8;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="4" width="10" x="101.299" y="298.961" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_screw_490" parent="drawn_mcb4763_6_3_25D_pro_device" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffffff;strokeColor=#555555;strokeWidth=0.75;" value="" vertex="1">
+          <mxGeometry height="8.4" width="8.4" x="172.965" y="302.961" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_slot_491" parent="drawn_mcb4763_6_3_25D_pro_device" style="shape=line;html=1;strokeColor=#777777;strokeWidth=0.7;" value="" vertex="1">
+          <mxGeometry width="6" x="174.165" y="307.161" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_terminal_notch_492" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d8d8d8;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="4" width="10" x="172.165" y="298.961" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_module_divider_493" parent="drawn_mcb4763_6_3_25D_pro_device" style="shape=line;html=1;strokeColor=#c5c5c5;strokeWidth=0.45;" value="" vertex="1">
+          <mxGeometry height="314.961" x="70.866" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_module_divider_494" parent="drawn_mcb4763_6_3_25D_pro_device" style="shape=line;html=1;strokeColor=#c5c5c5;strokeWidth=0.45;" value="" vertex="1">
+          <mxGeometry height="314.961" x="141.732" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_frame_495" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=0.35;" value="" vertex="1">
+          <mxGeometry height="314.961" width="212.598" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_editable_marking" parent="drawn_mcb4763_6_3_25D_pro_device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#111111;whiteSpace=wrap;spacing=0;spacingTop=0;spacingBottom=0;overflow=hidden;" value="ВА 47-63&lt;br&gt;3P D25" vertex="1">
+          <mxGeometry height="55" width="204.598" x="4" y="206" as="geometry" />
+        </mxCell><mxCell id="drawn_mcb4763_6_3_25D_pro_device_line_tag" parent="drawn_mcb4763_6_3_25D_pro_device" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE45C;strokeColor=#B88900;strokeWidth=0.8;fontColor=#111111;fontSize=10;fontStyle=1;align=center;verticalAlign=middle;spacing=4;arcSize=35;autosize=1;resizable=1;" value="QF " vertex="1">
+          <mxGeometry height="30" width="50" x="81.299" y="123" as="geometry" />
+        </mxCell></root></mxGraphModel>
