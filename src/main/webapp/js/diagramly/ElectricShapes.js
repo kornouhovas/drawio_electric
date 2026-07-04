@@ -118,20 +118,144 @@
 		}
 	};
 
-	Editor.getElectricLibraryPreview = function(title)
+	Editor.getElectricSvgText = function(value)
 	{
-		var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="360" height="180" viewBox="0 0 360 180">' +
-			'<rect width="360" height="180" rx="8" fill="#f8fafc"/>' +
-			'<rect x="34" y="34" width="62" height="112" rx="3" fill="#ffffff" stroke="#111827" stroke-width="2"/>' +
-			'<rect x="48" y="54" width="34" height="12" fill="#ef4444"/>' +
-			'<rect x="48" y="88" width="34" height="30" rx="3" fill="#9ca3af" stroke="#4b5563"/>' +
-			'<rect x="128" y="34" width="92" height="112" rx="3" fill="#ffffff" stroke="#111827" stroke-width="2"/>' +
-			'<path d="M146 62h56M146 90h56M146 118h56" stroke="#64748b" stroke-width="6" stroke-linecap="round"/>' +
-			'<rect x="252" y="34" width="54" height="112" rx="3" fill="#eef2ff" stroke="#111827" stroke-width="2"/>' +
-			'<circle cx="270" cy="58" r="5" fill="#ffffff" stroke="#111827"/>' +
-			'<circle cx="288" cy="58" r="5" fill="#ffffff" stroke="#111827"/>' +
-			'<text x="180" y="166" font-family="Arial, sans-serif" font-size="18" text-anchor="middle" fill="#111827">' +
-			mxUtils.htmlEntities(title) + '</text></svg>';
+		return mxUtils.htmlEntities(value || '');
+	};
+
+	Editor.getElectricShapeLabel = function(entry)
+	{
+		var data = entry.data || {};
+
+		return data['Маркировка'] || data['Сечение'] || data['Модель'] ||
+			data['Выход'] || entry.title;
+	};
+
+	Editor.getElectricTerminalColor = function(entry)
+	{
+		var color = Editor.getElectricShapeValue(entry, 'Цвет');
+		var type = Editor.getElectricShapeValue(entry, 'Тип');
+		var section = entry.section || '';
+
+		if (color == 'Синий' || section.indexOf('сини') >= 0)
+		{
+			return {fill: '#bfdbfe', stroke: '#1d4ed8', accent: '#60a5fa'};
+		}
+		else if (color == 'PE' || type.indexOf('зазем') >= 0 || section.indexOf('PE') >= 0)
+		{
+			return {fill: '#d9f99d', stroke: '#15803d', accent: '#facc15'};
+		}
+		else if (type.indexOf('Заглуш') >= 0 || section.indexOf('заглуш') >= 0)
+		{
+			return {fill: '#f3f4f6', stroke: '#6b7280', accent: '#d1d5db'};
+		}
+		else if (section.indexOf('аксесс') >= 0)
+		{
+			return {fill: '#e5e7eb', stroke: '#4b5563', accent: '#9ca3af'};
+		}
+
+		return {fill: '#e5e7eb', stroke: '#374151', accent: '#9ca3af'};
+	};
+
+	Editor.getElectricPreviewSize = function(entry)
+	{
+		if (entry.kind == 'terminal')
+		{
+			return {width: 54, height: 76, thumbWidth: 38, thumbHeight: 34};
+		}
+
+		return {
+			width: Math.max(20, entry.width),
+			height: Math.max(40, entry.height),
+			thumbWidth: 32,
+			thumbHeight: 30
+		};
+	};
+
+	Editor.getElectricLibraryPreviewTile = function(entry, x, y, w, h)
+	{
+		var label = Editor.getElectricShapeLabel(entry);
+		var body = '';
+
+		if (entry.kind == 'terminal')
+		{
+			var colors = Editor.getElectricTerminalColor(entry);
+			body += '<rect x="' + (x + w * 0.31) + '" y="' + (y + 7) +
+				'" width="' + (w * 0.38) + '" height="' + (h - 24) +
+				'" rx="3" fill="' + colors.fill + '" stroke="' + colors.stroke +
+				'" stroke-width="1.6"/>';
+			body += '<rect x="' + (x + w * 0.37) + '" y="' + (y + 15) +
+				'" width="' + (w * 0.26) + '" height="10" rx="2" fill="#ffffff" stroke="#64748b"/>';
+			body += '<rect x="' + (x + w * 0.37) + '" y="' + (y + h - 32) +
+				'" width="' + (w * 0.26) + '" height="10" rx="2" fill="#ffffff" stroke="#64748b"/>';
+			body += '<path d="M' + (x + w * 0.5) + ' ' + (y + 29) + 'v' +
+				(h - 64) + '" stroke="' + colors.accent + '" stroke-width="3" stroke-linecap="round"/>';
+		}
+		else if (entry.kind == 'psu')
+		{
+			body += '<rect x="' + (x + 12) + '" y="' + (y + 7) +
+				'" width="' + (w - 24) + '" height="' + (h - 24) +
+				'" rx="3" fill="#f8fafc" stroke="#111827" stroke-width="1.6"/>';
+			body += '<rect x="' + (x + 12) + '" y="' + (y + 7) +
+				'" width="' + (w - 24) + '" height="10" fill="#e5e7eb"/>';
+			body += '<text x="' + (x + w / 2) + '" y="' + (y + 34) +
+				'" font-family="Arial,sans-serif" font-size="10" font-weight="700" text-anchor="middle" fill="#111827">MW</text>';
+			body += '<path d="M' + (x + 20) + ' ' + (y + h - 30) + 'h' +
+				(w - 40) + '" stroke="#64748b" stroke-width="2"/>';
+		}
+		else
+		{
+			var isRcbo = entry.kind == 'rcbo';
+			var bw = isRcbo ? w * 0.58 : w * 0.44;
+			var bx = x + (w - bw) / 2;
+			body += '<rect x="' + bx + '" y="' + (y + 7) +
+				'" width="' + bw + '" height="' + (h - 24) +
+				'" rx="3" fill="#f8f8f8" stroke="#111827" stroke-width="1.6"/>';
+			body += '<rect x="' + (bx + bw * 0.18) + '" y="' + (y + 17) +
+				'" width="' + (bw * 0.42) + '" height="6" fill="#ef4444"/>';
+			body += '<rect x="' + (bx + bw * 0.22) + '" y="' + (y + 33) +
+				'" width="' + (bw * 0.56) + '" height="14" rx="2" fill="#9ca3af" stroke="#4b5563"/>';
+
+			if (isRcbo)
+			{
+				body += '<circle cx="' + (bx + bw * 0.78) + '" cy="' + (y + 22) +
+					'" r="4" fill="#ffffff" stroke="#111827"/>';
+			}
+		}
+
+		body += '<text x="' + (x + w / 2) + '" y="' + (y + h - 4) +
+			'" font-family="Arial,sans-serif" font-size="8.5" text-anchor="middle" fill="#111827">' +
+			Editor.getElectricSvgText(label).substring(0, 26) + '</text>';
+
+		return body;
+	};
+
+	Editor.getElectricLibraryPreview = function(library)
+	{
+		var items = library.items || [];
+		var cols = Math.min(10, Math.max(4, Math.ceil(Math.sqrt(items.length * 1.45))));
+		var tileW = 62;
+		var tileH = 78;
+		var pad = 24;
+		var headerH = 40;
+		var rows = Math.ceil(items.length / cols);
+		var width = cols * tileW + pad * 2;
+		var height = rows * tileH + headerH + pad;
+		var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + width +
+			'" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '">' +
+			'<rect width="' + width + '" height="' + height + '" fill="#ffffff"/>' +
+			'<text x="' + pad + '" y="27" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#374151">' +
+			Editor.getElectricSvgText(library.title) + '</text>';
+
+		for (var i = 0; i < items.length; i++)
+		{
+			var col = i % cols;
+			var row = Math.floor(i / cols);
+			svg += Editor.getElectricLibraryPreviewTile(items[i],
+				pad + col * tileW, headerH + row * tileH, tileW, tileH);
+		}
+
+		svg += '</svg>';
 
 		return 'data:image/svg+xml,' + encodeURIComponent(svg);
 	};
@@ -223,33 +347,23 @@
 
 	Editor.createElectricTerminalPreview = function(entry, group, w, h)
 	{
-		var color = Editor.getElectricShapeValue(entry, 'Цвет');
 		var type = Editor.getElectricShapeValue(entry, 'Тип');
 		var section = Editor.getElectricShapeValue(entry, 'Сечение');
-		var fill = '#e5e7eb';
-
-		if (color == 'Синий')
-		{
-			fill = '#bfdbfe';
-		}
-		else if (color == 'PE' || type.indexOf('зазем') >= 0)
-		{
-			fill = '#bbf7d0';
-		}
-		else if (type.indexOf('Заглуш') >= 0)
-		{
-			fill = '#f3f4f6';
-		}
+		var colors = Editor.getElectricTerminalColor(entry);
 
 		Editor.createElectricCell(group, '', 0, 0, w, h,
-			'rounded=0;whiteSpace=wrap;html=1;fillColor=' + fill + ';strokeColor=#111827;strokeWidth=0.8;');
-		Editor.createElectricCell(group, '', w * 0.18, h * 0.18, w * 0.64, h * 0.18,
-			'rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6b7280;strokeWidth=0.6;arcSize=20;');
-		Editor.createElectricCell(group, '', w * 0.18, h * 0.64, w * 0.64, h * 0.18,
-			'rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6b7280;strokeWidth=0.6;arcSize=20;');
-		Editor.createElectricText(group, 'XT', w * 0.08, h * 0.39, w * 0.84, h * 0.12, Math.max(8, w * 0.16), true, 'center');
-		Editor.createElectricText(group, section || Editor.getElectricShapeValue(entry, 'Модель'),
-			w * 0.06, h * 0.5, w * 0.88, h * 0.12, Math.max(6, w * 0.1), false, 'center');
+			'rounded=1;whiteSpace=wrap;html=1;fillColor=' + colors.fill +
+			';strokeColor=' + colors.stroke + ';strokeWidth=1.1;arcSize=8;');
+		Editor.createElectricCell(group, '', w * 0.18, h * 0.1, w * 0.64, h * 0.22,
+			'rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#64748b;strokeWidth=0.8;arcSize=18;');
+		Editor.createElectricCell(group, '', w * 0.18, h * 0.68, w * 0.64, h * 0.22,
+			'rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#64748b;strokeWidth=0.8;arcSize=18;');
+		Editor.createElectricCell(group, '', w * 0.45, h * 0.34, w * 0.1, h * 0.28,
+			'rounded=1;whiteSpace=wrap;html=1;fillColor=' + colors.accent +
+			';strokeColor=none;arcSize=40;');
+		Editor.createElectricText(group, 'UT', w * 0.08, h * 0.41, w * 0.84, h * 0.12, Math.max(7, w * 0.14), true, 'center');
+		Editor.createElectricText(group, section || type || Editor.getElectricShapeValue(entry, 'Модель'),
+			w * 0.06, h * 0.52, w * 0.88, h * 0.1, Math.max(5, w * 0.085), false, 'center');
 	};
 
 	Editor.createElectricPsuPreview = function(entry, group, w, h)
@@ -282,8 +396,9 @@
 
 	Editor.createElectricShapePreviewCells = function(entry)
 	{
-		var w = Math.max(20, entry.width);
-		var h = Math.max(40, entry.height);
+		var size = Editor.getElectricPreviewSize(entry);
+		var w = size.width;
+		var h = size.height;
 		var group = new mxCell('', new mxGeometry(0, 0, w, h),
 			'group;html=1;electricShapeId=' + entry.id + ';');
 		group.vertex = true;
@@ -338,8 +453,10 @@
 	Sidebar.prototype.createElectricShapeItem = function(entry)
 	{
 		var cells = Editor.createElectricShapePreviewCells(entry);
-		var elt = this.createVertexTemplateFromCells(cells, entry.width,
-			entry.height, entry.title, true, true, null, true, null, 32, 30);
+		var size = Editor.getElectricPreviewSize(entry);
+		var elt = this.createVertexTemplateFromCells(cells, size.width,
+			size.height, entry.title, true, true, null, true, null,
+			size.thumbWidth, size.thumbHeight);
 		var loaded = false;
 
 		if (elt == null)
@@ -445,8 +562,7 @@
 				entries.push({
 					title: catalog.libraries[i].title,
 					id: catalog.libraries[i].id,
-					desc: catalog.libraries[i].items.length + ' элементов. Оригиналы загружаются при перетаскивании.',
-					image: Editor.getElectricLibraryPreview(catalog.libraries[i].title)
+					image: Editor.getElectricLibraryPreview(catalog.libraries[i])
 				});
 			}
 

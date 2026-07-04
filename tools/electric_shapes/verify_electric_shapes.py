@@ -14,11 +14,7 @@ EXPECTED_COUNTS = {
     "electric-ekf-rcbo-2m-30ma": 46,
     "electric-ekf-rcbo-2m-100ma": 38,
     "electric-ekf-rcbo-2m-300ma": 28,
-    "electric-ekf-ut-gray": 8,
-    "electric-ekf-ut-blue": 8,
-    "electric-ekf-ut-pe": 7,
-    "electric-ekf-ut-accessories": 1,
-    "electric-ekf-ut-sak": 4,
+    "electric-ekf-ut": 28,
     "electric-mw-hdr-12v": 6,
     "electric-mw-hdr-24v": 6,
     "electric-mw-hdr-48v": 6,
@@ -80,7 +76,12 @@ def main():
         if "<mxGraphModel" not in text or "<root>" not in text:
             return fail(f"Original is not a graph model: {item['id']}")
 
-    print("Electric shapes manifest verified: 240 items, 15 libraries, no EKF 4P")
+    terminal_libraries = [library for library in libraries if library["id"].startswith("electric-ekf-ut")]
+
+    if len(terminal_libraries) != 1 or terminal_libraries[0]["id"] != "electric-ekf-ut":
+        return fail(f"Expected one merged terminal library, got {[library['id'] for library in terminal_libraries]}")
+
+    print("Electric shapes manifest verified: 240 items, 11 libraries, merged UT terminals, no EKF 4P")
     return 0
 
 

@@ -20,11 +20,6 @@ SECTION_REWRITES = {
     "ВА 47-63 — 1P (19)": ("electric-ekf-breakers-1p", "EKF автоматы 1P"),
     "ВА 47-63 — 2P (9)": ("electric-ekf-breakers-2p", "EKF автоматы 2P"),
     "ВА 47-63 / 47-63N — 3P (14)": ("electric-ekf-breakers-3p", "EKF автоматы 3P"),
-    "UT — Проходные серые (8)": ("electric-ekf-ut-gray", "EKF клеммы UT серые"),
-    "UT — Проходные синие (8)": ("electric-ekf-ut-blue", "EKF клеммы UT синие"),
-    "UT — PE / заземление (7)": ("electric-ekf-ut-pe", "EKF клеммы UT PE"),
-    "UT — аксессуары / зажимы (1)": ("electric-ekf-ut-accessories", "EKF UT аксессуары"),
-    "UT — заглушки SAK (4)": ("electric-ekf-ut-sak", "EKF UT заглушки SAK"),
 }
 
 RCBO_LEAKAGE_ORDER = ["10мА", "30мА", "100мА", "300мА"]
@@ -166,6 +161,9 @@ def item_kind(page_key):
 
 
 def library_for_item(page_key, section, data):
+    if page_key == "ekf_ut":
+        return "electric-ekf-ut", "EKF клеммы UT"
+
     if page_key == "ekf_rcbo_2m":
         marking = data.get("Маркировка", "")
 
@@ -297,11 +295,7 @@ def write_manifest(entries, output_dir):
         "electric-ekf-rcbo-2m-30ma",
         "electric-ekf-rcbo-2m-100ma",
         "electric-ekf-rcbo-2m-300ma",
-        "electric-ekf-ut-gray",
-        "electric-ekf-ut-blue",
-        "electric-ekf-ut-pe",
-        "electric-ekf-ut-accessories",
-        "electric-ekf-ut-sak",
+        "electric-ekf-ut",
         "electric-mw-hdr-12v",
         "electric-mw-hdr-24v",
         "electric-mw-hdr-48v",
