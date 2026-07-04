@@ -18,27 +18,36 @@ window.DRAW_MATH_URL = "math4/es5";
 (function() {
   var explicitUi = urlParams["ui"] != null;
   var skipThemeMigration = explicitUi || urlParams["embed"] == "1" || urlParams["lightbox"] == "1";
+  var activeUi = explicitUi ? urlParams["ui"] : null;
 
   if (!skipThemeMigration) {
     try {
       var markerKey = ".drawio-electric-theme-v1";
       var configKey = ".drawio-config";
+      var value = localStorage.getItem(configKey);
+      var config = (value != null && value !== "") ? JSON.parse(value) : {};
+
+      if (config == null || typeof config != "object") {
+        config = {};
+      }
 
       if (localStorage.getItem(markerKey) == null) {
-        var value = localStorage.getItem(configKey);
-        var config = (value != null && value !== "") ? JSON.parse(value) : {};
-
-        if (config == null || typeof config != "object") {
-          config = {};
-        }
-
         config.ui = "electric";
         localStorage.setItem(configKey, JSON.stringify(config));
         localStorage.setItem(markerKey, "1");
       }
+
+      activeUi = config.ui;
     } catch (e) {
       window.uiTheme = window.uiTheme || "electric";
+      activeUi = window.uiTheme;
     }
+  }
+
+  if (activeUi == "electric") {
+    urlParams["ui"] = "electric";
+    urlParams["local"] = "1";
+    urlParams["splash"] = "0";
   }
 })();
 
