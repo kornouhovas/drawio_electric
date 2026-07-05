@@ -79,6 +79,67 @@
 		return null;
 	};
 
+	Editor.isElectricUtTerminalShape = function(entry)
+	{
+		return entry != null && entry.kind == 'terminal' &&
+			(entry.libraryId == 'electric-ekf-ut' ||
+				String(entry.id || '').indexOf('electric-ekf-ut-') == 0);
+	};
+
+	Editor.isElectricTerminalCanvasLabel = function(parent, cell)
+	{
+		if (parent == null || cell == null || parent.geometry == null ||
+			cell.geometry == null)
+		{
+			return false;
+		}
+
+		var id = String(cell.id || '');
+		var parentHeight = parseFloat(parent.geometry.height);
+		var cellY = parseFloat(cell.geometry.y);
+
+		return id.indexOf('_marking') >= 0 && !isNaN(parentHeight) &&
+			!isNaN(cellY) && cellY >= parentHeight - 0.1;
+	};
+
+	Editor.removeElectricTerminalCanvasLabels = function(cells, entry)
+	{
+		if (!Editor.isElectricUtTerminalShape(entry) || cells == null)
+		{
+			return cells;
+		}
+
+		var removeLabels = function(cell)
+		{
+			if (cell == null || typeof cell.getChildCount != 'function' ||
+				typeof cell.getChildAt != 'function')
+			{
+				return;
+			}
+
+			for (var i = cell.getChildCount() - 1; i >= 0; i--)
+			{
+				var child = cell.getChildAt(i);
+
+				if (Editor.isElectricTerminalCanvasLabel(cell, child))
+				{
+					cell.remove(i);
+				}
+				else
+				{
+					removeLabels(child);
+				}
+			}
+		};
+
+		for (var i = 0; i < cells.length; i++)
+		{
+			removeLabels(cells[i]);
+		}
+
+		return cells;
+	};
+
 	Editor.getElectricShapeCells = function(entry, graph)
 	{
 		var xml = Editor.electricShapeOriginalCache[entry.id];
@@ -95,6 +156,7 @@
 		codec.decode(doc.documentElement, model);
 
 		var cells = graph.cloneCells(model.root.getChildAt(0).children);
+		Editor.removeElectricTerminalCanvasLabels(cells, entry);
 		Editor.markElectricShapeCells(cells, entry);
 
 		return cells;
