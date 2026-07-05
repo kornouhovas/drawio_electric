@@ -241,13 +241,27 @@
 		];
 	};
 
-	Editor.getElectricSvgTextLine = function(value, x, y, size, weight, anchor)
+	Editor.getElectricSvgTextLine = function(value, x, y, size, weight, anchor, fill)
 	{
 		return '<text x="' + x + '" y="' + y +
 			'" font-family="Arial,sans-serif" font-size="' + size +
 			'" font-weight="' + (weight || '400') + '" text-anchor="' +
-			(anchor || 'middle') + '" fill="#111827">' +
+			(anchor || 'middle') + '" fill="' + (fill || '#111827') + '">' +
 			Editor.getElectricSvgText(value) + '</text>';
+	};
+
+	Editor.getElectricPsuTopLabels = function(entry)
+	{
+		var series = Editor.getElectricShapeValue(entry, 'Серия');
+		var model = Editor.getElectricShapeValue(entry, 'Модель') || entry.title;
+		var size = Editor.getElectricShapeValue(entry, 'Размер');
+
+		if (/HDR-(100|150)/.test(series + ' ' + model) || /[46]M/.test(size))
+		{
+			return ['-V', '-V', '+V', '+V'];
+		}
+
+		return ['-V', '+V'];
 	};
 
 	Editor.createElectricBreakerPoleSvg = function(entry, x, y, w, h, compact)
@@ -377,23 +391,99 @@
 		}
 		else if (entry.kind == 'psu')
 		{
+			var model = Editor.getElectricShapeValue(entry, 'Модель') || entry.title;
+			var input = Editor.getElectricShapeValue(entry, 'Вход');
+			var output = Editor.getElectricShapeValue(entry, 'Выход');
+			var power = Editor.getElectricShapeValue(entry, 'Мощность');
+			var topLabels = Editor.getElectricPsuTopLabels(entry);
+			var terminalR = Math.max(2.2, Math.min(4.2, faceW * 0.04));
+			var logoW = Math.min(faceW * 0.34, faceH * 0.18);
+			var logoX = faceX + faceW * 0.06;
+			var contentColor = '#d8d0bb';
+			var smallColor = '#d7d7d7';
+			var powerColor = '#f7df25';
+
 			svg += '<rect x="' + faceX + '" y="' + faceY + '" width="' +
 				faceW + '" height="' + faceH +
-				'" fill="#f8fafc" stroke="#111827" stroke-width="1.3"/>';
+				'" fill="#626663" stroke="#222" stroke-width="1.3"/>';
 			svg += '<rect x="' + faceX + '" y="' + faceY + '" width="' +
-				faceW + '" height="' + Math.max(7, faceH * 0.11) +
-				'" fill="#e5e7eb" stroke="#cbd5e1" stroke-width="0.5"/>';
-			svg += '<rect x="' + faceX + '" y="' + (faceY + faceH * 0.86) +
-				'" width="' + faceW + '" height="' + (faceH * 0.14) +
-				'" fill="#e5e7eb" stroke="#cbd5e1" stroke-width="0.5"/>';
-			svg += Editor.getElectricSvgTextLine('MW', faceX + faceW * 0.18,
-				faceY + faceH * 0.22, compact ? 7 : 9, '700');
-			svg += Editor.getElectricSvgTextLine(rows[0], faceX + faceW / 2,
-				faceY + faceH * 0.43, compact ? 7 : 9, '700');
-			svg += Editor.getElectricSvgTextLine(rows[1], faceX + faceW / 2,
-				faceY + faceH * 0.58, compact ? 5.5 : 7, '400');
-			svg += Editor.getElectricSvgTextLine(rows[2], faceX + faceW / 2,
-				faceY + faceH * 0.72, compact ? 6 : 8, '700');
+				faceW + '" height="' + (faceH * 0.107) +
+				'" fill="#30383a" stroke="none"/>';
+			svg += '<rect x="' + faceX + '" y="' + (faceY + faceH * 0.107) +
+				'" width="' + faceW + '" height="' + (faceH * 0.048) +
+				'" fill="#41484a" stroke="#171b1c" stroke-width="0.6"/>';
+			svg += '<rect x="' + faceX + '" y="' + (faceY + faceH * 0.158) +
+				'" width="' + faceW + '" height="' + (faceH * 0.706) +
+				'" fill="#5e625f" stroke="none"/>';
+			svg += '<rect x="' + faceX + '" y="' + (faceY + faceH * 0.791) +
+				'" width="' + faceW + '" height="' + (faceH * 0.048) +
+				'" fill="#41484a" stroke="#171b1c" stroke-width="0.6"/>';
+			svg += '<rect x="' + faceX + '" y="' + (faceY + faceH * 0.839) +
+				'" width="' + faceW + '" height="' + (faceH * 0.161) +
+				'" fill="#4b504e" stroke="none"/>';
+
+			for (var i = 0; i < topLabels.length; i++)
+			{
+				var tx = faceX + faceW * (0.42 + i * 0.16);
+
+				if (topLabels.length == 2)
+				{
+					tx = faceX + faceW * (0.42 + i * 0.18);
+				}
+
+				svg += '<circle cx="' + tx + '" cy="' +
+					(faceY + faceH * 0.064) + '" r="' + terminalR +
+					'" fill="#050606"/>';
+				svg += Editor.getElectricSvgTextLine(topLabels[i], tx,
+					faceY + faceH * 0.103, compact ? 4.5 : 5.2,
+					'400', 'middle', '#d9d0a2');
+			}
+
+			for (var j = 0; j < 2; j++)
+			{
+				var bx = faceX + faceW * (0.32 + j * 0.22);
+
+				svg += '<circle cx="' + bx + '" cy="' +
+					(faceY + faceH * 0.949) + '" r="' + terminalR +
+					'" fill="#050606"/>';
+				svg += Editor.getElectricSvgTextLine(j == 0 ? 'L' : 'N', bx,
+					faceY + faceH * 0.887, compact ? 5.5 : 7.5,
+					'400', 'middle', '#e7e7e7');
+			}
+
+			svg += '<rect x="' + (faceX + faceW * 0.34) + '" y="' +
+				(faceY + faceH * 0.972) + '" width="' + (faceW * 0.32) +
+				'" height="' + Math.max(2, faceH * 0.017) +
+				'" fill="#f0f0f0" stroke="#222" stroke-width="0.5"/>';
+			svg += '<rect x="' + logoX + '" y="' + (faceY + faceH * 0.203) +
+				'" width="' + logoW + '" height="' + (faceH * 0.071) +
+				'" fill="#777b78" stroke="#9b9b86" stroke-width="0.5"/>';
+			svg += Editor.getElectricSvgTextLine('MW', logoX + logoW / 2,
+				faceY + faceH * 0.236, compact ? 6.5 : 9.2,
+				'700', 'middle', contentColor);
+			svg += Editor.getElectricSvgTextLine('MEAN WELL', logoX + logoW / 2,
+				faceY + faceH * 0.263, compact ? 3.8 : 5.2,
+				'700', 'middle', contentColor);
+			svg += Editor.getElectricSvgTextLine(Editor.trimElectricText(model, 16),
+				logoX + logoW + faceW * 0.04, faceY + faceH * 0.245,
+				compact ? 6.2 : 8.8, '700', 'start', contentColor);
+			svg += Editor.getElectricSvgTextLine('INPUT: ' + input,
+				faceX + faceW * 0.06, faceY + faceH * 0.32,
+				compact ? 4.2 : 5.8, '400', 'start', smallColor);
+			svg += Editor.getElectricSvgTextLine('OUTPUT: ' + output,
+				faceX + faceW * 0.06, faceY + faceH * 0.377,
+				compact ? 4.2 : 5.8, '400', 'start', smallColor);
+			svg += '<rect x="' + (faceX + faceW * 0.37) + '" y="' +
+				(faceY + faceH * 0.401) + '" width="' + (faceW * 0.26) +
+				'" height="' + (faceH * 0.085) + '" rx="' +
+				Math.max(5, faceH * 0.03) +
+				'" fill="#FFE45C" stroke="#B88900" stroke-width="0.8"/>';
+			svg += Editor.getElectricSvgTextLine('PS', faceX + faceW / 2,
+				faceY + faceH * 0.458, compact ? 6.5 : 9.5,
+				'700', 'middle', '#111111');
+			svg += Editor.getElectricSvgTextLine(power,
+				faceX + faceW * 0.83, faceY + faceH * 0.745,
+				compact ? 5.2 : 7.5, '700', 'middle', powerColor);
 		}
 			else
 			{
@@ -689,29 +779,96 @@
 	Editor.createElectricPsuPreview = function(entry, group, w, h)
 	{
 		var model = Editor.getElectricShapeValue(entry, 'Модель');
+		var input = Editor.getElectricShapeValue(entry, 'Вход');
 		var output = Editor.getElectricShapeValue(entry, 'Выход');
 		var power = Editor.getElectricShapeValue(entry, 'Мощность');
+		var topLabels = Editor.getElectricPsuTopLabels(entry);
+		var terminal = Math.max(4, Math.min(8.4, w * 0.05));
+		var logoW = Math.min(w * 0.34, h * 0.18);
+		var logoX = w * 0.06;
+		var contentColor = '#d8d0bb';
+		var smallColor = '#d7d7d7';
 
 		Editor.createElectricCell(group, '', 0, 0, w, h,
-			'rounded=0;whiteSpace=wrap;html=1;fillColor=#f8fafc;gradientColor=#e5e7eb;' +
-			'gradientDirection=south;strokeColor=#111827;strokeWidth=0.8;');
-		Editor.createElectricCell(group, '', 0, 0, w, h * 0.12,
-			'rounded=0;whiteSpace=wrap;html=1;fillColor=#e5e7eb;strokeColor=#cbd5e1;strokeWidth=0.45;');
-		Editor.createElectricCell(group, '', 0, h * 0.88, w, h * 0.12,
-			'rounded=0;whiteSpace=wrap;html=1;fillColor=#e5e7eb;strokeColor=#cbd5e1;strokeWidth=0.45;');
-		Editor.createElectricText(group, 'MW', w * 0.08, h * 0.15, w * 0.24, h * 0.08, Math.max(7, w * 0.08), true, 'left');
-		Editor.createElectricText(group, 'MEAN WELL', w * 0.08, h * 0.24, w * 0.84, h * 0.06, Math.max(7, w * 0.07), true, 'left');
-		Editor.createElectricText(group, model, w * 0.08, h * 0.36, w * 0.84, h * 0.09, Math.max(9, w * 0.08), true, 'left');
-		Editor.createElectricText(group, output, w * 0.08, h * 0.48, w * 0.84, h * 0.1, Math.max(6, w * 0.055), false, 'left');
-		Editor.createElectricText(group, power, w * 0.08, h * 0.6, w * 0.84, h * 0.08, Math.max(8, w * 0.07), true, 'left');
+			'rounded=0;whiteSpace=wrap;html=1;fillColor=#626663;' +
+			'strokeColor=#222;strokeWidth=0.8;');
+		Editor.createElectricCell(group, '', 0, 0, w, h * 0.107,
+			'rounded=0;whiteSpace=wrap;html=1;fillColor=#30383a;strokeColor=none;strokeWidth=0;');
+		Editor.createElectricCell(group, '', 0, h * 0.107, w, h * 0.048,
+			'rounded=0;whiteSpace=wrap;html=1;fillColor=#41484a;strokeColor=#171b1c;strokeWidth=0.6;');
+		Editor.createElectricCell(group, '', 0, h * 0.158, w, h * 0.706,
+			'rounded=0;whiteSpace=wrap;html=1;fillColor=#5e625f;strokeColor=none;strokeWidth=0;');
+		Editor.createElectricCell(group, '', 0, h * 0.791, w, h * 0.048,
+			'rounded=0;whiteSpace=wrap;html=1;fillColor=#41484a;strokeColor=#171b1c;strokeWidth=0.6;');
+		Editor.createElectricCell(group, '', 0, h * 0.839, w, h * 0.161,
+			'rounded=0;whiteSpace=wrap;html=1;fillColor=#4b504e;strokeColor=none;strokeWidth=0;');
 
-		var labels = ['-V', '+V', 'L', 'N'];
-
-		for (var i = 0; i < labels.length; i++)
+		for (var i = 0; i < topLabels.length; i++)
 		{
-			Editor.createElectricText(group, labels[i], w * (0.08 + i * 0.22), h * 0.78,
-				w * 0.16, h * 0.08, Math.max(6, w * 0.055), true, 'center');
+			var tx = w * (0.42 + i * 0.16);
+
+			if (topLabels.length == 2)
+			{
+				tx = w * (0.42 + i * 0.18);
+			}
+
+			Editor.createElectricCell(group, '', tx - terminal / 2, h * 0.064 - terminal / 2,
+				terminal, terminal,
+				'ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#050606;strokeColor=none;strokeWidth=0;');
+			Editor.createElectricCell(group, topLabels[i], tx - w * 0.055, h * 0.083,
+				w * 0.11, h * 0.032,
+				'text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;' +
+				'fontSize=' + Math.max(4, w * 0.035) + ';fontColor=#d9d0a2;whiteSpace=wrap;spacing=0;overflow=hidden;');
 		}
+
+		for (var j = 0; j < 2; j++)
+		{
+			var bx = w * (0.32 + j * 0.22);
+
+			Editor.createElectricCell(group, '', bx - terminal / 2, h * 0.949 - terminal / 2,
+				terminal, terminal,
+				'ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#050606;strokeColor=none;strokeWidth=0;');
+			Editor.createElectricCell(group, j == 0 ? 'L' : 'N', bx - w * 0.06, h * 0.875,
+				w * 0.12, h * 0.04,
+				'text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;' +
+				'fontSize=' + Math.max(5, w * 0.05) + ';fontColor=#e7e7e7;whiteSpace=wrap;spacing=0;overflow=hidden;');
+		}
+
+		Editor.createElectricCell(group, '', w * 0.34, h * 0.972, w * 0.32, Math.max(2, h * 0.017),
+			'rounded=0;whiteSpace=wrap;html=1;fillColor=#f0f0f0;strokeColor=#222;strokeWidth=0.5;');
+		Editor.createElectricCell(group, '', logoX, h * 0.203, logoW, h * 0.071,
+			'rounded=0;whiteSpace=wrap;html=1;fillColor=#777b78;strokeColor=#9b9b86;strokeWidth=0.5;');
+		Editor.createElectricCell(group, 'MW', logoX + logoW * 0.06, h * 0.203, logoW * 0.88, h * 0.037,
+			'text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;' +
+			'fontSize=' + Math.max(6, w * 0.07) + ';fontColor=' + contentColor +
+			';whiteSpace=wrap;spacing=0;overflow=hidden;fontStyle=1;');
+		Editor.createElectricCell(group, 'MEAN WELL', logoX + logoW * 0.06, h * 0.236, logoW * 0.88, h * 0.03,
+			'text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;' +
+			'fontSize=' + Math.max(4, w * 0.036) + ';fontColor=' + contentColor +
+			';whiteSpace=wrap;spacing=0;overflow=hidden;fontStyle=1;');
+		Editor.createElectricCell(group, model, logoX + logoW + w * 0.04, h * 0.203,
+			Math.max(0, w - logoX - logoW - w * 0.1), h * 0.071,
+			'text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;' +
+			'fontSize=' + Math.max(6, Math.min(12, w * 0.065)) + ';fontColor=' +
+			contentColor + ';whiteSpace=wrap;spacing=0;overflow=hidden;fontStyle=1;');
+		Editor.createElectricCell(group, 'INPUT: ' + input, w * 0.06, h * 0.294,
+			w * 0.88, h * 0.051,
+			'text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;' +
+			'fontSize=' + Math.max(4, w * 0.043) + ';fontColor=' + smallColor +
+			';whiteSpace=wrap;spacing=0;overflow=hidden;');
+		Editor.createElectricCell(group, 'OUTPUT: ' + output, w * 0.06, h * 0.35,
+			w * 0.88, h * 0.051,
+			'text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;' +
+			'fontSize=' + Math.max(4, w * 0.043) + ';fontColor=' + smallColor +
+			';whiteSpace=wrap;spacing=0;overflow=hidden;');
+		Editor.createElectricCell(group, 'PS', w * 0.37, h * 0.401, w * 0.26, h * 0.085,
+			'rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE45C;strokeColor=#B88900;strokeWidth=0.8;' +
+			'fontColor=#111111;fontSize=' + Math.max(7, w * 0.07) +
+			';fontStyle=1;align=center;verticalAlign=middle;arcSize=35;');
+		Editor.createElectricCell(group, power, w * 0.68, h * 0.68, w * 0.26, h * 0.08,
+			'text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;' +
+			'fontSize=' + Math.max(5, w * 0.055) + ';fontColor=#f7df25;' +
+			'whiteSpace=wrap;spacing=0;overflow=hidden;fontStyle=1;');
 	};
 
 	Editor.createElectricShapePreviewCells = function(entry)
