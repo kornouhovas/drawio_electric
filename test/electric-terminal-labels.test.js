@@ -12,16 +12,23 @@ function createContext() {
 	Sidebar.prototype.createTooltip = noop;
 	Sidebar.prototype.createDropHandler = noop;
 
+	function EditorUi() {}
+	EditorUi.prototype.createUi = noop;
+	EditorUi.prototype.destroy = noop;
+
 	const context = {
 		console,
 		window: {
 			DRAWIO_BASE_URL: 'https://example.test',
 			location: { origin: 'https://example.test' },
 			innerHeight: 900,
-			innerWidth: 1200
+			innerWidth: 1200,
+			setTimeout: (fn) => fn()
 		},
 		Editor: {},
+		EditorUi,
 		Sidebar,
+		mxEvent: {},
 		mxUtils: {
 			bind: (scope, fn) => fn.bind(scope),
 			getValue: (style, key, defaultValue) =>
@@ -102,11 +109,60 @@ function createCell(id, x, y, width, height, value, style) {
 	};
 }
 
+function parseStyle(style) {
+	return String(style || '').split(';').reduce((result, item) => {
+		const index = item.indexOf('=');
+
+		if (index > 0) {
+			result[item.substring(0, index)] = item.substring(index + 1);
+		}
+
+		return result;
+	}, {});
+}
+
 function addChild(parent, child) {
 	parent.children.push(child);
 	child.parent = parent;
 
 	return child;
+}
+
+function createGraph(root) {
+	const removed = [];
+	const model = {
+		beginUpdate: noop,
+		endUpdate: noop,
+		getRoot() {
+			return root;
+		},
+		getChildCount(cell) {
+			return cell != null && cell.children != null ?
+				cell.children.length : 0;
+		},
+		getChildAt(cell, index) {
+			return cell.children[index];
+		},
+		remove(cell) {
+			removed.push(cell.id);
+
+			if (cell.parent != null) {
+				cell.parent.remove(cell.parent.getIndex(cell));
+			}
+
+			return cell;
+		}
+	};
+
+	return {
+		removed,
+		getModel() {
+			return model;
+		},
+		getCellStyle(cell) {
+			return parseStyle(cell != null ? cell.style : '');
+		}
+	};
 }
 
 const context = createContext();
@@ -160,4 +216,35 @@ assert.strictEqual(typeof context.Editor.removeElectricTerminalCanvasLabels,
 
 	assert.strictEqual(breaker.children.includes(marking), true,
 		'non-terminal bottom markings should not be changed');
+}
+
+assert.strictEqual(typeof context.Editor.cleanupElectricTerminalCanvasLabels,
+	'function', 'Electric graph cleanup helper must be registered');
+
+{
+	const root = createCell('root', 0, 0, 0, 0, '', '');
+	const device = addChild(root, createCell('ekf_ut_scr_ut_2_5_pe_device',
+		0, 0, 19, 165, '',
+		'group;html=1;electricDevice=1;electricShapeId=electric-ekf-ut-scr-ut-2-5-pe;'
+	));
+	const marking = addChild(device, createCell(
+		'ekf_ut_scr_ut_2_5_pe_device_marking', -19, 169, 58, 24,
+		'UT 2.5<br>PE', 'text;html=1;'
+	));
+	const lineTag = addChild(device, createCell(
+		'ekf_ut_scr_ut_2_5_pe_device_line_tag', 2, 38, 16, 12,
+		'XT', 'rounded=1;html=1;'
+	));
+	const graph = createGraph(root);
+
+	assert.strictEqual(context.Editor.cleanupElectricTerminalCanvasLabels(
+		graph, [device]), 1,
+		'cleanup should remove one existing UT terminal canvas marking');
+	assert.deepStrictEqual(graph.removed,
+		['ekf_ut_scr_ut_2_5_pe_device_marking'],
+		'cleanup should remove labels through the graph model');
+	assert.strictEqual(device.children.includes(marking), false,
+		'existing UT terminal bottom marking should be removed from canvas');
+	assert.strictEqual(device.children.includes(lineTag), true,
+		'existing UT terminal internal XT tag should remain on canvas');
 }

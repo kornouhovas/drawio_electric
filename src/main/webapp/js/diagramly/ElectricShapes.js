@@ -11,6 +11,8 @@
 	var initPalettes = Sidebar.prototype.initPalettes;
 	var createTooltip = Sidebar.prototype.createTooltip;
 	var createDropHandler = Sidebar.prototype.createDropHandler;
+	var createUi = EditorUi.prototype.createUi;
+	var destroy = EditorUi.prototype.destroy;
 
 	Editor.electricShapesPath = 'electric/shapes/';
 	Editor.electricShapeCatalog = null;
@@ -79,11 +81,16 @@
 		return null;
 	};
 
+	Editor.isElectricUtTerminalShapeId = function(id)
+	{
+		return String(id || '').indexOf('electric-ekf-ut-') == 0;
+	};
+
 	Editor.isElectricUtTerminalShape = function(entry)
 	{
 		return entry != null && entry.kind == 'terminal' &&
 			(entry.libraryId == 'electric-ekf-ut' ||
-				String(entry.id || '').indexOf('electric-ekf-ut-') == 0);
+				Editor.isElectricUtTerminalShapeId(entry.id));
 	};
 
 	Editor.isElectricTerminalCanvasLabel = function(parent, cell)
@@ -138,6 +145,97 @@
 		}
 
 		return cells;
+	};
+
+	Editor.getElectricCellShapeId = function(graph, cell)
+	{
+		if (graph != null && cell != null &&
+			typeof graph.getCellStyle == 'function')
+		{
+			return mxUtils.getValue(graph.getCellStyle(cell),
+				'electricShapeId', null);
+		}
+
+		return null;
+	};
+
+	Editor.isElectricUtTerminalCell = function(graph, cell)
+	{
+		var shapeId = Editor.getElectricCellShapeId(graph, cell);
+		var id = String((cell != null) ? cell.id || '' : '');
+
+		return Editor.isElectricUtTerminalShapeId(shapeId) ||
+			id.indexOf('ekf_ut_') == 0 || id.indexOf('ekf_hdw_') == 0;
+	};
+
+	Editor.cleanupElectricTerminalCanvasLabels = function(graph, cells)
+	{
+		var model = (graph != null && typeof graph.getModel == 'function') ?
+			graph.getModel() : null;
+
+		if (model == null)
+		{
+			return 0;
+		}
+
+		if (cells == null)
+		{
+			var root = (typeof model.getRoot == 'function') ?
+				model.getRoot() : model.root;
+			cells = (root != null) ? [root] : [];
+		}
+
+		var removed = 0;
+		var visit = function(cell)
+		{
+			if (cell == null)
+			{
+				return;
+			}
+
+			var terminal = Editor.isElectricUtTerminalCell(graph, cell);
+			var count = (typeof model.getChildCount == 'function') ?
+				model.getChildCount(cell) :
+				(typeof cell.getChildCount == 'function' ? cell.getChildCount() : 0);
+
+			for (var i = count - 1; i >= 0; i--)
+			{
+				var child = (typeof model.getChildAt == 'function') ?
+					model.getChildAt(cell, i) : cell.getChildAt(i);
+
+				if (terminal && Editor.isElectricTerminalCanvasLabel(cell, child))
+				{
+					model.remove(child);
+					removed++;
+				}
+				else
+				{
+					visit(child);
+				}
+			}
+		};
+
+		if (typeof model.beginUpdate == 'function')
+		{
+			model.beginUpdate();
+		}
+
+		try
+		{
+			for (var i = 0; i < cells.length; i++)
+			{
+				visit(cells[i]);
+			}
+		}
+		finally
+		{
+			if (typeof model.endUpdate == 'function')
+			{
+				model.endUpdate();
+			}
+		}
+
+		return removed;
 	};
 
 	Editor.getElectricShapeCells = function(entry, graph)
@@ -1134,6 +1232,74 @@
 				this.addPaletteFunctions(library.id, library.title, false, fns);
 			}))(catalog.libraries[i]);
 		}
+	};
+
+	EditorUi.prototype.installElectricShapeCanvasCleanup = function()
+	{
+		if (this.electricShapeCanvasCleanupInstalled || this.editor == null ||
+			this.editor.graph == null)
+		{
+			return;
+		}
+
+		var graph = this.editor.graph;
+		this.electricShapeCanvasCleanupHandler = mxUtils.bind(this, function(sender, evt)
+		{
+			if (Editor.isElectricTheme())
+			{
+				Editor.cleanupElectricTerminalCanvasLabels(graph,
+					evt.getProperty('cells'));
+			}
+		});
+		this.electricShapeFileLoadedHandler = mxUtils.bind(this, function()
+		{
+			if (Editor.isElectricTheme())
+			{
+				Editor.cleanupElectricTerminalCanvasLabels(graph);
+			}
+		});
+
+		graph.addListener('cellsInserted',
+			this.electricShapeCanvasCleanupHandler);
+		this.editor.addListener('fileLoaded',
+			this.electricShapeFileLoadedHandler);
+		this.electricShapeCanvasCleanupInstalled = true;
+
+		window.setTimeout(this.electricShapeFileLoadedHandler, 0);
+	};
+
+	EditorUi.prototype.removeElectricShapeCanvasCleanup = function()
+	{
+		if (this.electricShapeCanvasCleanupInstalled)
+		{
+			if (this.editor != null && this.editor.graph != null &&
+				this.electricShapeCanvasCleanupHandler != null)
+			{
+				this.editor.graph.removeListener(
+					this.electricShapeCanvasCleanupHandler);
+			}
+
+			if (this.editor != null && this.electricShapeFileLoadedHandler != null)
+			{
+				this.editor.removeListener(this.electricShapeFileLoadedHandler);
+			}
+		}
+
+		this.electricShapeCanvasCleanupInstalled = false;
+		this.electricShapeCanvasCleanupHandler = null;
+		this.electricShapeFileLoadedHandler = null;
+	};
+
+	EditorUi.prototype.createUi = function()
+	{
+		createUi.apply(this, arguments);
+		this.installElectricShapeCanvasCleanup();
+	};
+
+	EditorUi.prototype.destroy = function()
+	{
+		this.removeElectricShapeCanvasCleanup();
+		destroy.apply(this, arguments);
 	};
 
 	Sidebar.prototype.updateEntries = function()
