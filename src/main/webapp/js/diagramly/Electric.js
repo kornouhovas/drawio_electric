@@ -245,6 +245,69 @@ Editor.isElectricDeviceCell = function(graph, cell)
 	return Editor.hasElectricDeviceSignature(graph, cell);
 };
 
+Editor.getElectricDeviceRootForCell = function(graph, cell)
+{
+	var model = (graph != null) ? graph.getModel() : null;
+	var result = null;
+
+	while (model != null && cell != null)
+	{
+		if (Editor.isElectricDeviceCell(graph, cell))
+		{
+			result = cell;
+		}
+
+		cell = model.getParent(cell);
+	}
+
+	return result;
+};
+
+Editor.isElectricDeviceCellAccessible = function(graph, cell)
+{
+	var device = Editor.getElectricDeviceRootForCell(graph, cell);
+
+	return device == null || cell == device ||
+		(graph != null && graph.electricOpenDeviceCell == device);
+};
+
+Editor.resolveElectricDeviceCellForInteraction = function(graph, cell)
+{
+	var device = Editor.getElectricDeviceRootForCell(graph, cell);
+
+	if (device != null && cell != device &&
+		!Editor.isElectricDeviceCellAccessible(graph, cell))
+	{
+		return device;
+	}
+
+	return cell;
+};
+
+Editor.openElectricDeviceForEditing = function(graph, cell)
+{
+	var device = Editor.getElectricDeviceRootForCell(graph, cell);
+
+	if (graph != null && device != null)
+	{
+		graph.electricOpenDeviceCell = device;
+	}
+
+	return device;
+};
+
+Editor.clearElectricDeviceEditingIfOutside = function(graph, cell)
+{
+	var model = (graph != null) ? graph.getModel() : null;
+	var device = (graph != null) ? graph.electricOpenDeviceCell : null;
+
+	if (model != null && device != null &&
+		(cell == null || (cell != device && !model.isAncestor(device, cell))))
+	{
+		graph.electricOpenDeviceCell = null;
+	}
+};
+
 Editor.hasElectricDeviceCell = function(graph, cells)
 {
 	if (cells == null)
@@ -862,6 +925,83 @@ SetElectricPageMode.prototype.execute = function()
 		this.electricModeListenersInstalled = false;
 		this.electricModeRefreshHandler = null;
 		this.electricShapesPanelHandler = null;
+	};
+})();
+
+(function()
+{
+	if (typeof Graph == 'undefined')
+	{
+		return;
+	}
+
+	var getEventState = Graph.prototype.getEventState;
+	var isCellSelectable = Graph.prototype.isCellSelectable;
+	var selectCellForEvent = Graph.prototype.selectCellForEvent;
+	var dblClick = Graph.prototype.dblClick;
+
+	Graph.prototype.getEventState = function(state)
+	{
+		state = getEventState.apply(this, arguments);
+
+		if (Editor.isElectricTheme() && state != null)
+		{
+			var cell = Editor.resolveElectricDeviceCellForInteraction(
+				this, state.cell);
+
+			if (cell != null && cell != state.cell)
+			{
+				state = this.view.getState(cell) || state;
+			}
+		}
+
+		return state;
+	};
+
+	Graph.prototype.isCellSelectable = function(cell)
+	{
+		if (Editor.isElectricTheme() && cell != null &&
+			!Editor.isElectricDeviceCellAccessible(this, cell))
+		{
+			return false;
+		}
+
+		return isCellSelectable.apply(this, arguments);
+	};
+
+	Graph.prototype.selectCellForEvent = function(cell, evt)
+	{
+		if (Editor.isElectricTheme())
+		{
+			cell = Editor.resolveElectricDeviceCellForInteraction(this, cell);
+			Editor.clearElectricDeviceEditingIfOutside(this, cell);
+		}
+
+		return selectCellForEvent.apply(this, [cell, evt]);
+	};
+
+	Graph.prototype.dblClick = function(evt, cell)
+	{
+		if (Editor.isElectricTheme() && cell != null)
+		{
+			var device = Editor.getElectricDeviceRootForCell(this, cell);
+
+			if (device != null && (cell == device ||
+				!Editor.isElectricDeviceCellAccessible(this, cell)))
+			{
+				Editor.openElectricDeviceForEditing(this, device);
+
+				if (this.setSelectionCell != null)
+				{
+					this.setSelectionCell(device);
+				}
+
+				mxEvent.consume(evt);
+				return;
+			}
+		}
+
+		return dblClick.apply(this, arguments);
 	};
 })();
 

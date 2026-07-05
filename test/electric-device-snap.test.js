@@ -16,6 +16,12 @@ function createContext() {
 	mxGraphHandler.prototype.mouseMove = noop;
 	mxGraphHandler.prototype.updatePreview = noop;
 
+	function Graph() {}
+	Graph.prototype.getEventState = (state) => state;
+	Graph.prototype.isCellSelectable = () => true;
+	Graph.prototype.selectCellForEvent = noop;
+	Graph.prototype.dblClick = noop;
+
 	class mxRectangle {
 		constructor(x, y, width, height) {
 			this.x = x;
@@ -71,6 +77,7 @@ function createContext() {
 			themes: []
 		},
 		EditorUi,
+		Graph,
 		mxClient: {},
 		mxConstants: {},
 		mxEvent: {
@@ -143,3 +150,121 @@ assertDelta(
 	{ x: 37, y: 0 },
 	'horizontal side snap should require vertical overlap'
 );
+
+assert.strictEqual(typeof context.Editor.getElectricDeviceRootForCell,
+	'function', 'Electric device root helper must be registered');
+assert.strictEqual(typeof context.Editor.resolveElectricDeviceCellForInteraction,
+	'function', 'Electric interaction resolver must be registered');
+assert.strictEqual(typeof context.Editor.openElectricDeviceForEditing,
+	'function', 'Electric device edit-mode helper must be registered');
+
+function createMockGraph() {
+	const layer = { id: 'layer', vertex: false };
+	const device = {
+		id: 'device',
+		vertex: true,
+		style: { electricDevice: '1' },
+		parent: layer
+	};
+	const child = {
+		id: 'child',
+		vertex: true,
+		style: {},
+		parent: device
+	};
+	const grandchild = {
+		id: 'grandchild',
+		vertex: true,
+		style: {},
+		parent: child
+	};
+	const other = {
+		id: 'other',
+		vertex: true,
+		style: {},
+		parent: layer
+	};
+
+	device.children = [child];
+	child.children = [grandchild];
+	grandchild.children = [];
+	other.children = [];
+	layer.children = [device, other];
+
+	const model = {
+		getParent: (cell) => cell != null ? cell.parent || null : null,
+		isVertex: (cell) => !!(cell && cell.vertex),
+		getChildCount: (cell) => cell != null && cell.children != null ?
+			cell.children.length : 0,
+		getChildAt: (cell, index) => cell.children[index],
+		getValue: (cell) => cell != null ? cell.value || '' : '',
+		isAncestor: (ancestor, cell) => {
+			let current = cell;
+
+			while (current != null) {
+				if (current === ancestor) {
+					return true;
+				}
+
+				current = current.parent || null;
+			}
+
+			return false;
+		}
+	};
+
+	const graph = {
+		model,
+		view: {
+			getState: (cell) => cell != null ? { cell } : null
+		},
+		getModel: () => model,
+		getCellStyle: (cell) => cell != null ? cell.style || {} : {}
+	};
+
+	return { graph, device, child, grandchild, other };
+}
+
+{
+	const { graph, device, child, grandchild, other } = createMockGraph();
+	const electricGraph = Object.assign(new context.Graph(), graph);
+	let selected = null;
+	electricGraph.setSelectionCell = (cell) => {
+		selected = cell;
+	};
+
+	assert.strictEqual(context.Editor.getElectricDeviceRootForCell(graph, child),
+		device, 'child should resolve to Electric device root');
+	assert.strictEqual(context.Editor.getElectricDeviceRootForCell(graph, grandchild),
+		device, 'nested child should resolve to Electric device root');
+	assert.strictEqual(context.Editor.resolveElectricDeviceCellForInteraction(graph, child),
+		device, 'closed device should expose only the root for child hit-tests');
+	assert.strictEqual(context.Editor.resolveElectricDeviceCellForInteraction(graph, device),
+		device, 'device root should stay selectable');
+	assert.strictEqual(electricGraph.getEventState({ cell: child }).cell,
+		device, 'closed device hover state should resolve to root state');
+	assert.strictEqual(electricGraph.isCellSelectable(child), false,
+		'closed device child should not be selectable');
+
+	electricGraph.dblClick({}, child);
+	assert.strictEqual(electricGraph.electricOpenDeviceCell, device,
+		'double-click should open Electric device children');
+	assert.strictEqual(selected, device,
+		'double-click should keep the device root selected');
+	assert.strictEqual(context.Editor.resolveElectricDeviceCellForInteraction(electricGraph, child),
+		child, 'opened device should expose direct children');
+	assert.strictEqual(context.Editor.resolveElectricDeviceCellForInteraction(electricGraph, grandchild),
+		grandchild, 'opened device should expose nested children');
+	assert.strictEqual(electricGraph.getEventState({ cell: child }).cell,
+		child, 'opened device hover state should stay on child state');
+	assert.strictEqual(electricGraph.isCellSelectable(child), true,
+		'opened device child should be selectable');
+
+	context.Editor.clearElectricDeviceEditingIfOutside(electricGraph, child);
+	assert.strictEqual(electricGraph.electricOpenDeviceCell, device,
+		'click inside opened device should keep edit mode');
+
+	context.Editor.clearElectricDeviceEditingIfOutside(electricGraph, other);
+	assert.strictEqual(electricGraph.electricOpenDeviceCell, null,
+		'click outside opened device should close edit mode');
+}
