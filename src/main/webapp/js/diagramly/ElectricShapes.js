@@ -374,10 +374,6 @@
 					'" rx="2" fill="#ffffff" stroke="#64748b" stroke-width="0.8"/>';
 			}
 
-			svg += Editor.getElectricSvgTextLine(rows[0], faceX + faceW / 2,
-				faceY + faceH * 0.48, compact ? 7 : 8, '700');
-			svg += Editor.getElectricSvgTextLine(rows[1], faceX + faceW / 2,
-				faceY + faceH * 0.61, compact ? 6 : 7, '700');
 		}
 		else if (entry.kind == 'psu')
 		{
@@ -670,9 +666,7 @@
 	Editor.createElectricTerminalPreview = function(entry, group, w, h)
 	{
 		var type = Editor.getElectricShapeValue(entry, 'Тип');
-		var section = Editor.getElectricShapeValue(entry, 'Сечение');
 		var colors = Editor.getElectricTerminalColor(entry);
-		var rows = Editor.getElectricPreviewTextRows(entry);
 		var isPlate = /Заглуш|аксесс/i.test(type + ' ' + entry.section);
 
 		Editor.createElectricCell(group, '', 0, 0, w, h,
@@ -690,12 +684,6 @@
 		Editor.createElectricCell(group, '', w * 0.45, h * 0.34, w * 0.1, h * 0.28,
 			'rounded=1;whiteSpace=wrap;html=1;fillColor=' + colors.accent +
 			';strokeColor=none;arcSize=40;');
-		Editor.createElectricText(group, rows[0], w * 0.08, h * 0.39, w * 0.84,
-			h * 0.1, Math.max(6, w * 0.13), true, 'center');
-		Editor.createElectricText(group, section || rows[1], w * 0.06, h * 0.51,
-			w * 0.88, h * 0.09, Math.max(5, w * 0.095), true, 'center');
-		Editor.createElectricText(group, rows[2] || type, w * 0.06, h * 0.61,
-			w * 0.88, h * 0.08, Math.max(4, w * 0.075), false, 'center');
 	};
 
 	Editor.createElectricPsuPreview = function(entry, group, w, h)
