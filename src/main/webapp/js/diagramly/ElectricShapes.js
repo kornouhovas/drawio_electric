@@ -444,11 +444,15 @@
 
 			if (isRcbo)
 			{
+				var rcboTestR = Math.max(3, faceW * 0.045);
+				var rcboTestCy = faceY + faceH * 0.27;
+				var rcboQfdY = faceY + faceH * 0.40;
+
 				svg += '<circle cx="' + (faceX + faceW * 0.78) + '" cy="' +
-					(faceY + faceH * 0.22) + '" r="' + Math.max(3, faceW * 0.055) +
+					rcboTestCy + '" r="' + rcboTestR +
 					'" fill="#ffffff" stroke="#111827" stroke-width="0.8"/>';
 				svg += '<rect x="' + (faceX + faceW * 0.2) + '" y="' +
-					(faceY + faceH * 0.38) + '" width="' + (faceW * 0.6) +
+					rcboQfdY + '" width="' + (faceW * 0.6) +
 					'" height="' + (faceH * 0.08) +
 					'" rx="3" fill="#ffe45c" stroke="#b88900" stroke-width="0.5"/>';
 			}
@@ -581,7 +585,7 @@
 		{
 			Editor.createElectricText(group, (marking.indexOf(' A') >= 0) ? 'IΔn A' : 'IΔn AC',
 				pad, h * 0.5, w - 2 * pad, h * 0.055, Math.max(6, w * 0.08), false, 'center');
-			Editor.createElectricCell(group, 'T', w * 0.72, h * 0.33, w * 0.18, h * 0.07,
+			Editor.createElectricCell(group, 'T', w * 0.74, h * 0.29, w * 0.14, h * 0.055,
 				'ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffffff;strokeColor=#111827;' +
 				'fontSize=' + Math.max(6, w * 0.09) + ';fontStyle=1;align=center;verticalAlign=middle;');
 		}
