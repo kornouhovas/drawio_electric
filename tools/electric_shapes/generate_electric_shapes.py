@@ -16,12 +16,13 @@ PAGES = {
     "MW — устройства": "mw_hdr",
 }
 
-SECTION_REWRITES = {
-    "ВА 47-63 — 1P (19)": ("electric-ekf-breakers-1p", "EKF автоматы 1P"),
-    "ВА 47-63 — 2P (9)": ("electric-ekf-breakers-2p", "EKF автоматы 2P"),
-    "ВА 47-63 / 47-63N — 3P (14)": ("electric-ekf-breakers-3p", "EKF автоматы 3P"),
+BREAKER_SECTIONS = {
+    "ВА 47-63 — 1P (19)": "1P",
+    "ВА 47-63 — 2P (9)": "2P",
+    "ВА 47-63 / 47-63N — 3P (14)": "3P",
 }
 
+BREAKER_CURVE_ORDER = ["B", "C", "D"]
 RCBO_LEAKAGE_ORDER = ["10мА", "30мА", "100мА", "300мА"]
 MW_VOLTAGE_ORDER = ["12V", "24V", "48V"]
 
@@ -160,7 +161,25 @@ def item_kind(page_key):
     }[page_key]
 
 
+def breaker_curve(data):
+    match = re.search(r"\b([BCD])\d+", data.get("Маркировка", ""))
+    return match.group(1) if match is not None else "other"
+
+
 def library_for_item(page_key, section, data):
+    if page_key == "ekf_breakers" and section in BREAKER_SECTIONS:
+        pole = BREAKER_SECTIONS[section]
+        curve = breaker_curve(data)
+        suffix = curve.lower()
+
+        if curve in BREAKER_CURVE_ORDER:
+            return (
+                f"electric-ekf-breakers-{pole.lower()}-{suffix}",
+                f"EKF автоматы {pole} — характеристика {curve}",
+            )
+
+        return f"electric-ekf-breakers-{pole.lower()}-other", f"EKF автоматы {pole} — характеристика прочие"
+
     if page_key == "ekf_ut":
         return "electric-ekf-ut", "EKF клеммы UT"
 
@@ -181,9 +200,6 @@ def library_for_item(page_key, section, data):
                 return f"electric-mw-hdr-{voltage.lower()}", f"MW устройства {voltage}"
 
         return "electric-mw-hdr-other", "MW устройства прочие"
-
-    if section in SECTION_REWRITES:
-        return SECTION_REWRITES[section]
 
     safe = slug(section or page_key)
     return f"electric-{safe}", section or page_key
@@ -288,9 +304,15 @@ def write_manifest(entries, output_dir):
         })["items"].append({key: value for key, value in entry.items() if key != "_xml"})
 
     order = [
-        "electric-ekf-breakers-1p",
-        "electric-ekf-breakers-2p",
-        "electric-ekf-breakers-3p",
+        "electric-ekf-breakers-1p-b",
+        "electric-ekf-breakers-1p-c",
+        "electric-ekf-breakers-1p-d",
+        "electric-ekf-breakers-2p-b",
+        "electric-ekf-breakers-2p-c",
+        "electric-ekf-breakers-2p-d",
+        "electric-ekf-breakers-3p-b",
+        "electric-ekf-breakers-3p-c",
+        "electric-ekf-breakers-3p-d",
         "electric-ekf-rcbo-2m-10ma",
         "electric-ekf-rcbo-2m-30ma",
         "electric-ekf-rcbo-2m-100ma",

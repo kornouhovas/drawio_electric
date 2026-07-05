@@ -7,9 +7,15 @@ from pathlib import Path
 
 
 EXPECTED_COUNTS = {
-    "electric-ekf-breakers-1p": 19,
-    "electric-ekf-breakers-2p": 9,
-    "electric-ekf-breakers-3p": 14,
+    "electric-ekf-breakers-1p-b": 9,
+    "electric-ekf-breakers-1p-c": 7,
+    "electric-ekf-breakers-1p-d": 3,
+    "electric-ekf-breakers-2p-b": 2,
+    "electric-ekf-breakers-2p-c": 6,
+    "electric-ekf-breakers-2p-d": 1,
+    "electric-ekf-breakers-3p-b": 3,
+    "electric-ekf-breakers-3p-c": 6,
+    "electric-ekf-breakers-3p-d": 5,
     "electric-ekf-rcbo-2m-10ma": 40,
     "electric-ekf-rcbo-2m-30ma": 46,
     "electric-ekf-rcbo-2m-100ma": 38,
@@ -58,6 +64,21 @@ def main():
         if "4p" in library["id"].lower() or "4p" in library["title"].lower() or "4р" in library["title"].lower():
             return fail(f"Unexpected 4P library: {library['id']} {library['title']}")
 
+        if library["id"].startswith("electric-ekf-breakers-"):
+            if "характеристика" not in library["title"]:
+                return fail(f"Breaker library title does not include characteristic: {library['title']}")
+
+            expected_curve = library["id"].rsplit("-", 1)[-1].upper()
+
+            if f"характеристика {expected_curve}" not in library["title"]:
+                return fail(f"Breaker library title has wrong characteristic: {library['title']}")
+
+            for item in library.get("items", []):
+                marking = item.get("data", {}).get("Маркировка", "")
+
+                if f" {expected_curve}" not in marking:
+                    return fail(f"Breaker item is in wrong characteristic group: {library['id']} {marking}")
+
     for item in all_items:
         for key in ("id", "libraryId", "kind", "title", "width", "height", "original", "data", "tags"):
             if key not in item:
@@ -81,7 +102,7 @@ def main():
     if len(terminal_libraries) != 1 or terminal_libraries[0]["id"] != "electric-ekf-ut":
         return fail(f"Expected one merged terminal library, got {[library['id'] for library in terminal_libraries]}")
 
-    print("Electric shapes manifest verified: 240 items, 11 libraries, merged UT terminals, no EKF 4P")
+    print("Electric shapes manifest verified: 240 items, 17 libraries, breaker B/C/D groups, merged UT terminals, no EKF 4P")
     return 0
 
 
