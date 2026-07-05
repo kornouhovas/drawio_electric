@@ -94,7 +94,10 @@
 		var model = new mxGraphModel();
 		codec.decode(doc.documentElement, model);
 
-		return graph.cloneCells(model.root.getChildAt(0).children);
+		var cells = graph.cloneCells(model.root.getChildAt(0).children);
+		Editor.markElectricShapeCells(cells, entry);
+
+		return cells;
 	};
 
 	Editor.addElectricShapeConfigurations = function(catalog)

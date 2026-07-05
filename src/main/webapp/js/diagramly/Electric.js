@@ -15,6 +15,7 @@ Editor.isElectricTheme = function(theme)
 Editor.electricModeAttribute = 'electricMode';
 Editor.defaultElectricMode = 'general';
 Editor.electricLeftPanelTransitionDelay = 0.16;
+Editor.electricDeviceSnapTolerance = 8;
 
 Editor.createElectricModeIcon = function(svg)
 {
@@ -41,6 +42,297 @@ Editor.electricModes = [
 		icon: Editor.createElectricModeIcon('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="5" height="4" rx="1"/><rect x="15.5" y="4" width="5" height="4" rx="1"/><rect x="9.5" y="16" width="5" height="4" rx="1"/><path d="M8.5 6h7"/><path d="M6 8v3.5c0 .8.7 1.5 1.5 1.5H12v3"/><path d="M18 8v3.5c0 .8-.7 1.5-1.5 1.5H12"/></svg>')
 	}
 ];
+
+Editor.addElectricStyleValue = function(cell, key, value)
+{
+	if (cell == null || key == null || value == null)
+	{
+		return;
+	}
+
+	var style = cell.style || '';
+
+	if (style.indexOf(key + '=') < 0)
+	{
+		if (style.length > 0 && style.charAt(style.length - 1) != ';')
+		{
+			style += ';';
+		}
+
+		cell.style = style + key + '=' + value + ';';
+	}
+};
+
+Editor.markElectricShapeCells = function(cells, entry)
+{
+	if (cells == null)
+	{
+		return;
+	}
+
+	for (var i = 0; i < cells.length; i++)
+	{
+		Editor.addElectricStyleValue(cells[i], 'electricDevice', '1');
+
+		if (entry != null && entry.id != null)
+		{
+			Editor.addElectricStyleValue(cells[i], 'electricShapeId', entry.id);
+		}
+	}
+};
+
+Editor.getElectricDeviceSnapTolerance = function(graph)
+{
+	return Editor.electricDeviceSnapTolerance || 8;
+};
+
+Editor.electricRangesOverlap = function(a0, a1, b0, b1, tolerance)
+{
+	tolerance = (tolerance != null) ? tolerance : 0;
+
+	return Math.min(a1, b1) - Math.max(a0, b0) >= -tolerance;
+};
+
+Editor.getElectricDeviceSideSnapDelta = function(bounds, delta, targets, tolerance)
+{
+	var result = {
+		x: (delta != null && delta.x != null) ? delta.x : 0,
+		y: (delta != null && delta.y != null) ? delta.y : 0
+	};
+
+	if (bounds == null || delta == null || targets == null || targets.length == 0)
+	{
+		return result;
+	}
+
+	tolerance = (tolerance != null) ? tolerance :
+		Editor.electricDeviceSnapTolerance;
+
+	var movedLeft = bounds.x + result.x;
+	var movedRight = movedLeft + bounds.width;
+	var movedTop = bounds.y + result.y;
+	var movedBottom = movedTop + bounds.height;
+	var bestX = tolerance + 1;
+	var bestY = tolerance + 1;
+	var snapX = null;
+	var snapY = null;
+
+	function trySnapX(value)
+	{
+		var diff = Math.abs(value - result.x);
+
+		if (diff <= tolerance && diff < bestX)
+		{
+			bestX = diff;
+			snapX = value;
+		}
+	};
+
+	function trySnapY(value)
+	{
+		var diff = Math.abs(value - result.y);
+
+		if (diff <= tolerance && diff < bestY)
+		{
+			bestY = diff;
+			snapY = value;
+		}
+	};
+
+	for (var i = 0; i < targets.length; i++)
+	{
+		var target = targets[i];
+
+		if (target == null || target.width <= 0 || target.height <= 0)
+		{
+			continue;
+		}
+
+		var targetLeft = target.x;
+		var targetRight = target.x + target.width;
+		var targetTop = target.y;
+		var targetBottom = target.y + target.height;
+
+		if (Editor.electricRangesOverlap(movedTop, movedBottom,
+			targetTop, targetBottom, tolerance))
+		{
+			trySnapX(targetLeft - bounds.x - bounds.width);
+			trySnapX(targetRight - bounds.x);
+		}
+
+		if (Editor.electricRangesOverlap(movedLeft, movedRight,
+			targetLeft, targetRight, tolerance))
+		{
+			trySnapY(targetTop - bounds.y - bounds.height);
+			trySnapY(targetBottom - bounds.y);
+		}
+	}
+
+	if (snapX != null)
+	{
+		result.x = snapX;
+	}
+
+	if (snapY != null)
+	{
+		result.y = snapY;
+	}
+
+	return result;
+};
+
+Editor.hasElectricDeviceSignature = function(graph, cell)
+{
+	var model = (graph != null) ? graph.getModel() : null;
+
+	if (model == null || cell == null || model.getChildCount(cell) == 0)
+	{
+		return false;
+	}
+
+	var matches = 0;
+	var maxDepth = 3;
+
+	function visit(child, depth)
+	{
+		if (child == null || matches > 0 || depth > maxDepth)
+		{
+			return;
+		}
+
+		var value = model.getValue(child);
+		var text = (value != null) ? String(value) : '';
+		var style = child.style || '';
+
+		if (/(EKF|QF|QFD|MEAN WELL|BA 47-63|АВДТ|HDR|UT)/.test(text) ||
+			/electricShapeId=|fillColor=#FFE45C|fillColor=#626663/.test(style))
+		{
+			matches++;
+			return;
+		}
+
+		for (var i = 0; i < model.getChildCount(child); i++)
+		{
+			visit(model.getChildAt(child, i), depth + 1);
+		}
+	};
+
+	for (var i = 0; i < model.getChildCount(cell); i++)
+	{
+		visit(model.getChildAt(cell, i), 1);
+	}
+
+	return matches > 0;
+};
+
+Editor.isElectricDeviceCell = function(graph, cell)
+{
+	var model = (graph != null) ? graph.getModel() : null;
+
+	if (model == null || cell == null || !model.isVertex(cell))
+	{
+		return false;
+	}
+
+	var style = graph.getCellStyle(cell);
+
+	if (mxUtils.getValue(style, 'electricDevice', '0') == '1' ||
+		mxUtils.getValue(style, 'electricShapeId', null) != null)
+	{
+		return true;
+	}
+
+	return Editor.hasElectricDeviceSignature(graph, cell);
+};
+
+Editor.hasElectricDeviceCell = function(graph, cells)
+{
+	if (cells == null)
+	{
+		return false;
+	}
+
+	for (var i = 0; i < cells.length; i++)
+	{
+		if (Editor.isElectricDeviceCell(graph, cells[i]))
+		{
+			return true;
+		}
+	}
+
+	return false;
+};
+
+Editor.getElectricDeviceSnapTargets = function(handler)
+{
+	var graph = (handler != null) ? handler.graph : null;
+	var model = (graph != null) ? graph.getModel() : null;
+	var targets = [];
+
+	if (model == null || handler.cell == null)
+	{
+		return targets;
+	}
+
+	var parent = model.getParent(handler.cell);
+	var count = model.getChildCount(parent);
+
+	for (var i = 0; i < count; i++)
+	{
+		var cell = model.getChildAt(parent, i);
+
+		if (cell != null && !(handler.isCellMoving != null &&
+			handler.isCellMoving(cell)) && Editor.isElectricDeviceCell(graph, cell))
+		{
+			var state = graph.view.getState(cell);
+
+			if (state != null && state.width > 0 && state.height > 0)
+			{
+				targets.push({
+					x: state.x,
+					y: state.y,
+					width: state.width,
+					height: state.height
+				});
+			}
+		}
+	}
+
+	return targets;
+};
+
+Editor.applyElectricDeviceSideSnap = function(handler, me)
+{
+	var graph = (handler != null) ? handler.graph : null;
+
+	if (!Editor.isElectricTheme() || graph == null || handler.bounds == null ||
+		handler.cells == null || !Editor.hasElectricDeviceCell(graph, handler.cells))
+	{
+		return;
+	}
+
+	var evt = (me != null && me.getEvent != null) ? me.getEvent() : null;
+
+	if (evt != null && mxEvent.isAltDown(evt))
+	{
+		return;
+	}
+
+	var targets = Editor.getElectricDeviceSnapTargets(handler);
+
+	if (targets.length == 0)
+	{
+		return;
+	}
+
+	var snapped = Editor.getElectricDeviceSideSnapDelta(handler.bounds, {
+		x: handler.currentDx || 0,
+		y: handler.currentDy || 0
+	}, targets, Editor.getElectricDeviceSnapTolerance(graph));
+
+	handler.currentDx = snapped.x;
+	handler.currentDy = snapped.y;
+};
 
 function SetElectricPageMode(ui, page, modeId)
 {
@@ -570,5 +862,36 @@ SetElectricPageMode.prototype.execute = function()
 		this.electricModeListenersInstalled = false;
 		this.electricModeRefreshHandler = null;
 		this.electricShapesPanelHandler = null;
+	};
+})();
+
+(function()
+{
+	var mouseMove = mxGraphHandler.prototype.mouseMove;
+	var updatePreview = mxGraphHandler.prototype.updatePreview;
+
+	mxGraphHandler.prototype.mouseMove = function(sender, me)
+	{
+		this.electricDeviceSnapMouseEvent = me;
+
+		try
+		{
+			return mouseMove.apply(this, arguments);
+		}
+		finally
+		{
+			this.electricDeviceSnapMouseEvent = null;
+		}
+	};
+
+	mxGraphHandler.prototype.updatePreview = function(remote)
+	{
+		if (!remote && this.electricDeviceSnapMouseEvent != null)
+		{
+			Editor.applyElectricDeviceSideSnap(this,
+				this.electricDeviceSnapMouseEvent);
+		}
+
+		return updatePreview.apply(this, arguments);
 	};
 })();
