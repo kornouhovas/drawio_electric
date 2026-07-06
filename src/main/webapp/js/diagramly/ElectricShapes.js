@@ -614,10 +614,6 @@
 					'400', 'middle', '#e7e7e7');
 			}
 
-			svg += '<rect x="' + (faceX + faceW * 0.34) + '" y="' +
-				(faceY + faceH * 0.972) + '" width="' + (faceW * 0.32) +
-				'" height="' + Math.max(2, faceH * 0.017) +
-				'" fill="#f0f0f0" stroke="#222" stroke-width="0.5"/>';
 			svg += '<rect x="' + logoX + '" y="' + (faceY + faceH * 0.203) +
 				'" width="' + logoW + '" height="' + (faceH * 0.071) +
 				'" fill="#777b78" stroke="#9b9b86" stroke-width="0.5"/>';
@@ -997,8 +993,6 @@
 				'fontSize=' + Math.max(5, w * 0.05) + ';fontColor=#e7e7e7;whiteSpace=wrap;spacing=0;overflow=hidden;');
 		}
 
-		Editor.createElectricCell(group, '', w * 0.34, h * 0.972, w * 0.32, Math.max(2, h * 0.017),
-			'rounded=0;whiteSpace=wrap;html=1;fillColor=#f0f0f0;strokeColor=#222;strokeWidth=0.5;');
 		Editor.createElectricCell(group, '', logoX, h * 0.203, logoW, h * 0.071,
 			'rounded=0;whiteSpace=wrap;html=1;fillColor=#777b78;strokeColor=#9b9b86;strokeWidth=0.5;');
 		Editor.createElectricCell(group, 'MW', logoX + logoW * 0.06, h * 0.203, logoW * 0.88, h * 0.037,

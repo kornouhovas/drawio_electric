@@ -12,8 +12,6 @@
           <mxGeometry height="17" width="413.386" y="280.331" as="geometry" />
         </mxCell><mxCell id="mw_HDR_150_12_device_bottom_cap" parent="mw_HDR_150_12_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#4b504e;strokeColor=none;strokeWidth=0;" value="" vertex="1">
           <mxGeometry height="57" width="413.386" y="297.331" as="geometry" />
-        </mxCell><mxCell id="mw_HDR_150_12_device_din_slot" parent="mw_HDR_150_12_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f0f0f0;strokeColor=#222;strokeWidth=0.5;" value="" vertex="1">
-          <mxGeometry height="6" width="132.283" x="140.551" y="344.331" as="geometry" />
         </mxCell><mxCell id="mw_HDR_150_12_device_top_term_0" parent="mw_HDR_150_12_device" style="ellipse;whiteSpace=wrap;html=1;fillColor=#050606;strokeColor=none;strokeWidth=0.5;" value="" vertex="1">
           <mxGeometry height="8.4" width="8.4" x="177.69" y="18" as="geometry" />
         </mxCell><mxCell id="mw_HDR_150_12_device_top_lab_0" parent="mw_HDR_150_12_device" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=5;fontColor=#d9d0a2;whiteSpace=wrap;spacing=0;overflow=hidden;" value="-V" vertex="1">
