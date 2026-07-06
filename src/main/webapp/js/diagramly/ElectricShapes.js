@@ -413,18 +413,52 @@
 			Editor.getElectricSvgText(value) + '</text>';
 	};
 
-	Editor.getElectricPsuTopLabels = function(entry)
+	Editor.getElectricPsuSeries = function(entry)
 	{
 		var series = Editor.getElectricShapeValue(entry, 'Серия');
 		var model = Editor.getElectricShapeValue(entry, 'Модель') || entry.title;
-		var size = Editor.getElectricShapeValue(entry, 'Размер');
+		var match = /HDR-(150|100|60|30|15)/.exec(series + ' ' + model);
 
-		if (/HDR-(100|150)/.test(series + ' ' + model) || /[46]M/.test(size))
+		return match != null ? 'HDR-' + match[1] : 'HDR-30';
+	};
+
+	Editor.getElectricPsuTerminalLayout = function(entry)
+	{
+		var layouts = {
+			'HDR-15': {
+				top: [{label: '+V', x: 0.44}, {label: '-V', x: 0.60}],
+				bottom: [{label: 'N', x: 0.44}, {label: 'L', x: 0.60}]
+			},
+			'HDR-30': {
+				top: [{label: '-V', x: 0.62}, {label: '+V', x: 0.76}],
+				bottom: [{label: 'N', x: 0.40}, {label: 'L', x: 0.68}]
+			},
+			'HDR-60': {
+				top: [{label: '-V', x: 0.28}, {label: '-V', x: 0.38},
+					{label: '+V', x: 0.48}, {label: '+V', x: 0.58}],
+				bottom: [{label: 'L', x: 0.22}, {label: 'N', x: 0.38}]
+			},
+			'HDR-100': {
+				top: [{label: '-V', x: 0.43}, {label: '-V', x: 0.50},
+					{label: '+V', x: 0.57}, {label: '+V', x: 0.64}],
+				bottom: [{label: 'L', x: 0.12}, {label: 'N', x: 0.28}]
+			},
+			'HDR-150': {
+				top: [{label: '-V', x: 0.12}, {label: '-V', x: 0.17},
+					{label: '+V', x: 0.22}, {label: '+V', x: 0.27}],
+				bottom: [{label: 'N', x: 0.82}, {label: 'L', x: 0.91}]
+			}
+		};
+
+		return layouts[Editor.getElectricPsuSeries(entry)] || layouts['HDR-30'];
+	};
+
+	Editor.getElectricPsuTopLabels = function(entry)
+	{
+		return Editor.getElectricPsuTerminalLayout(entry).top.map(function(item)
 		{
-			return ['-V', '-V', '+V', '+V'];
-		}
-
-		return ['-V', '+V'];
+			return item.label;
+		});
 	};
 
 	Editor.createElectricBreakerPoleSvg = function(entry, x, y, w, h, compact)
@@ -558,7 +592,9 @@
 			var input = Editor.getElectricShapeValue(entry, 'Вход');
 			var output = Editor.getElectricShapeValue(entry, 'Выход');
 			var power = Editor.getElectricShapeValue(entry, 'Мощность');
-			var topLabels = Editor.getElectricPsuTopLabels(entry);
+			var terminalLayout = Editor.getElectricPsuTerminalLayout(entry);
+			var topTerminals = terminalLayout.top;
+			var bottomTerminals = terminalLayout.bottom;
 			var terminalR = Math.max(2.2, Math.min(4.2, faceW * 0.04));
 			var logoW = Math.min(faceW * 0.34, faceH * 0.18);
 			var logoX = faceX + faceW * 0.06;
@@ -585,31 +621,26 @@
 				'" width="' + faceW + '" height="' + (faceH * 0.161) +
 				'" fill="#4b504e" stroke="none"/>';
 
-			for (var i = 0; i < topLabels.length; i++)
+			for (var i = 0; i < topTerminals.length; i++)
 			{
-				var tx = faceX + faceW * (0.42 + i * 0.16);
-
-				if (topLabels.length == 2)
-				{
-					tx = faceX + faceW * (0.42 + i * 0.18);
-				}
+				var tx = faceX + faceW * topTerminals[i].x;
 
 				svg += '<circle cx="' + tx + '" cy="' +
 					(faceY + faceH * 0.064) + '" r="' + terminalR +
 					'" fill="#050606"/>';
-				svg += Editor.getElectricSvgTextLine(topLabels[i], tx,
+				svg += Editor.getElectricSvgTextLine(topTerminals[i].label, tx,
 					faceY + faceH * 0.103, compact ? 4.5 : 5.2,
 					'400', 'middle', '#d9d0a2');
 			}
 
-			for (var j = 0; j < 2; j++)
+			for (var j = 0; j < bottomTerminals.length; j++)
 			{
-				var bx = faceX + faceW * (0.32 + j * 0.22);
+				var bx = faceX + faceW * bottomTerminals[j].x;
 
 				svg += '<circle cx="' + bx + '" cy="' +
 					(faceY + faceH * 0.949) + '" r="' + terminalR +
 					'" fill="#050606"/>';
-				svg += Editor.getElectricSvgTextLine(j == 0 ? 'L' : 'N', bx,
+				svg += Editor.getElectricSvgTextLine(bottomTerminals[j].label, bx,
 					faceY + faceH * 0.887, compact ? 5.5 : 7.5,
 					'400', 'middle', '#e7e7e7');
 			}
@@ -941,7 +972,9 @@
 		var input = Editor.getElectricShapeValue(entry, 'Вход');
 		var output = Editor.getElectricShapeValue(entry, 'Выход');
 		var power = Editor.getElectricShapeValue(entry, 'Мощность');
-		var topLabels = Editor.getElectricPsuTopLabels(entry);
+		var terminalLayout = Editor.getElectricPsuTerminalLayout(entry);
+		var topTerminals = terminalLayout.top;
+		var bottomTerminals = terminalLayout.bottom;
 		var terminal = Math.max(4, Math.min(8.4, w * 0.05));
 		var logoW = Math.min(w * 0.34, h * 0.18);
 		var logoX = w * 0.06;
@@ -962,32 +995,27 @@
 		Editor.createElectricCell(group, '', 0, h * 0.839, w, h * 0.161,
 			'rounded=0;whiteSpace=wrap;html=1;fillColor=#4b504e;strokeColor=none;strokeWidth=0;');
 
-		for (var i = 0; i < topLabels.length; i++)
+		for (var i = 0; i < topTerminals.length; i++)
 		{
-			var tx = w * (0.42 + i * 0.16);
-
-			if (topLabels.length == 2)
-			{
-				tx = w * (0.42 + i * 0.18);
-			}
+			var tx = w * topTerminals[i].x;
 
 			Editor.createElectricCell(group, '', tx - terminal / 2, h * 0.064 - terminal / 2,
 				terminal, terminal,
 				'ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#050606;strokeColor=none;strokeWidth=0;');
-			Editor.createElectricCell(group, topLabels[i], tx - w * 0.055, h * 0.083,
+			Editor.createElectricCell(group, topTerminals[i].label, tx - w * 0.055, h * 0.083,
 				w * 0.11, h * 0.032,
 				'text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;' +
 				'fontSize=' + Math.max(4, w * 0.035) + ';fontColor=#d9d0a2;whiteSpace=wrap;spacing=0;overflow=hidden;');
 		}
 
-		for (var j = 0; j < 2; j++)
+		for (var j = 0; j < bottomTerminals.length; j++)
 		{
-			var bx = w * (0.32 + j * 0.22);
+			var bx = w * bottomTerminals[j].x;
 
 			Editor.createElectricCell(group, '', bx - terminal / 2, h * 0.949 - terminal / 2,
 				terminal, terminal,
 				'ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#050606;strokeColor=none;strokeWidth=0;');
-			Editor.createElectricCell(group, j == 0 ? 'L' : 'N', bx - w * 0.06, h * 0.875,
+			Editor.createElectricCell(group, bottomTerminals[j].label, bx - w * 0.06, h * 0.875,
 				w * 0.12, h * 0.04,
 				'text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;' +
 				'fontSize=' + Math.max(5, w * 0.05) + ';fontColor=#e7e7e7;whiteSpace=wrap;spacing=0;overflow=hidden;');
