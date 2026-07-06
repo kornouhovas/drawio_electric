@@ -1,4 +1,4 @@
-<mxGraphModel><root><mxCell id="0" /><mxCell id="1" parent="0" /><mxCell id="mw_HDR_100_24N_device" parent="1" style="group;html=1;" value="" vertex="1">
+<mxGraphModel><root><mxCell id="0" /><mxCell id="1" parent="0" /><mxCell id="mw_HDR_100_24N_device" parent="1" style="group;html=1;points=[[0.43,0.063,0],[0.5,0.063,0],[0.57,0.063,0],[0.64,0.063,0],[0.12,0.95,0],[0.28,0.95,0]];outlineConnect=0;" value="" vertex="1">
           <mxGeometry height="354.331" width="275.591" x="0" y="0" as="geometry" />
         </mxCell><mxCell id="mw_HDR_100_24N_device_body" parent="mw_HDR_100_24N_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#626663;strokeColor=#222;strokeWidth=0.8;" value="" vertex="1">
           <mxGeometry height="354.331" width="275.591" as="geometry" />

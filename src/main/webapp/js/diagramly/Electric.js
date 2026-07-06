@@ -63,6 +63,125 @@ Editor.addElectricStyleValue = function(cell, key, value)
 	}
 };
 
+Editor.setElectricStyleValue = function(cell, key, value)
+{
+	if (cell == null || key == null || value == null)
+	{
+		return;
+	}
+
+	var style = cell.style || '';
+	var parts = style.split(';');
+	var result = [];
+
+	for (var i = 0; i < parts.length; i++)
+	{
+		if (parts[i] != '' && parts[i].indexOf(key + '=') != 0)
+		{
+			result.push(parts[i]);
+		}
+	}
+
+	result.push(key + '=' + value);
+	cell.style = result.join(';') + ';';
+};
+
+Editor.isElectricConnectionPointCell = function(cell)
+{
+	var id = String((cell != null) ? cell.id || '' : '');
+
+	return /_device_(top_term|bottom_term|screw|copper)_\d+$/.test(id);
+};
+
+Editor.getElectricConnectionPointCells = function(cell)
+{
+	var result = [];
+
+	function visit(parent, dx, dy)
+	{
+		if (parent == null || typeof parent.getChildCount != 'function')
+		{
+			return;
+		}
+
+		for (var i = 0; i < parent.getChildCount(); i++)
+		{
+			var child = parent.getChildAt(i);
+			var geo = (child != null) ? child.geometry : null;
+			var x = dx + ((geo != null && geo.x != null) ? geo.x : 0);
+			var y = dy + ((geo != null && geo.y != null) ? geo.y : 0);
+
+			if (Editor.isElectricConnectionPointCell(child) && geo != null)
+			{
+				result.push({cell: child, x: x, y: y});
+			}
+
+			visit(child, x, y);
+		}
+	}
+
+	visit(cell, 0, 0);
+
+	return result;
+};
+
+Editor.getElectricConnectionPointsForCell = function(cell)
+{
+	if (cell == null || cell.geometry == null ||
+		cell.geometry.width == null || cell.geometry.height == null ||
+		cell.geometry.width == 0 || cell.geometry.height == 0)
+	{
+		return [];
+	}
+
+	var terminals = Editor.getElectricConnectionPointCells(cell);
+	var points = [];
+	var seen = {};
+
+	for (var i = 0; i < terminals.length; i++)
+	{
+		var geo = terminals[i].cell.geometry;
+		var x = (terminals[i].x + geo.width / 2) / cell.geometry.width;
+		var y = (terminals[i].y + geo.height / 2) / cell.geometry.height;
+
+		if (isFinite(x) && isFinite(y))
+		{
+			x = Math.max(0, Math.min(1, Math.round(x * 1000) / 1000));
+			y = Math.max(0, Math.min(1, Math.round(y * 1000) / 1000));
+
+			var key = x + ',' + y;
+
+			if (seen[key] == null)
+			{
+				seen[key] = true;
+				points.push([x, y, 0]);
+			}
+		}
+	}
+
+	points.sort(function(a, b)
+	{
+		return a[1] - b[1] || a[0] - b[0];
+	});
+
+	return points;
+};
+
+Editor.applyElectricConnectionPoints = function(cell)
+{
+	if (cell == null)
+	{
+		return [];
+	}
+
+	var points = Editor.getElectricConnectionPointsForCell(cell);
+
+	Editor.setElectricStyleValue(cell, 'points', JSON.stringify(points));
+	Editor.setElectricStyleValue(cell, 'outlineConnect', '0');
+
+	return points;
+};
+
 Editor.markElectricShapeCells = function(cells, entry)
 {
 	if (cells == null)
@@ -78,6 +197,8 @@ Editor.markElectricShapeCells = function(cells, entry)
 		{
 			Editor.addElectricStyleValue(cells[i], 'electricShapeId', entry.id);
 		}
+
+		Editor.applyElectricConnectionPoints(cells[i]);
 	}
 };
 
@@ -262,6 +383,50 @@ Editor.getElectricDeviceRootForCell = function(graph, cell)
 
 	return result;
 };
+
+if (typeof Graph != 'undefined' && Graph.prototype != null &&
+	Graph.prototype.getAllConnectionConstraints != null)
+{
+	(function()
+	{
+		var graphGetAllConnectionConstraints =
+			Graph.prototype.getAllConnectionConstraints;
+
+		Graph.prototype.getAllConnectionConstraints = function(terminal, source)
+		{
+			var result = graphGetAllConnectionConstraints.apply(this, arguments);
+
+			if (terminal != null && terminal.cell != null &&
+				Editor.isElectricDeviceCell(this, terminal.cell))
+			{
+				var hasExplicitPoints = terminal.style != null &&
+					mxUtils.getValue(terminal.style, 'points', null) != null;
+
+				if (result == null || !hasExplicitPoints)
+				{
+					var points = Editor.getElectricConnectionPointsForCell(terminal.cell);
+
+					if (points.length > 0)
+					{
+						result = [];
+
+						for (var i = 0; i < points.length; i++)
+						{
+							result.push(new mxConnectionConstraint(
+								new mxPoint(points[i][0], points[i][1]), false));
+						}
+					}
+					else
+					{
+						result = [];
+					}
+				}
+			}
+
+			return result;
+		};
+	})();
+}
 
 Editor.isElectricDeviceCellAccessible = function(graph, cell)
 {
