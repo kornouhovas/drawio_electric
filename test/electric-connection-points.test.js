@@ -107,6 +107,8 @@ for (const item of items)
 
 	assert.strictEqual(style.outlineConnect, '0',
 		`${item.original} must disable outline connections`);
+	assert.notStrictEqual(device.connectable, '0',
+		`${item.original} device root must be connectable so terminal points are visible`);
 	assert(style.points,
 		`${item.original} must define connection points`);
 
@@ -127,3 +129,7 @@ assert(/Graph\.prototype\.getAllConnectionConstraints/.test(electricJs),
 	'Electric.js must hook Graph.getAllConnectionConstraints for legacy Electric devices');
 assert(/hasExplicitPoints/.test(electricJs),
 	'Electric.js must override default constraints for legacy Electric devices without points style');
+assert(/Graph\.prototype\.isCellConnectable/.test(electricJs),
+	'Electric.js must make legacy Electric device roots connectable when terminal points exist');
+assert(/setConnectable\(true\)/.test(electricJs),
+	'Electric.js must mark newly dropped Electric device roots as connectable');

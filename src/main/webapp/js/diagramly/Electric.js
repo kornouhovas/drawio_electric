@@ -179,6 +179,20 @@ Editor.applyElectricConnectionPoints = function(cell)
 	Editor.setElectricStyleValue(cell, 'points', JSON.stringify(points));
 	Editor.setElectricStyleValue(cell, 'outlineConnect', '0');
 
+	if (points.length > 0)
+	{
+		Editor.setElectricStyleValue(cell, 'connectable', '1');
+
+		if (cell.setConnectable != null)
+		{
+			cell.setConnectable(true);
+		}
+		else
+		{
+			cell.connectable = true;
+		}
+	}
+
 	return points;
 };
 
@@ -383,6 +397,29 @@ Editor.getElectricDeviceRootForCell = function(graph, cell)
 
 	return result;
 };
+
+if (typeof Graph != 'undefined' && Graph.prototype != null &&
+	Graph.prototype.isCellConnectable != null)
+{
+	(function()
+	{
+		var graphIsCellConnectable = Graph.prototype.isCellConnectable;
+
+		Graph.prototype.isCellConnectable = function(cell)
+		{
+			var result = graphIsCellConnectable.apply(this, arguments);
+
+			if (!result && cell != null &&
+				Editor.isElectricDeviceCell(this, cell) &&
+				Editor.getElectricConnectionPointsForCell(cell).length > 0)
+			{
+				result = true;
+			}
+
+			return result;
+		};
+	})();
+}
 
 if (typeof Graph != 'undefined' && Graph.prototype != null &&
 	Graph.prototype.getAllConnectionConstraints != null)
