@@ -149,12 +149,36 @@ Editor.getElectricConnectionPointsForCell = function(cell)
 			x = Math.max(0, Math.min(1, Math.round(x * 1000) / 1000));
 			y = Math.max(0, Math.min(1, Math.round(y * 1000) / 1000));
 
+			var topDistance = y;
+			var bottomDistance = 1 - y;
+			var leftDistance = x;
+			var rightDistance = 1 - x;
+			var minDistance = Math.min(topDistance, bottomDistance,
+				leftDistance, rightDistance);
+
+			if (minDistance == topDistance)
+			{
+				y = 0;
+			}
+			else if (minDistance == bottomDistance)
+			{
+				y = 1;
+			}
+			else if (minDistance == leftDistance)
+			{
+				x = 0;
+			}
+			else
+			{
+				x = 1;
+			}
+
 			var key = x + ',' + y;
 
 			if (seen[key] == null)
 			{
 				seen[key] = true;
-				points.push([x, y, 0]);
+				points.push([x, y, 1]);
 			}
 		}
 	}
@@ -436,27 +460,21 @@ if (typeof Graph != 'undefined' && Graph.prototype != null &&
 			if (terminal != null && terminal.cell != null &&
 				Editor.isElectricDeviceCell(this, terminal.cell))
 			{
-				var hasExplicitPoints = terminal.style != null &&
-					mxUtils.getValue(terminal.style, 'points', null) != null;
+				var points = Editor.getElectricConnectionPointsForCell(terminal.cell);
 
-				if (result == null || !hasExplicitPoints)
+				if (points.length > 0)
 				{
-					var points = Editor.getElectricConnectionPointsForCell(terminal.cell);
+					result = [];
 
-					if (points.length > 0)
+					for (var i = 0; i < points.length; i++)
 					{
-						result = [];
-
-						for (var i = 0; i < points.length; i++)
-						{
-							result.push(new mxConnectionConstraint(
-								new mxPoint(points[i][0], points[i][1]), false));
-						}
+						result.push(new mxConnectionConstraint(
+							new mxPoint(points[i][0], points[i][1]), true));
 					}
-					else
-					{
-						result = [];
-					}
+				}
+				else
+				{
+					result = [];
 				}
 			}
 

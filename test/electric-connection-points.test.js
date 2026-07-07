@@ -55,7 +55,7 @@ function isConnectionTerminal(cell)
 	return /_device_(?:top_term|bottom_term|screw|copper)_\d+$/.test(cell.id || '');
 }
 
-function centerPoint(cell, device)
+function terminalCenter(cell, device)
 {
 	const g = cell.geometry;
 	const d = device.geometry;
@@ -64,10 +64,44 @@ function centerPoint(cell, device)
 	const y = (Number(g.y || 0) + Number(g.height || 0) / 2 -
 		Number(d.y || 0)) / Number(d.height);
 
+	return {
+		x: Number(x.toFixed(3)),
+		y: Number(y.toFixed(3))
+	};
+}
+
+function perimeterPoint(cell, device)
+{
+	const center = terminalCenter(cell, device);
+	const distances = [
+		{edge: 'top', value: center.y},
+		{edge: 'bottom', value: 1 - center.y},
+		{edge: 'left', value: center.x},
+		{edge: 'right', value: 1 - center.x}
+	].sort((a, b) => a.value - b.value);
+	const point = {x: center.x, y: center.y};
+
+	if (distances[0].edge == 'top')
+	{
+		point.y = 0;
+	}
+	else if (distances[0].edge == 'bottom')
+	{
+		point.y = 1;
+	}
+	else if (distances[0].edge == 'left')
+	{
+		point.x = 0;
+	}
+	else
+	{
+		point.x = 1;
+	}
+
 	return [
-		Number(x.toFixed(3)),
-		Number(y.toFixed(3)),
-		0
+		Number(point.x.toFixed(3)),
+		Number(point.y.toFixed(3)),
+		1
 	];
 }
 
@@ -103,7 +137,7 @@ for (const item of items)
 	checked++;
 
 	const expected = sortPoints(terminalCells.map((cell) =>
-		centerPoint(cell, device)));
+		perimeterPoint(cell, device)));
 
 	assert.strictEqual(style.outlineConnect, '0',
 		`${item.original} must disable outline connections`);
@@ -115,7 +149,7 @@ for (const item of items)
 	const actual = sortPoints(JSON.parse(style.points));
 
 	assert.deepStrictEqual(actual, expected,
-		`${item.original} connection points must match terminal geometry`);
+		`${item.original} connection points must sit on device perimeter opposite terminals`);
 }
 
 assert(checked > 200, 'Expected connection point assertions for Electric devices');
@@ -127,8 +161,8 @@ assert(/getElectricConnectionPointCells/.test(electricJs),
 	'Electric.js must expose a runtime connection point fallback');
 assert(/Graph\.prototype\.getAllConnectionConstraints/.test(electricJs),
 	'Electric.js must hook Graph.getAllConnectionConstraints for legacy Electric devices');
-assert(/hasExplicitPoints/.test(electricJs),
-	'Electric.js must override default constraints for legacy Electric devices without points style');
+assert(!/hasExplicitPoints/.test(electricJs),
+	'Electric.js must recalculate Electric device constraints even when old explicit points style exists');
 assert(/Graph\.prototype\.isCellConnectable/.test(electricJs),
 	'Electric.js must make legacy Electric device roots connectable when terminal points exist');
 assert(/setConnectable\(true\)/.test(electricJs),
