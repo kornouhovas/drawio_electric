@@ -483,6 +483,118 @@ if (typeof Graph != 'undefined' && Graph.prototype != null &&
 	})();
 }
 
+Editor.getElectricSelectedConnectionFocusCell = function(graph)
+{
+	if (!Editor.isElectricTheme() || graph == null ||
+		typeof graph.getSelectionCells != 'function')
+	{
+		return null;
+	}
+
+	var cells = graph.getSelectionCells();
+
+	if (cells == null || cells.length != 1)
+	{
+		return null;
+	}
+
+	var cell = cells[0];
+
+	if (Editor.isElectricDeviceCell(graph, cell) &&
+		Editor.getElectricConnectionPointsForCell(cell).length > 0)
+	{
+		return cell;
+	}
+
+	return null;
+};
+
+Editor.updateElectricConnectionFocus = function(graph)
+{
+	var ch = (graph != null && graph.connectionHandler != null) ?
+		graph.connectionHandler.constraintHandler : null;
+
+	if (ch == null)
+	{
+		return;
+	}
+
+	var cell = Editor.getElectricSelectedConnectionFocusCell(graph);
+
+	if (cell != null && graph.view != null)
+	{
+		var state = graph.view.getState(cell);
+
+		if (state != null)
+		{
+			ch.electricSelectedFocus = true;
+			ch.electricSelectedFocusCell = cell;
+			ch.setFocus(null, state, false);
+
+			if (ch.redraw != null)
+			{
+				ch.redraw();
+			}
+
+			return;
+		}
+	}
+
+	if (ch.electricSelectedFocus)
+	{
+		ch.electricSelectedFocus = false;
+		ch.electricSelectedFocusCell = null;
+		ch.currentFocus = null;
+		ch.constraints = null;
+		ch.destroyIcons();
+		ch.destroyFocusHighlight();
+	}
+};
+
+Editor.installElectricConnectionFocus = function(graph)
+{
+	var ch = (graph != null && graph.connectionHandler != null) ?
+		graph.connectionHandler.constraintHandler : null;
+
+	if (graph == null || ch == null || graph.electricConnectionFocusInstalled)
+	{
+		return;
+	}
+
+	var isStateIgnored = ch.isStateIgnored;
+
+	ch.isStateIgnored = function(state, source)
+	{
+		if (Editor.isElectricTheme() && source && state != null &&
+			graph.isCellSelected(state.cell) &&
+			Editor.isElectricDeviceCell(graph, state.cell) &&
+			Editor.getElectricConnectionPointsForCell(state.cell).length > 0)
+		{
+			return false;
+		}
+
+		return isStateIgnored.apply(this, arguments);
+	};
+
+	var refresh = function()
+	{
+		window.setTimeout(function()
+		{
+			Editor.updateElectricConnectionFocus(graph);
+		}, 0);
+	};
+
+	graph.getSelectionModel().addListener(mxEvent.CHANGE, refresh);
+	graph.getModel().addListener(mxEvent.CHANGE, refresh);
+	graph.getView().addListener(mxEvent.SCALE, refresh);
+	graph.getView().addListener(mxEvent.TRANSLATE, refresh);
+	graph.getView().addListener(mxEvent.SCALE_AND_TRANSLATE, refresh);
+	graph.addListener(mxEvent.ROOT, refresh);
+	graph.electricConnectionFocusInstalled = true;
+
+	refresh();
+};
+
 Editor.isElectricDeviceCellAccessible = function(graph, cell)
 {
 	var device = Editor.getElectricDeviceRootForCell(graph, cell);
@@ -1109,10 +1221,13 @@ SetElectricPageMode.prototype.execute = function()
 			return;
 		}
 
+		Editor.installElectricConnectionFocus(this.editor.graph);
+
 		this.electricModeRefreshHandler = mxUtils.bind(this, function()
 		{
 			this.updateElectricModePanel();
 			this.updateElectricLeftPanelState();
+			Editor.updateElectricConnectionFocus(this.editor.graph);
 		});
 
 		this.electricShapesPanelHandler = mxUtils.bind(this, function()

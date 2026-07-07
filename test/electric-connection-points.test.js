@@ -167,3 +167,9 @@ assert(/Graph\.prototype\.isCellConnectable/.test(electricJs),
 	'Electric.js must make legacy Electric device roots connectable when terminal points exist');
 assert(/setConnectable\(true\)/.test(electricJs),
 	'Electric.js must mark newly dropped Electric device roots as connectable');
+assert(/installElectricConnectionFocus/.test(electricJs),
+	'Electric.js must install selected Electric device connection focus handling');
+assert(/isStateIgnored/.test(electricJs),
+	'Electric.js must override constraint state ignoring for selected Electric devices');
+assert(/setFocus\(null,\s*state,\s*false\)/.test(electricJs),
+	'Electric.js must show native connection handles for the selected Electric device state');
