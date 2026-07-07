@@ -65,7 +65,7 @@ Editor.addElectricStyleValue = function(cell, key, value)
 
 Editor.setElectricStyleValue = function(cell, key, value)
 {
-	if (cell == null || key == null || value == null)
+	if (cell == null || key == null)
 	{
 		return;
 	}
@@ -82,24 +82,28 @@ Editor.setElectricStyleValue = function(cell, key, value)
 		}
 	}
 
-	result.push(key + '=' + value);
-	cell.style = result.join(';') + ';';
+	if (value != null)
+	{
+		result.push(key + '=' + value);
+	}
+
+	cell.style = (result.length > 0) ? result.join(';') + ';' : '';
 };
 
 Editor.isElectricConnectionPointCell = function(cell)
 {
-	var id = String((cell != null) ? cell.id || '' : '');
+	var id = (cell != null && cell.id != null) ? String(cell.id) : '';
 
-	return /_device_(top_term|bottom_term|screw|copper)_\d+$/.test(id);
+	return /_device_(top_term|bottom_term|screw|port|copper)_\d+$/.test(id);
 };
 
 Editor.getElectricConnectionPointCells = function(cell)
 {
 	var result = [];
 
-	function visit(parent, dx, dy)
+	function visit(parent, offsetX, offsetY)
 	{
-		if (parent == null || typeof parent.getChildCount != 'function')
+		if (parent == null || parent.getChildCount == null)
 		{
 			return;
 		}
@@ -108,17 +112,21 @@ Editor.getElectricConnectionPointCells = function(cell)
 		{
 			var child = parent.getChildAt(i);
 			var geo = (child != null) ? child.geometry : null;
-			var x = dx + ((geo != null && geo.x != null) ? geo.x : 0);
-			var y = dy + ((geo != null && geo.y != null) ? geo.y : 0);
+			var x = offsetX + ((geo != null && geo.x != null) ? Number(geo.x) : 0);
+			var y = offsetY + ((geo != null && geo.y != null) ? Number(geo.y) : 0);
 
 			if (Editor.isElectricConnectionPointCell(child) && geo != null)
 			{
-				result.push({cell: child, x: x, y: y});
+				result.push({
+					cell: child,
+					x: x,
+					y: y
+				});
 			}
 
 			visit(child, x, y);
 		}
-	}
+	};
 
 	visit(cell, 0, 0);
 
@@ -127,65 +135,49 @@ Editor.getElectricConnectionPointCells = function(cell)
 
 Editor.getElectricConnectionPointsForCell = function(cell)
 {
-	if (cell == null || cell.geometry == null ||
-		cell.geometry.width == null || cell.geometry.height == null ||
-		cell.geometry.width == 0 || cell.geometry.height == 0)
+	var geo = (cell != null) ? cell.geometry : null;
+
+	if (geo == null || geo.width == null || geo.height == null ||
+		Number(geo.width) == 0 || Number(geo.height) == 0)
 	{
 		return [];
 	}
 
+	var width = Number(geo.width);
+	var height = Number(geo.height);
 	var terminals = Editor.getElectricConnectionPointCells(cell);
 	var points = [];
 	var seen = {};
 
+	function round(value)
+	{
+		return Math.round(value * 1000) / 1000;
+	};
+
 	for (var i = 0; i < terminals.length; i++)
 	{
-		var geo = terminals[i].cell.geometry;
-		var x = (terminals[i].x + geo.width / 2) / cell.geometry.width;
-		var y = (terminals[i].y + geo.height / 2) / cell.geometry.height;
+		var terminalGeo = terminals[i].cell.geometry;
+		var x = (terminals[i].x + Number(terminalGeo.width) / 2) / width;
+		var y = (terminals[i].y + Number(terminalGeo.height) / 2) / height;
 
 		if (isFinite(x) && isFinite(y))
 		{
-			x = Math.max(0, Math.min(1, Math.round(x * 1000) / 1000));
-			y = Math.max(0, Math.min(1, Math.round(y * 1000) / 1000));
-
-			var topDistance = y;
-			var bottomDistance = 1 - y;
-			var leftDistance = x;
-			var rightDistance = 1 - x;
-			var minDistance = Math.min(topDistance, bottomDistance,
-				leftDistance, rightDistance);
-
-			if (minDistance == topDistance)
-			{
-				y = 0;
-			}
-			else if (minDistance == bottomDistance)
-			{
-				y = 1;
-			}
-			else if (minDistance == leftDistance)
-			{
-				x = 0;
-			}
-			else
-			{
-				x = 1;
-			}
+			x = round(Math.max(0, Math.min(1, x)));
+			y = round(Math.max(0, Math.min(1, y)));
 
 			var key = x + ',' + y;
 
 			if (seen[key] == null)
 			{
 				seen[key] = true;
-				points.push([x, y, 1]);
+				points.push([x, y, 0]);
 			}
 		}
 	}
 
 	points.sort(function(a, b)
 	{
-		return a[1] - b[1] || a[0] - b[0];
+		return (a[1] == b[1]) ? a[0] - b[0] : a[1] - b[1];
 	});
 
 	return points;
@@ -193,18 +185,12 @@ Editor.getElectricConnectionPointsForCell = function(cell)
 
 Editor.applyElectricConnectionPoints = function(cell)
 {
-	if (cell == null)
-	{
-		return [];
-	}
-
 	var points = Editor.getElectricConnectionPointsForCell(cell);
-
-	Editor.setElectricStyleValue(cell, 'points', JSON.stringify(points));
-	Editor.setElectricStyleValue(cell, 'outlineConnect', '0');
 
 	if (points.length > 0)
 	{
+		Editor.setElectricStyleValue(cell, 'points', JSON.stringify(points));
+		Editor.setElectricStyleValue(cell, 'outlineConnect', '0');
 		Editor.setElectricStyleValue(cell, 'connectable', '1');
 
 		if (cell.setConnectable != null)
@@ -422,179 +408,6 @@ Editor.getElectricDeviceRootForCell = function(graph, cell)
 	return result;
 };
 
-if (typeof Graph != 'undefined' && Graph.prototype != null &&
-	Graph.prototype.isCellConnectable != null)
-{
-	(function()
-	{
-		var graphIsCellConnectable = Graph.prototype.isCellConnectable;
-
-		Graph.prototype.isCellConnectable = function(cell)
-		{
-			var result = graphIsCellConnectable.apply(this, arguments);
-
-			if (!result && cell != null &&
-				Editor.isElectricDeviceCell(this, cell) &&
-				Editor.getElectricConnectionPointsForCell(cell).length > 0)
-			{
-				result = true;
-			}
-
-			return result;
-		};
-	})();
-}
-
-if (typeof Graph != 'undefined' && Graph.prototype != null &&
-	Graph.prototype.getAllConnectionConstraints != null)
-{
-	(function()
-	{
-		var graphGetAllConnectionConstraints =
-			Graph.prototype.getAllConnectionConstraints;
-
-		Graph.prototype.getAllConnectionConstraints = function(terminal, source)
-		{
-			var result = graphGetAllConnectionConstraints.apply(this, arguments);
-
-			if (terminal != null && terminal.cell != null &&
-				Editor.isElectricDeviceCell(this, terminal.cell))
-			{
-				var points = Editor.getElectricConnectionPointsForCell(terminal.cell);
-
-				if (points.length > 0)
-				{
-					result = [];
-
-					for (var i = 0; i < points.length; i++)
-					{
-						result.push(new mxConnectionConstraint(
-							new mxPoint(points[i][0], points[i][1]), true));
-					}
-				}
-				else
-				{
-					result = [];
-				}
-			}
-
-			return result;
-		};
-	})();
-}
-
-Editor.getElectricSelectedConnectionFocusCell = function(graph)
-{
-	if (!Editor.isElectricTheme() || graph == null ||
-		typeof graph.getSelectionCells != 'function')
-	{
-		return null;
-	}
-
-	var cells = graph.getSelectionCells();
-
-	if (cells == null || cells.length != 1)
-	{
-		return null;
-	}
-
-	var cell = cells[0];
-
-	if (Editor.isElectricDeviceCell(graph, cell) &&
-		Editor.getElectricConnectionPointsForCell(cell).length > 0)
-	{
-		return cell;
-	}
-
-	return null;
-};
-
-Editor.updateElectricConnectionFocus = function(graph)
-{
-	var ch = (graph != null && graph.connectionHandler != null) ?
-		graph.connectionHandler.constraintHandler : null;
-
-	if (ch == null)
-	{
-		return;
-	}
-
-	var cell = Editor.getElectricSelectedConnectionFocusCell(graph);
-
-	if (cell != null && graph.view != null)
-	{
-		var state = graph.view.getState(cell);
-
-		if (state != null)
-		{
-			ch.electricSelectedFocus = true;
-			ch.electricSelectedFocusCell = cell;
-			ch.setFocus(null, state, false);
-
-			if (ch.redraw != null)
-			{
-				ch.redraw();
-			}
-
-			return;
-		}
-	}
-
-	if (ch.electricSelectedFocus)
-	{
-		ch.electricSelectedFocus = false;
-		ch.electricSelectedFocusCell = null;
-		ch.currentFocus = null;
-		ch.constraints = null;
-		ch.destroyIcons();
-		ch.destroyFocusHighlight();
-	}
-};
-
-Editor.installElectricConnectionFocus = function(graph)
-{
-	var ch = (graph != null && graph.connectionHandler != null) ?
-		graph.connectionHandler.constraintHandler : null;
-
-	if (graph == null || ch == null || graph.electricConnectionFocusInstalled)
-	{
-		return;
-	}
-
-	var isStateIgnored = ch.isStateIgnored;
-
-	ch.isStateIgnored = function(state, source)
-	{
-		if (Editor.isElectricTheme() && source && state != null &&
-			graph.isCellSelected(state.cell) &&
-			Editor.isElectricDeviceCell(graph, state.cell) &&
-			Editor.getElectricConnectionPointsForCell(state.cell).length > 0)
-		{
-			return false;
-		}
-
-		return isStateIgnored.apply(this, arguments);
-	};
-
-	var refresh = function()
-	{
-		window.setTimeout(function()
-		{
-			Editor.updateElectricConnectionFocus(graph);
-		}, 0);
-	};
-
-	graph.getSelectionModel().addListener(mxEvent.CHANGE, refresh);
-	graph.getModel().addListener(mxEvent.CHANGE, refresh);
-	graph.getView().addListener(mxEvent.SCALE, refresh);
-	graph.getView().addListener(mxEvent.TRANSLATE, refresh);
-	graph.getView().addListener(mxEvent.SCALE_AND_TRANSLATE, refresh);
-	graph.addListener(mxEvent.ROOT, refresh);
-	graph.electricConnectionFocusInstalled = true;
-
-	refresh();
-};
-
 Editor.isElectricDeviceCellAccessible = function(graph, cell)
 {
 	var device = Editor.getElectricDeviceRootForCell(graph, cell);
@@ -605,24 +418,6 @@ Editor.isElectricDeviceCellAccessible = function(graph, cell)
 
 Editor.resolveElectricDeviceCellForInteraction = function(graph, cell)
 {
-	var device = Editor.getElectricDeviceRootForCell(graph, cell);
-
-	if (device != null && cell != device &&
-		!Editor.isElectricDeviceCellAccessible(graph, cell))
-	{
-		return device;
-	}
-
-	return cell;
-};
-
-Editor.getElectricDeviceConnectionRootForCell = function(graph, cell)
-{
-	if (!Editor.isElectricTheme() || graph == null || cell == null)
-	{
-		return cell;
-	}
-
 	var device = Editor.getElectricDeviceRootForCell(graph, cell);
 
 	if (device != null && cell != device &&
@@ -1239,13 +1034,10 @@ SetElectricPageMode.prototype.execute = function()
 			return;
 		}
 
-		Editor.installElectricConnectionFocus(this.editor.graph);
-
 		this.electricModeRefreshHandler = mxUtils.bind(this, function()
 		{
 			this.updateElectricModePanel();
 			this.updateElectricLeftPanelState();
-			Editor.updateElectricConnectionFocus(this.editor.graph);
 		});
 
 		this.electricShapesPanelHandler = mxUtils.bind(this, function()
@@ -1355,49 +1147,6 @@ SetElectricPageMode.prototype.execute = function()
 		}
 
 		return dblClick.apply(this, arguments);
-	};
-})();
-
-(function()
-{
-	if (typeof mxConstraintHandler == 'undefined' ||
-		typeof mxCellMarker == 'undefined')
-	{
-		return;
-	}
-
-	var constraintGetCellForEvent =
-		mxConstraintHandler.prototype.getCellForEvent;
-	var markerGetStateToMark = mxCellMarker.prototype.getStateToMark;
-
-	mxConstraintHandler.prototype.getCellForEvent = function(me, point)
-	{
-		var cell = constraintGetCellForEvent.apply(this, arguments);
-
-		if (this.graph != null)
-		{
-			cell = Editor.getElectricDeviceConnectionRootForCell(this.graph, cell);
-		}
-
-		return cell;
-	};
-
-	mxCellMarker.prototype.getStateToMark = function(state)
-	{
-		state = markerGetStateToMark.apply(this, arguments);
-
-		if (state != null && this.graph != null)
-		{
-			var cell = Editor.getElectricDeviceConnectionRootForCell(
-				this.graph, state.cell);
-
-			if (cell != state.cell)
-			{
-				state = this.graph.view.getState(cell) || state;
-			}
-		}
-
-		return state;
 	};
 })();
 

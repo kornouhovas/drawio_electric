@@ -253,6 +253,8 @@
 		var model = new mxGraphModel();
 		codec.decode(doc.documentElement, model);
 
+		Editor.markElectricShapeCells(model.root.getChildAt(0).children, entry);
+
 		var cells = graph.cloneCells(model.root.getChildAt(0).children);
 		Editor.removeElectricTerminalCanvasLabels(cells, entry);
 		Editor.markElectricShapeCells(cells, entry);
