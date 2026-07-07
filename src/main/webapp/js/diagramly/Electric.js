@@ -616,6 +616,24 @@ Editor.resolveElectricDeviceCellForInteraction = function(graph, cell)
 	return cell;
 };
 
+Editor.getElectricDeviceConnectionRootForCell = function(graph, cell)
+{
+	if (!Editor.isElectricTheme() || graph == null || cell == null)
+	{
+		return cell;
+	}
+
+	var device = Editor.getElectricDeviceRootForCell(graph, cell);
+
+	if (device != null && cell != device &&
+		!Editor.isElectricDeviceCellAccessible(graph, cell))
+	{
+		return device;
+	}
+
+	return cell;
+};
+
 Editor.openElectricDeviceForEditing = function(graph, cell)
 {
 	var device = Editor.getElectricDeviceRootForCell(graph, cell);
@@ -1337,6 +1355,49 @@ SetElectricPageMode.prototype.execute = function()
 		}
 
 		return dblClick.apply(this, arguments);
+	};
+})();
+
+(function()
+{
+	if (typeof mxConstraintHandler == 'undefined' ||
+		typeof mxCellMarker == 'undefined')
+	{
+		return;
+	}
+
+	var constraintGetCellForEvent =
+		mxConstraintHandler.prototype.getCellForEvent;
+	var markerGetStateToMark = mxCellMarker.prototype.getStateToMark;
+
+	mxConstraintHandler.prototype.getCellForEvent = function(me, point)
+	{
+		var cell = constraintGetCellForEvent.apply(this, arguments);
+
+		if (this.graph != null)
+		{
+			cell = Editor.getElectricDeviceConnectionRootForCell(this.graph, cell);
+		}
+
+		return cell;
+	};
+
+	mxCellMarker.prototype.getStateToMark = function(state)
+	{
+		state = markerGetStateToMark.apply(this, arguments);
+
+		if (state != null && this.graph != null)
+		{
+			var cell = Editor.getElectricDeviceConnectionRootForCell(
+				this.graph, state.cell);
+
+			if (cell != state.cell)
+			{
+				state = this.graph.view.getState(cell) || state;
+			}
+		}
+
+		return state;
 	};
 })();
 

@@ -173,3 +173,9 @@ assert(/isStateIgnored/.test(electricJs),
 	'Electric.js must override constraint state ignoring for selected Electric devices');
 assert(/setFocus\(null,\s*state,\s*false\)/.test(electricJs),
 	'Electric.js must show native connection handles for the selected Electric device state');
+assert(/getElectricDeviceConnectionRootForCell/.test(electricJs),
+	'Electric.js must resolve internal Electric connection cells to their device root');
+assert(/mxConstraintHandler\.prototype\.getCellForEvent/.test(electricJs),
+	'Electric.js must prevent constraint focus from targeting internal Electric terminals');
+assert(/mxCellMarker\.prototype\.getStateToMark/.test(electricJs),
+	'Electric.js must prevent connection marker highlight from targeting internal Electric terminals');
