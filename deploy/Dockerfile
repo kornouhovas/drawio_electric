@@ -28,5 +28,7 @@ FROM jgraph/drawio@sha256:b0791d8f4cd4e50600ad2ff4e0c5ea51bc7adb59c782da50214db0
 USER root
 RUN rm -rf /usr/local/tomcat/webapps/draw /usr/local/tomcat/webapps/draw.war
 COPY --chown=tomcat:tomcat --from=builder /workspace/src/main/webapp/ /usr/local/tomcat/webapps/draw/
-COPY --chown=tomcat:tomcat deploy/PreConfig.js /usr/local/tomcat/webapps/draw/js/PreConfig.js
+COPY --chown=tomcat:tomcat deploy/PreConfig.js /opt/drawio-electric/PreConfig.js
+COPY --chmod=0755 --chown=tomcat:tomcat deploy/electric-start.sh /usr/local/bin/electric-start.sh
 USER tomcat
+CMD ["/usr/local/bin/electric-start.sh", "catalina.sh", "run"]

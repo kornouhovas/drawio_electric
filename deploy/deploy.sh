@@ -56,7 +56,10 @@ docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
 wait_for_health drawio-electric-export
 wait_for_health drawio-electric
 
+docker exec drawio-electric grep -q 'drawio-electric-theme-v1' \
+    /usr/local/tomcat/webapps/draw/js/PreConfig.js
 curl -fsS "$PUBLIC_URL" -o /dev/null
+curl -fsS "$PUBLIC_URL/js/PreConfig.js" | grep -q 'drawio-electric-theme-v1'
 curl -fsS "$REGRESSION_URL" -o /dev/null
 
 if [ "${PRUNE_AFTER_DEPLOY:-0}" = 1 ]; then
