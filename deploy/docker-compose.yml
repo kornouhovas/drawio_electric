@@ -3,6 +3,8 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
+      args:
+        ELECTRIC_ASSET_VERSION: ${DRAWIO_ELECTRIC_TAG:-local}
     image: drawio-electric:${DRAWIO_ELECTRIC_TAG:-local}
     container_name: drawio-electric
     restart: unless-stopped

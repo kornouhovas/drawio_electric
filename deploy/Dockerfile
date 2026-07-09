@@ -8,6 +8,10 @@ RUN apt-get update \
 COPY . .
 RUN node --check src/main/webapp/js/diagramly/Electric.js \
     && node --check src/main/webapp/js/diagramly/ElectricShapes.js \
+    && node --check src/main/webapp/js/diagramly/App.js \
+    && node --check src/main/webapp/js/diagramly/Menus.js \
+    && node --check src/main/webapp/js/bootstrap.js \
+    && node --check deploy/PreConfig.js \
     && node --test test/electric-*.test.js \
     && python3 tools/electric_shapes/verify_electric_shapes.py src/main/webapp/electric/shapes \
     && python3 tools/electric_shapes/generate_electric_shapes.py \
@@ -23,12 +27,25 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 COPY . .
 RUN cd etc/build && ant -f build.xml war
+RUN find src/main/webapp/stencils src/main/webapp/electric/shapes/items \
+        -type f -name '*.xml' -size +1024c -exec gzip -9 -k -f {} + \
+    && find src/main/webapp/js src/main/webapp/styles \
+        -type f \( -name '*.js' -o -name '*.css' \) -size +1024c \
+        -exec gzip -9 -k -f {} +
 
 FROM jgraph/drawio@sha256:b0791d8f4cd4e50600ad2ff4e0c5ea51bc7adb59c782da50214db0511db03106
+ARG ELECTRIC_ASSET_VERSION=local
 USER root
-RUN rm -rf /usr/local/tomcat/webapps/draw /usr/local/tomcat/webapps/draw.war
+RUN rm -rf /usr/local/tomcat/webapps/draw /usr/local/tomcat/webapps/draw.war \
+    && sed -i '/<load-on-startup>1<\/load-on-startup>/i\
+        <init-param>\
+            <param-name>precompressed</param-name>\
+            <param-value>gzip=.gz</param-value>\
+        </init-param>' /usr/local/tomcat/conf/web.xml
 COPY --chown=tomcat:tomcat --from=builder /workspace/src/main/webapp/ /usr/local/tomcat/webapps/draw/
 COPY --chown=tomcat:tomcat deploy/PreConfig.js /opt/drawio-electric/PreConfig.js
+RUN sed -i "s/@ELECTRIC_ASSET_VERSION@/${ELECTRIC_ASSET_VERSION}/g" \
+        /opt/drawio-electric/PreConfig.js
 COPY --chmod=0755 --chown=tomcat:tomcat deploy/electric-start.sh /usr/local/bin/electric-start.sh
 USER tomcat
 CMD ["/usr/local/bin/electric-start.sh", "catalina.sh", "run"]

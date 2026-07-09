@@ -298,7 +298,10 @@ else
         
         function loadAppJS()
         {
-            mxscript('js/app.min.js', function()
+			var appUrl = (typeof window.DRAWIO_ASSET_URL === 'function') ?
+				window.DRAWIO_ASSET_URL('js/app.min.js') : 'js/app.min.js';
+
+			mxscript(appUrl, function()
             {
                 mxScriptsLoaded = true;
                 checkAllLoaded();
@@ -351,5 +354,4 @@ window.onerror = function()
         status.innerHTML = 'Page could not be loaded. Please try refreshing.';
     }
 };
-
 

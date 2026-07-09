@@ -10001,7 +10001,7 @@
 			if (!this.doImportVisio && !this.loadingExtensions && !this.isOffline(true))
 			{
 				this.loadingExtensions = true;
-				mxscript(window.DRAWIO_SERVER_URL + 'js/extensions.min.js', delayed, null, null, null, handleError);
+				mxscript(App.getAssetUrl(window.DRAWIO_SERVER_URL + 'js/extensions.min.js'), delayed, null, null, null, handleError);
 			}
 			else
 			{
@@ -10066,7 +10066,7 @@
 			if (!this.doImportGraphML && !this.loadingExtensions && !this.isOffline(true))
 			{
 				this.loadingExtensions = true;
-				mxscript(window.DRAWIO_SERVER_URL + 'js/extensions.min.js', delayed, null, null, null, handleError);
+				mxscript(App.getAssetUrl(window.DRAWIO_SERVER_URL + 'js/extensions.min.js'), delayed, null, null, null, handleError);
 			}
 			else
 			{
@@ -10137,7 +10137,7 @@
 				if (typeof VsdxExport === 'undefined' && !this.loadingExtensions && !this.isOffline(true))
 				{
 					this.loadingExtensions = true;
-					mxscript(window.DRAWIO_SERVER_URL + 'js/extensions.min.js', delayed, null, null, null, handleError);
+					mxscript(App.getAssetUrl(window.DRAWIO_SERVER_URL + 'js/extensions.min.js'), delayed, null, null, null, handleError);
 				}
 				else
 				{
@@ -10268,7 +10268,7 @@
 				}
 				else
 				{
-					mxscript(window.DRAWIO_SERVER_URL + 'js/extensions.min.js', delayed,
+					mxscript(App.getAssetUrl(window.DRAWIO_SERVER_URL + 'js/extensions.min.js'), delayed,
 						null, null, null, handleError);
 				}
 			}
@@ -10809,7 +10809,7 @@
 			}
 			else
 			{
-				mxscript(window.DRAWIO_SERVER_URL + 'js/extensions.min.js',
+				mxscript(App.getAssetUrl(window.DRAWIO_SERVER_URL + 'js/extensions.min.js'),
 					onsuccess, null, null, null, onerror);
 			}
 		}
@@ -11656,7 +11656,7 @@
 		if (typeof JSZip === 'undefined' && !this.loadingExtensions && !this.isOffline(true))
 		{
 			this.loadingExtensions = true;
-			mxscript(window.DRAWIO_SERVER_URL + 'js/extensions.min.js', delayed,
+			mxscript(App.getAssetUrl(window.DRAWIO_SERVER_URL + 'js/extensions.min.js'), delayed,
 				null, null, null, onerror);
 		}
 		else

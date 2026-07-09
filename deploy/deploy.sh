@@ -40,8 +40,17 @@ wait_for_health()
 trap cleanup EXIT INT TERM
 cd "$ROOT"
 
+if [ "$(id -u)" -eq 0 ] && [ -d /etc/sysctl.d ]; then
+    install -m 0644 deploy/99-caddy-quic.conf /etc/sysctl.d/99-caddy-quic.conf
+    sysctl -p /etc/sysctl.d/99-caddy-quic.conf
+fi
+
 node --check src/main/webapp/js/diagramly/Electric.js
 node --check src/main/webapp/js/diagramly/ElectricShapes.js
+node --check src/main/webapp/js/diagramly/App.js
+node --check src/main/webapp/js/diagramly/Menus.js
+node --check src/main/webapp/js/bootstrap.js
+node --check deploy/PreConfig.js
 node --test test/electric-*.test.js
 python3 tools/electric_shapes/verify_electric_shapes.py src/main/webapp/electric/shapes
 python3 tools/electric_shapes/generate_electric_shapes.py \
@@ -60,6 +69,11 @@ docker exec drawio-electric grep -q 'drawio-electric-theme-v1' \
     /usr/local/tomcat/webapps/draw/js/PreConfig.js
 curl -fsS "$PUBLIC_URL" -o /dev/null
 curl -fsS "$PUBLIC_URL/js/PreConfig.js" | grep -q 'drawio-electric-theme-v1'
+curl -fsSI -H 'Accept-Encoding: gzip' \
+    "$PUBLIC_URL/js/app.min.js?v=$DRAWIO_ELECTRIC_TAG" | \
+    grep -qi '^content-encoding: gzip'
+curl -fsSI "$PUBLIC_URL/js/app.min.js?v=$DRAWIO_ELECTRIC_TAG" | \
+    grep -qi '^cache-control: public, max-age=31536000, immutable'
 curl -fsS "$REGRESSION_URL" -o /dev/null
 
 if [ "${PRUNE_AFTER_DEPLOY:-0}" = 1 ]; then

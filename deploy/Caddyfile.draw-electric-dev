@@ -17,7 +17,16 @@ draw-electric-dev.109.235.118.132.nip.io {
     @electricCatalog path /electric/shapes/manifest.json /electric/shapes/catalog.js
     header @electricCatalog Cache-Control "no-cache"
 
-    @applicationAssets path /js/* /styles/*
+    @versionedApplicationAssets {
+        path /js/* /styles/* /stencils/* /shapes/* /math4/* /resources/*
+        query v=*
+    }
+    header @versionedApplicationAssets Cache-Control "public, max-age=31536000, immutable"
+
+    @applicationAssets {
+        path /js/* /styles/* /stencils/* /shapes/* /math4/* /resources/*
+        not query v=*
+    }
     header @applicationAssets Cache-Control "public, max-age=0, must-revalidate"
 
     reverse_proxy drawio-electric:8080

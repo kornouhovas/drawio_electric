@@ -12,6 +12,65 @@ Editor.isElectricTheme = function(theme)
 	return theme == 'electric';
 };
 
+Editor.ensureElectricMath = function()
+{
+	if (Editor.isElectricTheme() && typeof window.MathJax === 'undefined')
+	{
+		Editor.initMath(App.getAssetUrl(DRAW_MATH_URL + '/startup.js'));
+	}
+};
+
+(function()
+{
+	if (Editor.prototype == null || typeof EditorUi === 'undefined' ||
+		EditorUi.prototype == null || typeof mxStencilRegistry === 'undefined')
+	{
+		return;
+	}
+
+	var setGraphXml = Editor.prototype.setGraphXml;
+	var setMathEnabled = EditorUi.prototype.setMathEnabled;
+	var loadStencil = mxStencilRegistry.loadStencil;
+
+	Editor.prototype.setGraphXml = function()
+	{
+		var result = setGraphXml.apply(this, arguments);
+
+		if (Editor.isElectricTheme() && this.graph.mathEnabled)
+		{
+			Editor.ensureElectricMath();
+
+			if (Editor.MathJaxRender != null)
+			{
+				Editor.MathJaxRender(this.graph.container);
+			}
+		}
+
+		return result;
+	};
+
+	EditorUi.prototype.setMathEnabled = function(value)
+	{
+		if (Editor.isElectricTheme() && value)
+		{
+			Editor.ensureElectricMath();
+		}
+
+		return setMathEnabled.apply(this, arguments);
+	};
+
+	mxStencilRegistry.loadStencil = function(filename, fn)
+	{
+		if (Editor.isElectricTheme() &&
+			typeof window.DRAWIO_ASSET_URL === 'function')
+		{
+			filename = window.DRAWIO_ASSET_URL(filename);
+		}
+
+		return loadStencil.apply(this, [filename, fn]);
+	};
+})();
+
 Editor.electricModeAttribute = 'electricMode';
 Editor.defaultElectricMode = 'general';
 Editor.electricLeftPanelTransitionDelay = 0.16;

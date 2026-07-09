@@ -600,10 +600,15 @@
 			}
 		}, null, null, null, navigator.onLine && urlParams['stealth'] != '1' && urlParams['lockdown'] != '1');
 
-		if (typeof(MathJax) !== 'undefined')
+		if (typeof(MathJax) !== 'undefined' || window.ELECTRIC_LAZY_MATH)
 		{
 			var action = editorUi.actions.addAction('mathematicalTypesetting', function()
 			{
+				if (!editorUi.isMathEnabled())
+				{
+					Editor.ensureElectricMath();
+				}
+
 				var change = new ChangePageSetup(editorUi);
 				change.ignoreColor = true;
 				change.ignoreImage = true;
@@ -5033,7 +5038,7 @@
 				
 				menu.addSeparator(parent);
 
-				if (typeof(MathJax) !== 'undefined')
+				if (typeof(MathJax) !== 'undefined' || window.ELECTRIC_LAZY_MATH)
 				{
 					var item = this.addMenuItem(menu, 'mathematicalTypesetting', parent);
 					
