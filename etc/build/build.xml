@@ -553,6 +553,7 @@ OUTPUT FILES (in src/main/webapp/js/):
 				<file name="P2PCollab.js" />
 				<file name="Simple.js" />
 				<file name="Electric.js" />
+				<file name="../../electric/shapes/catalog.js" />
 				<file name="ElectricShapes.js" />
 			</sources>
 		</jscomp>
@@ -617,6 +618,7 @@ OUTPUT FILES (in src/main/webapp/js/):
 			<sources dir="${war.dir}/js/diagramly">
 				<file name="Simple.js" />
 				<file name="Electric.js" />
+				<file name="../../electric/shapes/catalog.js" />
 				<file name="ElectricShapes.js" />
 			</sources>
 		</jscomp>

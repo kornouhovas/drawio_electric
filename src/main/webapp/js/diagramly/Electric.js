@@ -23,22 +23,28 @@ Editor.createElectricModeIcon = function(svg)
 };
 
 Editor.electricModes = [
-	{
-		id: 'general',
-		label: 'Общая',
-		title: 'Общий режим',
+		{
+			id: 'general',
+			label: 'Общая',
+			title: 'Общий режим',
+			labelKey: 'electricGeneralMode',
+			titleKey: 'electricGeneralModeTitle',
 		icon: Editor.createElectricModeIcon('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="1.5"/><path d="M8 8h8"/><path d="M8 12h5"/><path d="M8 16h7"/></svg>')
 	},
 	{
 		id: 'cabinetLayout',
-		label: 'Шкафы',
-		title: 'Компоновка шкафов',
+			label: 'Шкафы',
+			title: 'Компоновка шкафов',
+			labelKey: 'electricCabinetMode',
+			titleKey: 'electricCabinetModeTitle',
 		icon: Editor.createElectricModeIcon('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 7h8"/><path d="M8 12h8"/><path d="M8 17h8"/><rect x="8" y="8.5" width="2.5" height="2" rx=".4"/><rect x="11" y="8.5" width="2.5" height="2" rx=".4"/><rect x="14" y="8.5" width="2" height="2" rx=".4"/><rect x="8" y="13.5" width="3" height="2" rx=".4"/><rect x="12" y="13.5" width="4" height="2" rx=".4"/></svg>')
 	},
 	{
 		id: 'projectSchematics',
-		label: 'Схемы',
-		title: 'Проектные схемы',
+			label: 'Схемы',
+			title: 'Проектные схемы',
+			labelKey: 'electricSchematicsMode',
+			titleKey: 'electricSchematicsModeTitle',
 		icon: Editor.createElectricModeIcon('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="5" height="4" rx="1"/><rect x="15.5" y="4" width="5" height="4" rx="1"/><rect x="9.5" y="16" width="5" height="4" rx="1"/><path d="M8.5 6h7"/><path d="M6 8v3.5c0 .8.7 1.5 1.5 1.5H12v3"/><path d="M18 8v3.5c0 .8-.7 1.5-1.5 1.5H12"/></svg>')
 	}
 ];
@@ -63,6 +69,22 @@ Editor.addElectricStyleValue = function(cell, key, value)
 	}
 };
 
+Editor.isElectricConnectableDeviceShapeId = function(shapeId)
+{
+	return shapeId != null &&
+		(String(shapeId).indexOf("electric-ekf-breakers-") == 0 ||
+		String(shapeId).indexOf("electric-ekf-rcbo-") == 0 ||
+		String(shapeId).indexOf("electric-wb-") == 0);
+};
+
+Editor.isElectricConnectableDeviceEntry = function(entry)
+{
+	return entry != null &&
+		(entry.kind == "breaker" || entry.kind == "rcbo" ||
+		entry.kind == "wb" ||
+		Editor.isElectricConnectableDeviceShapeId(entry.id));
+};
+
 Editor.markElectricShapeCells = function(cells, entry)
 {
 	if (cells == null)
@@ -73,6 +95,12 @@ Editor.markElectricShapeCells = function(cells, entry)
 	for (var i = 0; i < cells.length; i++)
 	{
 		Editor.addElectricStyleValue(cells[i], 'electricDevice', '1');
+
+		if (Editor.isElectricConnectableDeviceEntry(entry) &&
+			cells[i].setConnectable != null)
+		{
+			cells[i].setConnectable(true);
+		}
 
 		if (entry != null && entry.id != null)
 		{
@@ -225,6 +253,9 @@ Editor.hasElectricDeviceSignature = function(graph, cell)
 	return matches > 0;
 };
 
+Editor.electricDeviceRecognitionCache = (typeof WeakMap != 'undefined') ?
+	new WeakMap() : null;
+
 Editor.isElectricDeviceCell = function(graph, cell)
 {
 	var model = (graph != null) ? graph.getModel() : null;
@@ -242,7 +273,20 @@ Editor.isElectricDeviceCell = function(graph, cell)
 		return true;
 	}
 
-	return Editor.hasElectricDeviceSignature(graph, cell);
+	if (Editor.electricDeviceRecognitionCache != null &&
+		Editor.electricDeviceRecognitionCache.has(cell))
+	{
+		return Editor.electricDeviceRecognitionCache.get(cell);
+	}
+
+	var result = Editor.hasElectricDeviceSignature(graph, cell);
+
+	if (Editor.electricDeviceRecognitionCache != null)
+	{
+		Editor.electricDeviceRecognitionCache.set(cell, result);
+	}
+
+	return result;
 };
 
 Editor.getElectricDeviceRootForCell = function(graph, cell)
@@ -440,13 +484,14 @@ SetElectricPageMode.prototype.execute = function()
 		}
 
 		var style = document.createElement('style');
+		var transition = Editor.electricLeftPanelTransitionDelay + 's';
 		style.setAttribute('id', 'geElectricModeStyles');
 		style.setAttribute('type', 'text/css');
 		style.appendChild(document.createTextNode(
 			'.geEditor.geElectricModes{grid-template-columns:min-content min-content min-content 1fr min-content;}' +
-			'.geEditor.geElectricModes>.geElectricModePanel{grid-column:1;grid-row:3;box-sizing:border-box;width:40px;min-width:0;min-height:0;border-right:1px solid light-dark(var(--border-color),var(--dark-border-color));background:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 3px;overflow:hidden;z-index:3;transition:width .16s ease-in-out,padding .16s ease-in-out,border-color .16s ease-in-out;}' +
-			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer){grid-column:2;min-width:0!important;transition:width .16s ease-in-out;}' +
-			'.geEditor.geElectricModes>.geHsplit{grid-column:3;transition:opacity .16s ease-in-out;}' +
+			'.geEditor.geElectricModes>.geElectricModePanel{grid-column:1;grid-row:3;box-sizing:border-box;width:40px;min-width:0;min-height:0;border-right:1px solid light-dark(var(--border-color),var(--dark-border-color));background:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 3px;overflow:hidden;z-index:3;transition:width ' + transition + ' ease-in-out,padding ' + transition + ' ease-in-out,border-color ' + transition + ' ease-in-out;}' +
+			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer){grid-column:2;min-width:0!important;transition:width ' + transition + ' ease-in-out;}' +
+			'.geEditor.geElectricModes>.geHsplit{grid-column:3;transition:opacity ' + transition + ' ease-in-out;}' +
 			'.geEditor.geElectricModes>.geDiagramContainer{grid-column:4;}' +
 			'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer{grid-column:5;}' +
 			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geElectricModePanel{width:0!important;padding-left:0!important;padding-right:0!important;border-right-width:0!important;pointer-events:none;}' +
@@ -687,19 +732,6 @@ SetElectricPageMode.prototype.execute = function()
 			Editor.electricLeftPanelTransitionDelay :
 			((Editor.transitionDelay != null) ? Editor.transitionDelay : 0.1)) * 1000;
 		var end = Date.now() + delay + 80;
-		var hasRuler = this.diagramContainer != null &&
-			this.diagramContainer.getElementsByClassName('geRuler').length > 0;
-
-		if (!hasRuler)
-		{
-			window.setTimeout(mxUtils.bind(this, function()
-			{
-				this.refresh(true);
-			}), delay + 20);
-
-			return;
-		}
-
 		if (this.electricLeftPanelRefreshRunning)
 		{
 			return;
@@ -715,7 +747,11 @@ SetElectricPageMode.prototype.execute = function()
 				return;
 			}
 
-			this.refresh(true);
+			if (this.editor != null && this.editor.graph != null &&
+				this.editor.graph.sizeDidChange != null)
+			{
+				this.editor.graph.sizeDidChange();
+			}
 
 			if (Date.now() < end)
 			{
@@ -724,6 +760,7 @@ SetElectricPageMode.prototype.execute = function()
 			else
 			{
 				this.electricLeftPanelRefreshRunning = false;
+				this.refresh(true);
 			}
 		});
 
@@ -751,8 +788,9 @@ SetElectricPageMode.prototype.execute = function()
 
 		if (this.electricToolbarViewButton != null)
 		{
-			var title = (collapsed) ? 'Показать левую панель' :
-				'Скрыть левую панель';
+			var title = (collapsed) ?
+				(mxResources.get('showElectricLeftPanel') || 'Show left panel') :
+				(mxResources.get('hideElectricLeftPanel') || 'Hide left panel');
 			this.electricToolbarViewButton.setAttribute('title', title);
 			this.electricToolbarViewButton.setAttribute('aria-label', title);
 			this.electricToolbarViewButton.setAttribute('aria-expanded',
@@ -763,9 +801,10 @@ SetElectricPageMode.prototype.execute = function()
 	EditorUi.prototype.createElectricModeButton = function(mode)
 	{
 		var button = document.createElement('button');
+		var title = mxResources.get(mode.titleKey) || mode.title;
 		button.setAttribute('type', 'button');
-		button.setAttribute('title', mode.title);
-		button.setAttribute('aria-label', mode.title);
+		button.setAttribute('title', title);
+		button.setAttribute('aria-label', title);
 		button.setAttribute('data-electric-mode', mode.id);
 		button.className = 'geElectricModeButton';
 
@@ -788,7 +827,8 @@ SetElectricPageMode.prototype.execute = function()
 		var panel = document.createElement('div');
 		panel.className = 'geElectricModePanel';
 		panel.setAttribute('role', 'navigation');
-		panel.setAttribute('aria-label', 'Electric modes');
+		panel.setAttribute('aria-label', mxResources.get('electricModes') ||
+			'Electric modes');
 
 		for (var i = 0; i < Editor.electricModes.length; i++)
 		{
@@ -936,6 +976,7 @@ SetElectricPageMode.prototype.execute = function()
 	}
 
 	var getEventState = Graph.prototype.getEventState;
+	var isCellConnectable = Graph.prototype.isCellConnectable;
 	var isCellSelectable = Graph.prototype.isCellSelectable;
 	var selectCellForEvent = Graph.prototype.selectCellForEvent;
 	var dblClick = Graph.prototype.dblClick;
@@ -956,6 +997,23 @@ SetElectricPageMode.prototype.execute = function()
 		}
 
 		return state;
+	};
+
+	Graph.prototype.isCellConnectable = function(cell)
+	{
+		if (Editor.isElectricTheme() && cell != null)
+		{
+			var style = this.getCellStyle(cell);
+			var shapeId = mxUtils.getValue(style, "electricShapeId", null);
+
+			if (Editor.isElectricConnectableDeviceShapeId(shapeId) &&
+				mxUtils.getValue(style, 'connectable', '1') != '0')
+			{
+				return true;
+			}
+		}
+
+		return isCellConnectable.apply(this, arguments);
 	};
 
 	Graph.prototype.isCellSelectable = function(cell)

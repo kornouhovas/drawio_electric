@@ -1,0 +1,57 @@
+name: Electric CI
+
+on:
+  push:
+    branches:
+      - dev
+      - "codex/**"
+  pull_request:
+    branches:
+      - dev
+
+permissions:
+  contents: read
+
+concurrency:
+  group: electric-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install Ant
+        run: sudo apt-get update && sudo apt-get install -y ant
+
+      - name: Verify Electric JavaScript
+        run: |
+          node --check src/main/webapp/js/diagramly/Electric.js
+          node --check src/main/webapp/js/diagramly/ElectricShapes.js
+          node --test test/electric-*.test.js
+
+      - name: Verify generated Electric catalog
+        run: |
+          python3 tools/electric_shapes/verify_electric_shapes.py src/main/webapp/electric/shapes
+          python3 tools/electric_shapes/generate_electric_shapes.py \
+            tools/electric_shapes/source/base.drawio.gz /tmp/electric-shapes
+          diff -qr src/main/webapp/electric/shapes /tmp/electric-shapes
+
+      - name: Validate Compose
+        run: docker compose -f deploy/docker-compose.yml config --quiet
+
+      - name: Build draw.io web application
+        working-directory: etc/build
+        run: ant -f build.xml war

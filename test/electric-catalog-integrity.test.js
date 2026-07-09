@@ -1,0 +1,37 @@
+const assert = require('assert');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+const zlib = require('zlib');
+
+const root = path.join(__dirname, '..');
+const shapesRoot = path.join(root, 'src/main/webapp/electric/shapes');
+const manifest = JSON.parse(fs.readFileSync(
+	path.join(shapesRoot, 'manifest.json'), 'utf8'));
+const catalogText = fs.readFileSync(path.join(shapesRoot, 'catalog.js'), 'utf8').trim();
+const prefix = 'Editor.electricShapeCatalog = ';
+
+assert(catalogText.startsWith(prefix) && catalogText.endsWith(';'),
+	'catalog.js must assign the embedded Electric catalog');
+assert.deepStrictEqual(JSON.parse(catalogText.slice(prefix.length, -1)), manifest,
+	'catalog.js and manifest.json must contain identical data');
+
+const sourcePath = path.join(root, manifest.source);
+const source = zlib.gunzipSync(fs.readFileSync(sourcePath));
+const sourceHash = crypto.createHash('sha256').update(source).digest('hex');
+
+assert.strictEqual(manifest.version, 2);
+assert.strictEqual(manifest.sourceSha256, sourceHash);
+assert.strictEqual(manifest.assetVersion, sourceHash.slice(0, 16));
+
+const items = manifest.libraries.flatMap((library) => library.items);
+const titles = new Set();
+
+for (const item of items)
+{
+	assert(!titles.has(item.title), `Duplicate Electric title: ${item.title}`);
+	titles.add(item.title);
+	assert(item.data['Производитель'], `Missing manufacturer: ${item.id}`);
+	assert(/^https:\/\//.test(item.sourceUrl), `Missing source URL: ${item.id}`);
+	assert(item.sourceKey, `Missing source key: ${item.id}`);
+}

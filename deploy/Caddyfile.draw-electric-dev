@@ -1,0 +1,24 @@
+draw-electric-dev.109.235.118.132.nip.io {
+    encode zstd gzip
+
+    header {
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://storage.googleapis.com https://apis.google.com https://docs.google.com https://code.jquery.com; connect-src 'self'; img-src * data: blob:; media-src * data: blob:; font-src 'self' data: about: https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; frame-src 'self' https://*.google.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'"
+        Permissions-Policy "camera=(), geolocation=(), microphone=()"
+        Referrer-Policy "same-origin"
+        X-Content-Type-Options "nosniff"
+    }
+
+    @versionedElectricShapes {
+        path /electric/shapes/items/* /electric/shapes/previews/*
+        query v=*
+    }
+    header @versionedElectricShapes Cache-Control "public, max-age=31536000, immutable"
+
+    @electricCatalog path /electric/shapes/manifest.json /electric/shapes/catalog.js
+    header @electricCatalog Cache-Control "no-cache"
+
+    @applicationAssets path /js/* /styles/*
+    header @applicationAssets Cache-Control "public, max-age=0, must-revalidate"
+
+    reverse_proxy drawio-electric:8080
+}

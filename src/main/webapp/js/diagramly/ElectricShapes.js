@@ -11,12 +11,15 @@
 	var initPalettes = Sidebar.prototype.initPalettes;
 	var createTooltip = Sidebar.prototype.createTooltip;
 	var createDropHandler = Sidebar.prototype.createDropHandler;
-	var createUi = EditorUi.prototype.createUi;
-	var destroy = EditorUi.prototype.destroy;
 
 	Editor.electricShapesPath = 'electric/shapes/';
-	Editor.electricShapeCatalog = null;
-	Editor.electricShapeOriginalCache = {};
+	Editor.electricShapeCatalog = Editor.electricShapeCatalog || null;
+	Editor.electricShapeEntryIndex = null;
+	Editor.electricShapeTemplateCache = {};
+	Editor.electricShapeTemplateOrder = [];
+	Editor.electricShapeTemplateCacheLimit = 24;
+	Editor.electricShapeLoadPromises = {};
+	Editor.electricLibraryPreviewCache = {};
 
 	Editor.getElectricShapesBaseUrl = function()
 	{
@@ -26,26 +29,38 @@
 		return base.replace(/\/$/, '') + '/' + Editor.electricShapesPath;
 	};
 
+	Editor.getElectricShapeAssetUrl = function(path)
+	{
+		var url = Editor.getElectricShapesBaseUrl() + path;
+		var version = (Editor.electricShapeCatalog != null) ?
+			Editor.electricShapeCatalog.assetVersion : null;
+
+		return url + ((version != null) ? '?v=' + encodeURIComponent(version) : '');
+	};
+
 	Editor.loadElectricTextResource = function(path)
 	{
-		var xhr = new XMLHttpRequest();
-		xhr.open('GET', Editor.getElectricShapesBaseUrl() + path, false);
-		xhr.send();
-
-		if (xhr.status >= 200 && xhr.status < 300)
+		return fetch(Editor.getElectricShapeAssetUrl(path), {
+			credentials: 'same-origin',
+			cache: 'force-cache'
+		}).then(function(response)
 		{
-			return xhr.responseText;
-		}
+			if (!response.ok)
+			{
+				throw new Error('Cannot load Electric shape resource: ' + path +
+					' (' + response.status + ')');
+			}
 
-		throw new Error('Cannot load Electric shape resource: ' + path);
+			return response.text();
+		});
 	};
 
 	Editor.loadElectricShapeCatalog = function()
 	{
-		if (Editor.electricShapeCatalog == null)
+		if (Editor.electricShapeCatalog == null ||
+			Editor.electricShapeCatalog.libraries == null)
 		{
-			Editor.electricShapeCatalog = JSON.parse(
-				Editor.loadElectricTextResource('manifest.json'));
+			throw new Error('Electric shape catalog is not included in the build');
 		}
 
 		return Editor.electricShapeCatalog;
@@ -55,18 +70,21 @@
 	{
 		var catalog = Editor.loadElectricShapeCatalog();
 
-		for (var i = 0; i < catalog.libraries.length; i++)
+		if (Editor.electricShapeEntryIndex == null)
 		{
-			for (var j = 0; j < catalog.libraries[i].items.length; j++)
+			Editor.electricShapeEntryIndex = {};
+
+			for (var i = 0; i < catalog.libraries.length; i++)
 			{
-				if (catalog.libraries[i].items[j].id == id)
+				for (var j = 0; j < catalog.libraries[i].items.length; j++)
 				{
-					return catalog.libraries[i].items[j];
+					Editor.electricShapeEntryIndex[catalog.libraries[i].items[j].id] =
+						catalog.libraries[i].items[j];
 				}
 			}
 		}
 
-		return null;
+		return Editor.electricShapeEntryIndex[id] || null;
 	};
 
 	Editor.getElectricShapeIdFromCells = function(graph, cells)
@@ -238,26 +256,99 @@
 		return removed;
 	};
 
-	Editor.getElectricShapeCells = function(entry, graph)
+	Editor.rememberElectricShapeTemplate = function(id, cells)
 	{
-		var xml = Editor.electricShapeOriginalCache[entry.id];
+		Editor.electricShapeTemplateCache[id] = cells;
 
-		if (xml == null)
+		var index = Editor.electricShapeTemplateOrder.indexOf(id);
+
+		if (index >= 0)
 		{
-			xml = Editor.loadElectricTextResource(entry.original);
-			Editor.electricShapeOriginalCache[entry.id] = xml;
+			Editor.electricShapeTemplateOrder.splice(index, 1);
 		}
 
-		var doc = mxUtils.parseXml(xml);
-		var codec = new mxCodec(doc);
-		var model = new mxGraphModel();
-		codec.decode(doc.documentElement, model);
+		Editor.electricShapeTemplateOrder.push(id);
 
-		var cells = graph.cloneCells(model.root.getChildAt(0).children);
-		Editor.removeElectricTerminalCanvasLabels(cells, entry);
-		Editor.markElectricShapeCells(cells, entry);
+		while (Editor.electricShapeTemplateOrder.length >
+			Editor.electricShapeTemplateCacheLimit)
+		{
+			delete Editor.electricShapeTemplateCache[
+				Editor.electricShapeTemplateOrder.shift()];
+		}
+	};
 
-		return cells;
+	Editor.getElectricShapeTemplate = function(entry)
+	{
+		var cached = Editor.electricShapeTemplateCache[entry.id];
+
+		if (cached != null)
+		{
+			Editor.rememberElectricShapeTemplate(entry.id, cached);
+			return Promise.resolve(cached);
+		}
+
+		if (Editor.electricShapeLoadPromises[entry.id] == null)
+		{
+			Editor.electricShapeLoadPromises[entry.id] =
+				Editor.loadElectricTextResource(entry.original).then(function(xml)
+				{
+					var doc = mxUtils.parseXml(xml);
+					var codec = new mxCodec(doc);
+					var model = new mxGraphModel();
+					codec.decode(doc.documentElement, model);
+
+					var layer = model.root.getChildAt(0);
+					var cells = (layer != null && layer.children != null) ?
+						layer.children : [];
+					Editor.rememberElectricShapeTemplate(entry.id, cells);
+					delete Editor.electricShapeLoadPromises[entry.id];
+
+					return cells;
+				}).catch(function(error)
+				{
+					delete Editor.electricShapeLoadPromises[entry.id];
+					throw error;
+				});
+		}
+
+		return Editor.electricShapeLoadPromises[entry.id];
+	};
+
+	Editor.getElectricShapeCells = function(entry, graph)
+	{
+		return Editor.getElectricShapeTemplate(entry).then(function(template)
+		{
+			var cells = graph.cloneCells(template);
+			Editor.removeElectricTerminalCanvasLabels(cells, entry);
+			Editor.markElectricShapeCells(cells, entry);
+
+			return cells;
+		});
+	};
+
+	Editor.prefetchElectricShape = function(entry)
+	{
+		return Editor.getElectricShapeTemplate(entry).catch(function()
+		{
+			return null;
+		});
+	};
+
+	Editor.showElectricShapeLoadError = function(sidebar, error)
+	{
+		if (window.console != null && window.console.error != null)
+		{
+			window.console.error(error);
+		}
+
+		var message = mxResources.get('electricShapesLoadError') ||
+			'Could not load Electric device';
+
+		if (sidebar != null && sidebar.editorUi != null &&
+			sidebar.editorUi.showError != null)
+		{
+			sidebar.editorUi.showError(message, (error != null) ? error.message : '');
+		}
 	};
 
 	Editor.addElectricShapeConfigurations = function(catalog)
@@ -277,6 +368,17 @@
 			{
 				Sidebar.prototype.configuration.push({id: id, libs: [id]});
 				existing[id] = true;
+			}
+		}
+	};
+
+	Editor.removeElectricShapeConfigurations = function()
+	{
+		for (var i = Sidebar.prototype.configuration.length - 1; i >= 0; i--)
+		{
+			if (String(Sidebar.prototype.configuration[i].id).indexOf('electric-') == 0)
+			{
+				Sidebar.prototype.configuration.splice(i, 1);
 			}
 		}
 	};
@@ -332,11 +434,41 @@
 		return {fill: '#e5e7eb', stroke: '#374151', accent: '#9ca3af'};
 	};
 
+	Editor.electricWbPreviewMaxWidth = 260;
+	Editor.electricWbPreviewMaxHeight = 210;
+
+	Editor.getElectricBoundedPreviewSize = function(entry, maxWidth, maxHeight, minWidth, minHeight)
+	{
+		var width = Math.max(1, Number(entry.width) || 1);
+		var height = Math.max(1, Number(entry.height) || 1);
+		var scale = Math.min(maxWidth / width, maxHeight / height, 1);
+
+		return {
+			width: Math.max(minWidth, Math.round(width * scale)),
+			height: Math.max(minHeight, Math.round(height * scale))
+		};
+	};
+
 	Editor.getElectricPreviewSize = function(entry)
 	{
 		if (entry.kind == 'terminal')
 		{
 			return {width: 44, height: 112, thumbWidth: 24, thumbHeight: 50};
+		}
+		else if (entry.kind == 'wb')
+		{
+			var wbSize = Editor.getElectricBoundedPreviewSize(entry,
+				Editor.electricWbPreviewMaxWidth,
+				Editor.electricWbPreviewMaxHeight, 24, 40);
+			var wbThumbHeight = 54;
+			var wbRatio = (entry.height > 0) ? entry.width / entry.height : 0.55;
+
+			return {
+				width: wbSize.width,
+				height: wbSize.height,
+				thumbWidth: Math.max(26, Math.min(64, Math.round(wbThumbHeight * wbRatio))),
+				thumbHeight: wbThumbHeight
+			};
 		}
 
 		var thumbHeight = 54;
@@ -391,6 +523,14 @@
 				Editor.trimElectricText(data['Модель'] || entry.title, 14),
 				Editor.trimElectricText(data['Выход'] || '', 16),
 				Editor.trimElectricText(data['Мощность'] || '', 10)
+			];
+		}
+		else if (entry.kind == 'wb')
+		{
+			return [
+				Editor.trimElectricText(data['Модель'] || data['Серия'] || entry.title, 18),
+				Editor.trimElectricText(data['Модульность'] || data['Ширина'] || '', 14),
+				Editor.trimElectricText(data['Тип'] || 'Wiren Board', 16)
 			];
 		}
 
@@ -560,7 +700,17 @@
 		var rows = Editor.getElectricPreviewTextRows(entry);
 		var svg = '';
 
-		if (entry.kind == 'terminal')
+		if (entry.kind == 'wb' && entry.preview != null)
+		{
+			svg += '<rect x="' + faceX + '" y="' + faceY + '" width="' +
+				faceW + '" height="' + faceH +
+				'" fill="#ffffff" stroke="#cbd5e1" stroke-width="0.5"/>';
+			svg += '<image href="' +
+				Editor.getElectricSvgText(Editor.getElectricShapeAssetUrl(entry.preview)) +
+				'" x="' + faceX + '" y="' + faceY + '" width="' + faceW +
+				'" height="' + faceH + '" preserveAspectRatio="xMidYMid meet"/>';
+		}
+		else if (entry.kind == 'terminal')
 		{
 			var colors = Editor.getElectricTerminalColor(entry);
 			var isPlate = /Заглуш|аксесс/i.test(Editor.getElectricShapeValue(entry, 'Тип') + ' ' + entry.section);
@@ -675,6 +825,11 @@
 				faceX + faceW * 0.83, faceY + faceH * 0.745,
 				compact ? 5.2 : 7.5, '700', 'middle', powerColor);
 		}
+		else if (entry.kind == 'wb')
+		{
+			svg += Editor.createElectricWbFaceSvg(entry, faceX, faceY,
+				faceW, faceH, compact);
+		}
 			else
 			{
 				var isRcbo = entry.kind == 'rcbo';
@@ -737,20 +892,302 @@
 		return svg;
 	};
 
+	Editor.createElectricWbFaceSvg = function(entry, x, y, w, h, compact)
+	{
+		var data = entry.data || {};
+		var model = data['Модель'] || data['Серия'] || entry.title;
+		var modularity = data['Модульность'] || data['Ширина'] || '';
+		var isController = entry.libraryId == 'electric-wb-controllers' ||
+			String(model).indexOf('Wiren Board') == 0;
+		var terminalCount = Math.max(2, Math.min(8, Math.round(w / 22)));
+		var bodyFill = isController ? '#f3f6fa' : '#f8fafc';
+		var headerFill = isController ? '#1f5f9f' : '#ffffff';
+		var accent = isController ? '#74b843' : '#1f5f9f';
+		var svg = '';
+
+		svg += '<rect x="' + x + '" y="' + y + '" width="' + w +
+			'" height="' + h + '" rx="' + Math.max(2, Math.min(7, w * 0.035)) +
+			'" fill="' + bodyFill + '" stroke="#1f2937" stroke-width="1.2"/>';
+		svg += '<rect x="' + x + '" y="' + y + '" width="' + w +
+			'" height="' + (h * 0.12) + '" fill="' + headerFill +
+			'" stroke="#cbd5e1" stroke-width="0.5"/>';
+		svg += '<rect x="' + x + '" y="' + (y + h * 0.88) +
+			'" width="' + w + '" height="' + (h * 0.12) +
+			'" fill="#e5e7eb" stroke="#cbd5e1" stroke-width="0.5"/>';
+		svg += '<rect x="' + (x + w * 0.06) + '" y="' + (y + h * 0.2) +
+			'" width="' + (w * 0.18) + '" height="' + (h * 0.1) +
+			'" rx="1.5" fill="' + accent + '" stroke="#17466f" stroke-width="0.45"/>';
+		svg += Editor.getElectricSvgTextLine('WB', x + w * 0.15,
+			y + h * 0.268, compact ? 5.6 : 8.2, '700', 'middle', '#ffffff');
+		svg += Editor.getElectricSvgTextLine(Editor.trimElectricText(model,
+			isController ? 20 : 16), x + w * 0.52, y + h * 0.255,
+			compact ? 6.2 : 8.8, '700', 'middle', '#111827');
+		svg += Editor.getElectricSvgTextLine(Editor.trimElectricText(modularity, 16),
+			x + w * 0.52, y + h * 0.37, compact ? 4.8 : 6.5,
+			'400', 'middle', '#475569');
+
+		for (var i = 0; i < terminalCount; i++)
+		{
+			var tx = x + w * (0.12 + (0.76 * i / Math.max(1, terminalCount - 1)));
+			var r = Math.max(1.8, Math.min(3.4, w * 0.035));
+
+			svg += '<circle cx="' + tx + '" cy="' + (y + h * 0.065) +
+				'" r="' + r + '" fill="#111827"/>';
+			svg += '<circle cx="' + tx + '" cy="' + (y + h * 0.935) +
+				'" r="' + r + '" fill="#111827"/>';
+		}
+
+		svg += '<rect x="' + (x + w * 0.08) + '" y="' + (y + h * 0.48) +
+			'" width="' + (w * 0.84) + '" height="' + (h * 0.08) +
+			'" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="0.45"/>';
+		svg += '<rect x="' + (x + w * 0.08) + '" y="' + (y + h * 0.62) +
+			'" width="' + (w * 0.84) + '" height="' + (h * 0.08) +
+			'" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="0.45"/>';
+
+		if (isController)
+		{
+			svg += '<rect x="' + (x + w * 0.7) + '" y="' + (y + h * 0.56) +
+				'" width="' + (w * 0.16) + '" height="' + (h * 0.16) +
+				'" rx="2" fill="#334155" stroke="#0f172a" stroke-width="0.45"/>';
+		}
+
+		return svg;
+	};
+
+	Editor.getElectricLibraryPreviewTextRows = function(entry)
+	{
+		var data = entry.data || {};
+
+		if (entry.kind == 'psu')
+		{
+			return [Editor.trimElectricText(data['Модель'] || entry.title, 12)];
+		}
+		else if (entry.kind == 'wb')
+		{
+			return [Editor.trimElectricText(data['Модель'] || data['Серия'] ||
+				entry.title, 13)];
+		}
+		else if (entry.kind == 'terminal')
+		{
+			return [Editor.trimElectricText(data['Сечение'] || data['Тип'] ||
+				entry.title, 12)];
+		}
+
+		return [Editor.trimElectricText(Editor.getElectricRating(entry), 12)];
+	};
+
+	Editor.createElectricCompactBreakerFaceSvg = function(entry, x, y, w, h)
+	{
+		var isRcbo = entry.kind == 'rcbo';
+		var poles = Math.max(1, Editor.getElectricPoleCount(entry));
+		var moduleW = w / poles;
+		var bandH = Math.max(5, h * 0.105);
+		var rating = Editor.trimElectricText(Editor.getElectricRating(entry), 5);
+		var tag = isRcbo ? 'QFD' : 'QF';
+		var svg = '';
+
+		svg += '<rect x="' + x + '" y="' + y + '" width="' + w +
+			'" height="' + h + '" fill="#f8f8f8" stroke="#111827" stroke-width="1.1"/>';
+		svg += '<rect x="' + x + '" y="' + y + '" width="' + w +
+			'" height="' + bandH + '" fill="#ededed" stroke="#c7c7c7" stroke-width="0.45"/>';
+		svg += '<rect x="' + x + '" y="' + (y + h - bandH) + '" width="' + w +
+			'" height="' + bandH + '" fill="#ededed" stroke="#c7c7c7" stroke-width="0.45"/>';
+		svg += '<rect x="' + x + '" y="' + (y + h * 0.21) + '" width="' + w +
+			'" height="' + Math.max(2, h * 0.028) + '" fill="#3b3b3b"/>';
+
+		for (var i = 0; i < poles; i++)
+		{
+			var poleX = x + i * moduleW;
+			var cx = poleX + moduleW / 2;
+			var r = Math.max(1.8, Math.min(3.2, moduleW * 0.1));
+
+			if (i > 0)
+			{
+				svg += '<path d="M' + poleX + ' ' + y + 'v' + h +
+					'" stroke="#9ca3af" stroke-width="0.55"/>';
+			}
+
+			svg += '<circle cx="' + cx + '" cy="' + (y + bandH * 0.58) +
+				'" r="' + r + '" fill="#ffffff" stroke="#777777" stroke-width="0.6"/>';
+			svg += '<circle cx="' + cx + '" cy="' + (y + h - bandH * 0.58) +
+				'" r="' + r + '" fill="#ffffff" stroke="#777777" stroke-width="0.6"/>';
+		}
+
+		svg += '<rect x="' + (x + w * 0.08) + '" y="' + (y + h * 0.145) +
+			'" width="' + Math.max(5, w * 0.12) + '" height="' +
+			Math.max(3, h * 0.04) + '" fill="#e41f26"/>';
+		svg += Editor.getElectricSvgTextLine(rating, x + w * 0.5,
+			y + h * 0.36, 8.2, '700', 'middle', '#111827');
+		svg += '<rect x="' + (x + w * 0.18) + '" y="' + (y + h * 0.43) +
+			'" width="' + (w * 0.64) + '" height="' + (h * 0.11) +
+			'" rx="3" fill="#ffe45c" stroke="#b88900" stroke-width="0.6"/>';
+		svg += Editor.getElectricSvgTextLine(tag, x + w * 0.5,
+			y + h * 0.512, tag == 'QFD' ? 6.6 : 7.8, '700',
+			'middle', '#111111');
+		svg += '<rect x="' + (x + w * 0.1) + '" y="' + (y + h * 0.62) +
+			'" width="' + (w * 0.8) + '" height="' + (h * 0.12) +
+			'" fill="#a9a49a" stroke="#7c786e" stroke-width="0.45"/>';
+
+		if (isRcbo)
+		{
+			svg += '<circle cx="' + (x + w * 0.78) + '" cy="' +
+				(y + h * 0.33) + '" r="' + Math.max(2.2, w * 0.04) +
+				'" fill="#ffffff" stroke="#111827" stroke-width="0.65"/>';
+		}
+
+		return svg;
+	};
+
+	Editor.createElectricCompactPsuFaceSvg = function(entry, x, y, w, h)
+	{
+		var terminalLayout = Editor.getElectricPsuTerminalLayout(entry);
+		var terminalR = Math.max(1.7, Math.min(3.3, w * 0.045));
+		var logoW = Math.min(w * 0.34, h * 0.18);
+		var logoX = x + w * 0.06;
+		var svg = '';
+
+		svg += '<rect x="' + x + '" y="' + y + '" width="' + w +
+			'" height="' + h + '" fill="#626663" stroke="#222" stroke-width="1.1"/>';
+		svg += '<rect x="' + x + '" y="' + y + '" width="' + w +
+			'" height="' + (h * 0.107) + '" fill="#30383a"/>';
+		svg += '<rect x="' + x + '" y="' + (y + h * 0.107) +
+			'" width="' + w + '" height="' + (h * 0.048) +
+			'" fill="#41484a" stroke="#171b1c" stroke-width="0.55"/>';
+		svg += '<rect x="' + x + '" y="' + (y + h * 0.79) +
+			'" width="' + w + '" height="' + (h * 0.05) +
+			'" fill="#41484a" stroke="#171b1c" stroke-width="0.55"/>';
+		svg += '<rect x="' + x + '" y="' + (y + h * 0.84) +
+			'" width="' + w + '" height="' + (h * 0.16) + '" fill="#4b504e"/>';
+
+		for (var i = 0; i < terminalLayout.top.length; i++)
+		{
+			svg += '<circle cx="' + (x + w * terminalLayout.top[i].x) +
+				'" cy="' + (y + h * 0.064) + '" r="' + terminalR +
+				'" fill="#050606"/>';
+		}
+
+		for (var j = 0; j < terminalLayout.bottom.length; j++)
+		{
+			svg += '<circle cx="' + (x + w * terminalLayout.bottom[j].x) +
+				'" cy="' + (y + h * 0.949) + '" r="' + terminalR +
+				'" fill="#050606"/>';
+		}
+
+		svg += '<rect x="' + logoX + '" y="' + (y + h * 0.21) +
+			'" width="' + logoW + '" height="' + (h * 0.09) +
+			'" fill="#777b78" stroke="#9b9b86" stroke-width="0.45"/>';
+		svg += Editor.getElectricSvgTextLine('MW', logoX + logoW / 2,
+			y + h * 0.265, 6.5, '700', 'middle', '#d8d0bb');
+		svg += '<rect x="' + (x + w * 0.36) + '" y="' + (y + h * 0.42) +
+			'" width="' + (w * 0.28) + '" height="' + (h * 0.11) +
+			'" rx="4" fill="#ffe45c" stroke="#b88900" stroke-width="0.6"/>';
+		svg += Editor.getElectricSvgTextLine('PS', x + w * 0.5,
+			y + h * 0.5, 7.4, '700', 'middle', '#111111');
+
+		return svg;
+	};
+
+	Editor.createElectricCompactWbFaceSvg = function(entry, x, y, w, h)
+	{
+		var data = entry.data || {};
+		var model = String(data['Модель'] || data['Серия'] || entry.title);
+		var isController = model.indexOf('Wiren Board') == 0;
+		var terminalCount = Math.max(2, Math.min(8, Math.round(w / 13)));
+		var bodyFill = isController ? '#f8fafc' : '#ffffff';
+		var accent = isController ? '#74b843' : '#8bd5a8';
+		var svg = '';
+
+		svg += '<rect data-electric-library-wb-preview="1" x="' + x +
+			'" y="' + y + '" width="' + w + '" height="' + h +
+			'" fill="' + bodyFill + '" stroke="#1f2937" stroke-width="1.05"/>';
+		svg += '<rect x="' + (x + w * 0.06) + '" y="' + (y + h * 0.03) +
+			'" width="' + (w * 0.88) + '" height="' + (h * 0.16) +
+			'" fill="' + accent + '" stroke="#6aa77b" stroke-width="0.45"/>';
+		svg += '<rect x="' + (x + w * 0.06) + '" y="' + (y + h * 0.81) +
+			'" width="' + (w * 0.88) + '" height="' + (h * 0.16) +
+			'" fill="' + accent + '" stroke="#6aa77b" stroke-width="0.45"/>';
+
+		for (var i = 0; i < terminalCount; i++)
+		{
+			var tx = x + w * (0.11 + 0.78 * i / Math.max(1, terminalCount - 1));
+
+			svg += '<circle cx="' + tx + '" cy="' + (y + h * 0.11) +
+				'" r="' + Math.max(1.4, w * 0.025) +
+				'" fill="#e5e7eb" stroke="#9ca3af" stroke-width="0.35"/>';
+			svg += '<circle cx="' + tx + '" cy="' + (y + h * 0.89) +
+				'" r="' + Math.max(1.4, w * 0.025) +
+				'" fill="#e5e7eb" stroke="#9ca3af" stroke-width="0.35"/>';
+		}
+
+		svg += '<rect x="' + (x + w * 0.12) + '" y="' + (y + h * 0.28) +
+			'" width="' + (w * 0.76) + '" height="' + (h * 0.18) +
+			'" rx="2" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.45"/>';
+		svg += '<circle cx="' + (x + w * 0.24) + '" cy="' + (y + h * 0.58) +
+			'" r="' + Math.max(1.8, w * 0.035) + '" fill="#74b843"/>';
+		svg += '<circle cx="' + (x + w * 0.5) + '" cy="' + (y + h * 0.58) +
+			'" r="' + Math.max(1.8, w * 0.035) + '" fill="#f59e0b"/>';
+		svg += '<circle cx="' + (x + w * 0.76) + '" cy="' + (y + h * 0.58) +
+			'" r="' + Math.max(1.8, w * 0.035) + '" fill="#94a3b8"/>';
+
+		if (isController)
+		{
+			svg += '<rect x="' + (x + w * 0.34) + '" y="' + (y + h * 0.5) +
+				'" width="' + (w * 0.32) + '" height="' + (h * 0.22) +
+				'" rx="2" fill="#ffffff" stroke="#94a3b8" stroke-width="0.45"/>';
+		}
+
+		return svg;
+	};
+
+	Editor.createElectricLibraryFaceSvg = function(entry, x, y, w, h)
+	{
+		var ratio = (entry.height > 0) ? entry.width / entry.height : 0.3;
+		var minW = (entry.kind == 'terminal') ? 20 : 26;
+		var faceW = Math.max(minW, Math.min(w - 10,
+			h * Math.max(0.2, Math.min(0.82, ratio))));
+		var faceH = h - 6;
+		var faceX = x + (w - faceW) / 2;
+		var faceY = y + 3;
+
+		if (entry.kind == 'psu')
+		{
+			return Editor.createElectricCompactPsuFaceSvg(entry, faceX, faceY,
+				faceW, faceH);
+		}
+		else if (entry.kind == 'wb')
+		{
+			return Editor.createElectricCompactWbFaceSvg(entry, faceX, faceY,
+				faceW, faceH);
+		}
+		else if (entry.kind == 'terminal')
+		{
+			return Editor.createElectricModuleFaceSvg(entry, x, y, w, h, true);
+		}
+
+		return Editor.createElectricCompactBreakerFaceSvg(entry, faceX, faceY,
+			faceW, faceH);
+	};
+
 	Editor.getElectricLibraryPreviewTile = function(entry, x, y, w, h)
 	{
-		var label = Editor.getElectricShapeLabel(entry);
-		var body = Editor.createElectricModuleFaceSvg(entry, x + 4, y + 3,
-			w - 8, h - 25, true);
+		var labelRows = Editor.getElectricLibraryPreviewTextRows(entry);
+		var body = Editor.createElectricLibraryFaceSvg(entry, x + 4, y + 3,
+			w - 8, h - 25);
 
 		body += Editor.getElectricSvgTextLine(
-			Editor.trimElectricText(label, 18), x + w / 2, y + h - 7, 7.5, '700');
+			Editor.trimElectricText(labelRows[0] || '', 13), x + w / 2,
+			y + h - 7, 6.6, '700');
 
 		return body;
 	};
 
 	Editor.getElectricLibraryPreview = function(library)
 	{
+		if (Editor.electricLibraryPreviewCache[library.id] != null)
+		{
+			return Editor.electricLibraryPreviewCache[library.id];
+		}
+
 		var items = library.items || [];
 		var cols = Math.min(8, Math.max(4, Math.ceil(Math.sqrt(items.length * 1.25))));
 		var tileW = 82;
@@ -776,7 +1213,49 @@
 
 		svg += '</svg>';
 
+		var result = 'data:image/svg+xml,' + encodeURIComponent(svg);
+		Editor.electricLibraryPreviewCache[library.id] = result;
+
+		return result;
+	};
+
+	Editor.getElectricLibraryPreviewPlaceholder = function(library)
+	{
+		var title = Editor.getElectricSvgText(library.title);
+		var count = (library.items || []).length;
+		var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">' +
+			'<rect width="640" height="360" fill="#ffffff"/>' +
+			'<rect x="28" y="28" width="584" height="304" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>' +
+			'<text x="320" y="170" font-family="Arial,sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#374151">' +
+			title + '</text><text x="320" y="208" font-family="Arial,sans-serif" font-size="16" text-anchor="middle" fill="#64748b">' +
+			count + ' shapes</text></svg>';
+
 		return 'data:image/svg+xml,' + encodeURIComponent(svg);
+	};
+
+	Editor.scheduleElectricLibraryPreviews = function(entries)
+	{
+		var index = 0;
+		var schedule = (window.requestIdleCallback != null) ?
+			function(callback)
+			{
+				window.requestIdleCallback(callback, {timeout: 1500});
+			} : function(callback)
+			{
+				window.setTimeout(callback, 32);
+			};
+		var renderNext = function()
+		{
+			if (index < entries.length)
+			{
+				var entry = entries[index++];
+				entry.image = Editor.getElectricLibraryPreview(entry.electricLibrary);
+				delete entry.electricLibrary;
+				schedule(renderNext);
+			}
+		};
+
+		schedule(renderNext);
 	};
 
 	Editor.createElectricCell = function(parent, value, x, y, w, h, style)
@@ -1056,6 +1535,74 @@
 			'whiteSpace=wrap;spacing=0;overflow=hidden;fontStyle=1;');
 	};
 
+	Editor.createElectricWbPreview = function(entry, group, w, h)
+	{
+		if (entry.preview != null)
+		{
+			Editor.createElectricCell(group, '', 0, 0, w, h,
+				'shape=image;html=1;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;' +
+				'verticalAlign=top;image=' + Editor.getElectricShapeAssetUrl(entry.preview) + ';');
+			return;
+		}
+
+		var data = entry.data || {};
+		var model = data['Модель'] || data['Серия'] || entry.title;
+		var modularity = data['Модульность'] || data['Ширина'] || '';
+		var isController = entry.libraryId == 'electric-wb-controllers' ||
+			String(model).indexOf('Wiren Board') == 0;
+		var headerFill = isController ? '#1f5f9f' : '#ffffff';
+		var bodyFill = isController ? '#f3f6fa' : '#f8fafc';
+		var accent = isController ? '#74b843' : '#1f5f9f';
+		var terminals = Math.max(2, Math.min(8, Math.round(w / 28)));
+		var terminal = Math.max(4, Math.min(7, w * 0.045));
+
+		Editor.createElectricCell(group, '', 0, 0, w, h,
+			'rounded=1;whiteSpace=wrap;html=1;fillColor=' + bodyFill +
+			';strokeColor=#1f2937;strokeWidth=0.8;arcSize=4;');
+		Editor.createElectricCell(group, '', 0, 0, w, h * 0.12,
+			'rounded=0;whiteSpace=wrap;html=1;fillColor=' + headerFill +
+			';strokeColor=#cbd5e1;strokeWidth=0.45;');
+		Editor.createElectricCell(group, '', 0, h * 0.88, w, h * 0.12,
+			'rounded=0;whiteSpace=wrap;html=1;fillColor=#e5e7eb;strokeColor=#cbd5e1;strokeWidth=0.45;');
+
+		for (var i = 0; i < terminals; i++)
+		{
+			var tx = w * (0.12 + (0.76 * i / Math.max(1, terminals - 1)));
+
+			Editor.createElectricCell(group, '', tx - terminal / 2, h * 0.065 - terminal / 2,
+				terminal, terminal,
+				'ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#111827;strokeColor=none;strokeWidth=0;');
+			Editor.createElectricCell(group, '', tx - terminal / 2, h * 0.935 - terminal / 2,
+				terminal, terminal,
+				'ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#111827;strokeColor=none;strokeWidth=0;');
+		}
+
+		Editor.createElectricCell(group, 'WB', w * 0.07, h * 0.2, w * 0.18, h * 0.1,
+			'rounded=1;whiteSpace=wrap;html=1;fillColor=' + accent +
+			';strokeColor=#17466f;strokeWidth=0.45;fontColor=#ffffff;' +
+			'fontSize=' + Math.max(5, w * 0.05) + ';fontStyle=1;align=center;verticalAlign=middle;arcSize=10;');
+		Editor.createElectricCell(group, Editor.trimElectricText(model, 18),
+			w * 0.29, h * 0.19, w * 0.64, h * 0.12,
+			'text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;' +
+			'fontSize=' + Math.max(6, Math.min(12, w * 0.06)) +
+			';fontColor=#111827;whiteSpace=wrap;spacing=0;overflow=hidden;fontStyle=1;');
+		Editor.createElectricCell(group, Editor.trimElectricText(modularity, 16),
+			w * 0.12, h * 0.34, w * 0.76, h * 0.08,
+			'text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;' +
+			'fontSize=' + Math.max(5, w * 0.04) +
+			';fontColor=#475569;whiteSpace=wrap;spacing=0;overflow=hidden;');
+		Editor.createElectricCell(group, '', w * 0.08, h * 0.5, w * 0.84, h * 0.08,
+			'rounded=1;whiteSpace=wrap;html=1;fillColor=#e2e8f0;strokeColor=#94a3b8;strokeWidth=0.45;arcSize=8;');
+		Editor.createElectricCell(group, '', w * 0.08, h * 0.63, w * 0.84, h * 0.08,
+			'rounded=1;whiteSpace=wrap;html=1;fillColor=#e2e8f0;strokeColor=#94a3b8;strokeWidth=0.45;arcSize=8;');
+
+		if (isController)
+		{
+			Editor.createElectricCell(group, '', w * 0.7, h * 0.56, w * 0.16, h * 0.16,
+				'rounded=1;whiteSpace=wrap;html=1;fillColor=#334155;strokeColor=#0f172a;strokeWidth=0.45;arcSize=8;');
+		}
+	};
+
 	Editor.createElectricShapePreviewCells = function(entry)
 	{
 		var size = Editor.getElectricPreviewSize(entry);
@@ -1073,6 +1620,10 @@
 		else if (entry.kind == 'psu')
 		{
 			Editor.createElectricPsuPreview(entry, group, w, h);
+		}
+		else if (entry.kind == 'wb')
+		{
+			Editor.createElectricWbPreview(entry, group, w, h);
 		}
 		else
 		{
@@ -1166,7 +1717,6 @@
 		var elt = this.createVertexTemplateFromCells(cells, size.width,
 			size.height, entry.title, true, true, null, true, null,
 			size.thumbWidth, size.thumbHeight);
-		var loaded = false;
 
 		if (elt == null)
 		{
@@ -1178,27 +1728,16 @@
 		elt.setAttribute('data-electric-shape-tooltip',
 			Editor.getElectricShapeTooltipText(entry));
 
-		var ensureOriginal = mxUtils.bind(this, function()
+		var prefetchOriginal = function()
 		{
-			if (!loaded)
-			{
-				var original = Editor.getElectricShapeCells(entry, this.graph);
-				cells.splice(0, cells.length);
-
-				for (var i = 0; i < original.length; i++)
-				{
-					cells.push(original[i]);
-				}
-
-				loaded = true;
-			}
-		});
+			Editor.prefetchElectricShape(entry);
+		};
 
 		if (elt.addEventListener != null)
 		{
-			elt.addEventListener('pointerdown', ensureOriginal, true);
-			elt.addEventListener('mousedown', ensureOriginal, true);
-			elt.addEventListener('touchstart', ensureOriginal, true);
+			elt.addEventListener('pointerenter', prefetchOriginal, {passive: true});
+			elt.addEventListener('focus', prefetchOriginal, {passive: true});
+			elt.addEventListener('touchstart', prefetchOriginal, {passive: true});
 		}
 
 		return elt;
@@ -1217,12 +1756,20 @@
 
 					if (entry != null)
 					{
-						var originalCells = Editor.getElectricShapeCells(entry, graph);
-						var originalBounds = new mxRectangle(0, 0, entry.width, entry.height);
-						var handler = createDropHandler.call(this, originalCells, allowSplit,
-							allowCellsInserted, originalBounds, startEditing, sourceCell);
+						Editor.getElectricShapeCells(entry, graph).then(mxUtils.bind(this,
+							function(originalCells)
+							{
+								var originalBounds = new mxRectangle(0, 0,
+									entry.width, entry.height);
+								var handler = createDropHandler.call(this, originalCells,
+									allowSplit, allowCellsInserted, originalBounds,
+									startEditing, sourceCell);
 
-						return handler(graph, evt, target, x, y, force);
+								handler(graph, evt, target, x, y, force);
+							})).catch(mxUtils.bind(this, function(error)
+							{
+								Editor.showElectricShapeLoadError(this, error);
+							}));
 					}
 				});
 			}
@@ -1256,74 +1803,6 @@
 		}
 	};
 
-	EditorUi.prototype.installElectricShapeCanvasCleanup = function()
-	{
-		if (this.electricShapeCanvasCleanupInstalled || this.editor == null ||
-			this.editor.graph == null)
-		{
-			return;
-		}
-
-		var graph = this.editor.graph;
-		this.electricShapeCanvasCleanupHandler = mxUtils.bind(this, function(sender, evt)
-		{
-			if (Editor.isElectricTheme())
-			{
-				Editor.cleanupElectricTerminalCanvasLabels(graph,
-					evt.getProperty('cells'));
-			}
-		});
-		this.electricShapeFileLoadedHandler = mxUtils.bind(this, function()
-		{
-			if (Editor.isElectricTheme())
-			{
-				Editor.cleanupElectricTerminalCanvasLabels(graph);
-			}
-		});
-
-		graph.addListener('cellsInserted',
-			this.electricShapeCanvasCleanupHandler);
-		this.editor.addListener('fileLoaded',
-			this.electricShapeFileLoadedHandler);
-		this.electricShapeCanvasCleanupInstalled = true;
-
-		window.setTimeout(this.electricShapeFileLoadedHandler, 0);
-	};
-
-	EditorUi.prototype.removeElectricShapeCanvasCleanup = function()
-	{
-		if (this.electricShapeCanvasCleanupInstalled)
-		{
-			if (this.editor != null && this.editor.graph != null &&
-				this.electricShapeCanvasCleanupHandler != null)
-			{
-				this.editor.graph.removeListener(
-					this.electricShapeCanvasCleanupHandler);
-			}
-
-			if (this.editor != null && this.electricShapeFileLoadedHandler != null)
-			{
-				this.editor.removeListener(this.electricShapeFileLoadedHandler);
-			}
-		}
-
-		this.electricShapeCanvasCleanupInstalled = false;
-		this.electricShapeCanvasCleanupHandler = null;
-		this.electricShapeFileLoadedHandler = null;
-	};
-
-	EditorUi.prototype.createUi = function()
-	{
-		createUi.apply(this, arguments);
-		this.installElectricShapeCanvasCleanup();
-	};
-
-	EditorUi.prototype.destroy = function()
-	{
-		this.removeElectricShapeCanvasCleanup();
-		destroy.apply(this, arguments);
-	};
-
 	Sidebar.prototype.updateEntries = function()
 	{
 		updateEntries.apply(this, arguments);
@@ -1339,11 +1818,17 @@
 				entries.push({
 					title: catalog.libraries[i].title,
 					id: catalog.libraries[i].id,
-					image: Editor.getElectricLibraryPreview(catalog.libraries[i])
+					image: Editor.getElectricLibraryPreviewPlaceholder(catalog.libraries[i]),
+					electricLibrary: catalog.libraries[i]
 				});
 			}
 
 			this.entries.unshift({title: 'Electric', entries: entries});
+			Editor.scheduleElectricLibraryPreviews(entries);
+		}
+		else
+		{
+			Editor.removeElectricShapeConfigurations();
 		}
 	};
 

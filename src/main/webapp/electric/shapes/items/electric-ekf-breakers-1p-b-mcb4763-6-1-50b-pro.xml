@@ -1,4 +1,4 @@
-<mxGraphModel><root><mxCell id="0" /><mxCell id="1" parent="0" /><mxCell id="drawn_mcb4763_6_1_50B_pro_device" connectable="0" parent="1" style="group;html=1;" value="" vertex="1">
+<mxGraphModel><root><mxCell id="0" /><mxCell id="1" parent="0" /><mxCell id="drawn_mcb4763_6_1_50B_pro_device" parent="1" style="group;html=1;" value="" vertex="1">
           <mxGeometry height="314.961" width="70.866" x="0" y="0" as="geometry" />
         </mxCell><mxCell id="drawn_mcb4763_6_1_50B_pro_device_body_85" parent="drawn_mcb4763_6_1_50B_pro_device" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8f8f8;gradientColor=#d9d9d9;gradientDirection=south;strokeColor=none;" value="" vertex="1">
           <mxGeometry height="314.961" width="70.866" as="geometry" />

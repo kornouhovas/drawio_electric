@@ -3,15 +3,31 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
-    image: drawio-electric:local
+    image: drawio-electric:${DRAWIO_ELECTRIC_TAG:-local}
     container_name: drawio-electric
     restart: unless-stopped
+    stop_grace_period: 30s
+    cpus: 1.25
+    mem_limit: 768m
+    pids_limit: 256
     expose:
       - "8080"
     environment:
       EXPORT_URL: "http://drawio-electric-export:8000"
-    volumes:
-      - /opt/drawio_electric/deploy/PreConfig.js:/usr/local/tomcat/webapps/draw/js/PreConfig.js:ro
+    depends_on:
+      drawio-electric-export:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/ -o /dev/null || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - drawio_default
 
@@ -19,11 +35,26 @@ services:
     build:
       context: .
       dockerfile: export-server.Dockerfile
-    image: drawio-electric-export:local
+    image: drawio-electric-export:${DRAWIO_ELECTRIC_TAG:-local}
     container_name: drawio-electric-export
     restart: unless-stopped
+    stop_grace_period: 30s
+    cpus: 1.25
+    mem_limit: 1024m
+    pids_limit: 256
     expose:
       - "8000"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://127.0.0.1:8000',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))\""]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     networks:
       - drawio_default
 
