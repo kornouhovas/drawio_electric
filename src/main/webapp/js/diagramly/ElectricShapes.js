@@ -1219,43 +1219,19 @@
 		return result;
 	};
 
-	Editor.getElectricLibraryPreviewPlaceholder = function(library)
+	Editor.createElectricLibraryPreviewImage = function(library)
 	{
-		var title = Editor.getElectricSvgText(library.title);
-		var count = (library.items || []).length;
-		var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">' +
-			'<rect width="640" height="360" fill="#ffffff"/>' +
-			'<rect x="28" y="28" width="584" height="304" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>' +
-			'<text x="320" y="170" font-family="Arial,sans-serif" font-size="24" font-weight="700" text-anchor="middle" fill="#374151">' +
-			title + '</text><text x="320" y="208" font-family="Arial,sans-serif" font-size="16" text-anchor="middle" fill="#64748b">' +
-			count + ' shapes</text></svg>';
+		var img = document.createElement('img');
+		img.setAttribute('border', '0');
+		img.setAttribute('alt', library.title);
+		img.setAttribute('src', Editor.getElectricLibraryPreview(library));
+		img.style.display = 'block';
+		img.style.margin = '0 auto';
+		img.style.maxWidth = '100%';
+		img.style.maxHeight = '100%';
+		img.style.objectFit = 'contain';
 
-		return 'data:image/svg+xml,' + encodeURIComponent(svg);
-	};
-
-	Editor.scheduleElectricLibraryPreviews = function(entries)
-	{
-		var index = 0;
-		var schedule = (window.requestIdleCallback != null) ?
-			function(callback)
-			{
-				window.requestIdleCallback(callback, {timeout: 1500});
-			} : function(callback)
-			{
-				window.setTimeout(callback, 32);
-			};
-		var renderNext = function()
-		{
-			if (index < entries.length)
-			{
-				var entry = entries[index++];
-				entry.image = Editor.getElectricLibraryPreview(entry.electricLibrary);
-				delete entry.electricLibrary;
-				schedule(renderNext);
-			}
-		};
-
-		schedule(renderNext);
+		return img;
 	};
 
 	Editor.createElectricCell = function(parent, value, x, y, w, h, style)
@@ -1815,16 +1791,21 @@
 
 			for (var i = 0; i < catalog.libraries.length; i++)
 			{
-				entries.push({
-					title: catalog.libraries[i].title,
-					id: catalog.libraries[i].id,
-					image: Editor.getElectricLibraryPreviewPlaceholder(catalog.libraries[i]),
-					electricLibrary: catalog.libraries[i]
-				});
+				(mxUtils.bind(this, function(library)
+				{
+					entries.push({
+						title: library.title,
+						id: library.id,
+						imageCallback: function(preview)
+						{
+							preview.appendChild(
+								Editor.createElectricLibraryPreviewImage(library));
+						}
+					});
+				}))(catalog.libraries[i]);
 			}
 
 			this.entries.unshift({title: 'Electric', entries: entries});
-			Editor.scheduleElectricLibraryPreviews(entries);
 		}
 		else
 		{

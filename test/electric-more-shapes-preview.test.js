@@ -64,3 +64,7 @@ assert(!/1P\+N|300mA|АВДТ|BA 47-63|6000/.test(ekf),
 assert.strictEqual(context.Editor.getElectricLibraryPreview(
 	libraries.get('electric-wb-devices')),
 	context.Editor.electricLibraryPreviewCache['electric-wb-devices']);
+assert(source.includes('imageCallback: function(preview)'),
+	'More Shapes must render the selected Electric library on demand');
+assert(!source.includes('getElectricLibraryPreviewPlaceholder'),
+	'More Shapes must not leave selected libraries on a placeholder');
