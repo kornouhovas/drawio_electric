@@ -547,16 +547,17 @@ SetElectricPageMode.prototype.execute = function()
 		style.setAttribute('id', 'geElectricModeStyles');
 		style.setAttribute('type', 'text/css');
 		style.appendChild(document.createTextNode(
-			'.geEditor.geElectricModes{grid-template-columns:min-content min-content min-content 1fr min-content;}' +
-			'.geEditor.geElectricModes>.geElectricModePanel{grid-column:1;grid-row:3;box-sizing:border-box;width:40px;min-width:0;min-height:0;border-right:1px solid light-dark(var(--border-color),var(--dark-border-color));background:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 3px;overflow:hidden;z-index:3;transition:width ' + transition + ' ease-in-out,padding ' + transition + ' ease-in-out,border-color ' + transition + ' ease-in-out;}' +
-			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer){grid-column:2;min-width:0!important;transition:width ' + transition + ' ease-in-out;}' +
-			'.geEditor.geElectricModes>.geHsplit{grid-column:3;transition:opacity ' + transition + ' ease-in-out;}' +
-			'.geEditor.geElectricModes>.geDiagramContainer{grid-column:4;}' +
-			'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer{grid-column:5;}' +
-			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geElectricModePanel{width:0!important;padding-left:0!important;padding-right:0!important;border-right-width:0!important;pointer-events:none;}' +
-			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geElectricModePanel .geElectricModeButton{opacity:0;pointer-events:none;}' +
-			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geSidebarContainer:not(.geFormatContainer){width:0!important;min-width:0!important;border-right-width:0!important;pointer-events:none;}' +
+			'.geEditor.geElectricModes{--ge-electric-mode-width:40px;--ge-electric-sidebar-width:0px;grid-template-columns:var(--ge-electric-mode-width) minmax(0,1fr) min-content;}' +
+			'.geEditor.geElectricModes>.geElectricModePanel{grid-column:1;grid-row:3;box-sizing:border-box;width:var(--ge-electric-mode-width);min-width:0;min-height:0;border-right:1px solid light-dark(var(--border-color),var(--dark-border-color));background:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 3px;overflow:hidden;z-index:8;transition:transform ' + transition + ' ease-in-out,opacity ' + transition + ' ease-in-out;}' +
+			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer){grid-column:2;grid-row:3;position:absolute!important;left:0;top:0;bottom:0;z-index:6;min-width:0!important;box-shadow:3px 0 8px rgba(0,0,0,.12);transform:translateX(0);transition:transform ' + transition + ' ease-in-out;will-change:transform;}' +
+			'.geEditor.geElectricModes>.geHsplit{grid-column:2;grid-row:3;position:absolute;left:var(--ge-electric-sidebar-width);top:0;bottom:0;z-index:7;transition:opacity ' + transition + ' ease-in-out;}' +
+			'.geEditor.geElectricModes>.geDiagramContainer{grid-column:2;grid-row:3;min-width:0;}' +
+			'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer{grid-column:3;grid-row:3;}' +
+			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geSidebarContainer:not(.geFormatContainer){transform:translateX(calc(-100% - 1px));pointer-events:none;}' +
 			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geHsplit{opacity:0!important;pointer-events:none;}' +
+			'.geEditor.geElectricModes.geElectricFullscreen>.geElectricModePanel{opacity:0;transform:translateX(-100%);pointer-events:none;}' +
+			'.geEditor.geElectricModes.geElectricFullscreen>.geSidebarContainer:not(.geFormatContainer){transform:translateX(calc(-100% - 1px));pointer-events:none;}' +
+			'.geEditor.geElectricModes.geElectricFullscreen>.geHsplit{opacity:0!important;pointer-events:none;}' +
 			'.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a.geElectricToolbarViewButton,.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[data-electric-toolbar-toggle="1"],.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Скрыть левую панель"],.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Показать левую панель"]{box-sizing:border-box!important;display:flex!important;width:34px!important;min-width:34px!important;height:30px!important;margin:4px 3px 4px -13px!important;padding:3px!important;align-items:center!important;justify-content:center!important;}' +
 			'.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[data-electric-toolbar-toggle="1"]+.geSeparator,.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Скрыть левую панель"]+.geSeparator,.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Показать левую панель"]+.geSeparator{margin-left:0!important;}' +
 			'.geElectricModeButton{box-sizing:border-box;width:34px;min-height:30px;border:1px solid transparent;border-radius:5px;background:transparent;color:light-dark(var(--text-color),var(--dark-text-color));display:flex;align-items:center;justify-content:center;padding:3px;cursor:pointer;overflow:hidden;}' +
@@ -606,13 +607,36 @@ SetElectricPageMode.prototype.execute = function()
 
 	EditorUi.prototype.refresh = function(sizeDidChange)
 	{
-		refresh.apply(this, arguments);
+		var electricOverlay = Editor.isElectricTheme() &&
+			this.electricModePanel != null;
+
+		if (electricOverlay)
+		{
+			var formatWidth = this.formatContainer.style.width;
+			this.sidebarContainer.style.width = Math.max(0,
+				this.hsplitPosition || 0) + 'px';
+			this.formatContainer.style.width = (this.format != null &&
+				this.formatWidth > 0) ? '' : '0';
+
+			// The left Shapes panel is an overlay, so its width must not resize
+			// or recenter the graph while the splitter is being dragged.
+			if (sizeDidChange || formatWidth != this.formatContainer.style.width)
+			{
+				this.editor.graph.sizeDidChange();
+			}
+		}
+		else
+		{
+			refresh.apply(this, arguments);
+		}
+
 		if (Editor.isElectricTheme())
 		{
 			this.installElectricToolbarViewButton();
 		}
 		this.updateElectricModePanel();
 		this.updateElectricLeftPanelState();
+		this.updateElectricLeftOverlayGeometry(false);
 	};
 
 	EditorUi.prototype.destroy = function()
@@ -787,43 +811,70 @@ SetElectricPageMode.prototype.execute = function()
 
 	EditorUi.prototype.refreshElectricLeftPanelTransition = function()
 	{
-		var delay = ((Editor.electricLeftPanelTransitionDelay != null) ?
-			Editor.electricLeftPanelTransitionDelay :
-			((Editor.transitionDelay != null) ? Editor.transitionDelay : 0.1)) * 1000;
-		var end = Date.now() + delay + 80;
-		if (this.electricLeftPanelRefreshRunning)
+		this.updateElectricLeftOverlayGeometry(true);
+	};
+
+	EditorUi.prototype.updateElectricLeftOverlayGeometry = function(animateRuler)
+	{
+		if (!Editor.isElectricTheme() || this.container == null ||
+			this.sidebarContainer == null || this.hsplit == null)
 		{
 			return;
 		}
 
-		this.electricLeftPanelRefreshRunning = true;
+		var width = Math.max(0, this.hsplitPosition || 0);
+		this.container.style.setProperty('--ge-electric-sidebar-width', width + 'px');
+		this.hsplit.style.left = width + 'px';
+		this.updateElectricRulerPosition(animateRuler);
+	};
 
-		var update = mxUtils.bind(this, function()
+	EditorUi.prototype.updateElectricRulerPosition = function(animate)
+	{
+		if (this.ruler == null || this.ruler.vRuler == null ||
+			this.ruler.vRuler.container == null || this.container == null)
 		{
-			if (this.container == null || !Editor.isElectricTheme())
-			{
-				this.electricLeftPanelRefreshRunning = false;
-				return;
-			}
+			return;
+		}
 
-			if (this.editor != null && this.editor.graph != null &&
-				this.editor.graph.sizeDidChange != null)
-			{
-				this.editor.graph.sizeDidChange();
-			}
+		this.electricRulerAnimate = this.electricRulerAnimate || animate === true;
 
-			if (Date.now() < end)
-			{
-				window.requestAnimationFrame(update);
-			}
-			else
-			{
-				this.electricLeftPanelRefreshRunning = false;
-				this.refresh(true);
-			}
-		});
+		if (this.electricRulerFrame != null)
+		{
+			return;
+		}
 
-		window.requestAnimationFrame(update);
+		this.electricRulerFrame = window.requestAnimationFrame(mxUtils.bind(this,
+			function()
+			{
+				var ruler = this.ruler != null && this.ruler.vRuler != null ?
+					this.ruler.vRuler.container : null;
+				var modePanel = this.electricModePanel;
+
+				this.electricRulerFrame = null;
+
+				if (ruler == null || modePanel == null || this.container == null)
+				{
+					this.electricRulerAnimate = false;
+					return;
+				}
+
+				var target = 0;
+				var fullscreen = this.container.classList.contains('geElectricFullscreen');
+				var collapsed = this.container.classList.contains('geElectricShapesCollapsed');
+
+				if (!fullscreen)
+				{
+					target = this.container.getBoundingClientRect().left +
+						modePanel.offsetLeft + modePanel.offsetWidth +
+						((collapsed) ? 0 : Math.max(0, this.hsplitPosition || 0));
+				}
+
+				var offset = Math.round(target - ruler.offsetLeft);
+				ruler.style.transition = this.electricRulerAnimate ?
+					'transform ' + Editor.electricLeftPanelTransitionDelay + 's ease-in-out' : 'none';
+				ruler.style.transform = 'translateX(' + offset + 'px)';
+				this.electricRulerAnimate = false;
+			}));
 	};
 
 	EditorUi.prototype.updateElectricLeftPanelState = function()
@@ -928,8 +979,17 @@ SetElectricPageMode.prototype.execute = function()
 			this.container.insertBefore(this.electricModePanel, this.sidebarContainer);
 		}
 
+		if (this.hsplit != null)
+		{
+			this.hsplit.getSplitPosition = mxUtils.bind(this, function()
+			{
+				return this.hsplitPosition || 0;
+			});
+		}
+
 		this.updateElectricModePanel();
 		this.updateElectricLeftPanelState();
+		this.updateElectricLeftOverlayGeometry(false);
 	};
 
 	EditorUi.prototype.removeElectricModePanel = function()
@@ -938,10 +998,24 @@ SetElectricPageMode.prototype.execute = function()
 		{
 			this.container.classList.remove('geElectricModes');
 			this.container.classList.remove('geElectricShapesCollapsed');
+			this.container.classList.remove('geElectricFullscreen');
+		}
+
+		if (this.electricRulerFrame != null)
+		{
+			window.cancelAnimationFrame(this.electricRulerFrame);
+			this.electricRulerFrame = null;
+		}
+
+		if (this.hsplit != null)
+		{
+			delete this.hsplit.getSplitPosition;
+			this.hsplit.style.left = '';
 		}
 
 		this.restoreElectricToolbarViewButton();
 		this.electricLeftPanelCollapsed = null;
+		this.electricFullscreenState = null;
 
 		if (this.electricModePanel != null)
 		{
@@ -992,13 +1066,58 @@ SetElectricPageMode.prototype.execute = function()
 		{
 			this.updateElectricModePanel();
 			this.updateElectricLeftPanelState();
+			this.updateElectricLeftOverlayGeometry(false);
 		});
 
 		this.electricShapesPanelHandler = mxUtils.bind(this, function()
 		{
-			this.electricLeftPanelCollapsed = null;
+			if (this.electricLeftPanelCollapsed == null)
+			{
+				this.electricLeftPanelCollapsed = !this.isShapesPanelVisible();
+			}
+
 			this.updateElectricModePanel();
 			this.updateElectricLeftPanelState();
+			this.updateElectricLeftOverlayGeometry(false);
+		});
+
+		this.electricSidebarWidthHandler = mxUtils.bind(this, function()
+		{
+			this.updateElectricLeftOverlayGeometry(false);
+		});
+
+		this.electricFullscreenHandler = mxUtils.bind(this, function()
+		{
+			if (!Editor.isElectricTheme() || this.container == null)
+			{
+				return;
+			}
+
+			if (document.fullscreenElement != null)
+			{
+				if (this.electricFullscreenState == null)
+				{
+					this.electricFullscreenState = {
+						collapsed: this.electricLeftPanelCollapsed === true
+					};
+				}
+
+				this.container.classList.add('geElectricFullscreen');
+			}
+			else
+			{
+				this.container.classList.remove('geElectricFullscreen');
+
+				if (this.electricFullscreenState != null)
+				{
+					this.electricLeftPanelCollapsed =
+						this.electricFullscreenState.collapsed;
+					this.electricFullscreenState = null;
+				}
+			}
+
+			this.updateElectricLeftPanelState();
+			this.updateElectricLeftOverlayGeometry(true);
 		});
 
 		this.editor.addListener('fileLoaded', this.electricModeRefreshHandler);
@@ -1009,6 +1128,8 @@ SetElectricPageMode.prototype.execute = function()
 		this.editor.addListener('electricModeChanged', this.electricModeRefreshHandler);
 		this.addListener('currentThemeChanged', this.electricModeRefreshHandler);
 		this.addListener('shapesPanelChanged', this.electricShapesPanelHandler);
+		this.addListener('sidebarWidthChanged', this.electricSidebarWidthHandler);
+		document.addEventListener('fullscreenchange', this.electricFullscreenHandler);
 		this.electricModeListenersInstalled = true;
 	};
 
@@ -1018,12 +1139,20 @@ SetElectricPageMode.prototype.execute = function()
 		{
 			this.editor.removeListener(this.electricModeRefreshHandler);
 			this.removeListener(this.electricShapesPanelHandler);
+			this.removeListener(this.electricSidebarWidthHandler);
 			this.removeListener(this.electricModeRefreshHandler);
+		}
+
+		if (this.electricFullscreenHandler != null)
+		{
+			document.removeEventListener('fullscreenchange', this.electricFullscreenHandler);
 		}
 
 		this.electricModeListenersInstalled = false;
 		this.electricModeRefreshHandler = null;
 		this.electricShapesPanelHandler = null;
+		this.electricSidebarWidthHandler = null;
+		this.electricFullscreenHandler = null;
 	};
 })();
 
