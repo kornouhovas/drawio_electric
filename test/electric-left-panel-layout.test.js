@@ -10,8 +10,10 @@ const editorUi = fs.readFileSync(path.join(root,
 
 assert(electric.includes('grid-template-columns:var(--ge-electric-mode-width) minmax(0,1fr) min-content;'),
 	'Electric must reserve a stable grid column only for the mode panel');
-assert(electric.includes('position:absolute!important;left:0;top:0;bottom:0;z-index:6;'),
+assert(electric.includes('grid-column:2/3;grid-row:3/4;position:absolute!important;left:0;top:0;bottom:0;z-index:6;'),
 	'The Shapes sidebar must overlay the diagram instead of taking layout space');
+assert(electric.includes('background-color:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));'),
+	'The overlay Shapes sidebar must have an opaque theme background');
 assert(electric.includes('geElectricShapesCollapsed>.geSidebarContainer:not(.geFormatContainer){transform:translateX'),
 	'Collapsing Shapes must animate the overlay rather than resize it to zero');
 assert(!electric.includes('geElectricShapesCollapsed>.geElectricModePanel{width:0'),
@@ -25,6 +27,9 @@ assert(electric.includes("document.addEventListener('fullscreenchange', this.ele
 	'Fullscreen transitions must be observed, including exits with Escape');
 assert(electric.includes('this.electricFullscreenState = {'),
 	'Fullscreen must preserve the prior left-panel state');
+assert(electric.includes('this.getElectricCanvasViewportState();') &&
+	electric.includes('this.scheduleElectricCanvasViewportRestore();'),
+	'Fullscreen must preserve the visible canvas position during viewport changes');
 assert(electric.includes('this.hsplit.getSplitPosition = mxUtils.bind(this'),
 	'The splitter must use the sidebar-local coordinate system');
 assert(editorUi.includes('if (elt.getSplitPosition != null)'),

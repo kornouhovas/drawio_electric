@@ -549,8 +549,8 @@ SetElectricPageMode.prototype.execute = function()
 		style.appendChild(document.createTextNode(
 			'.geEditor.geElectricModes{--ge-electric-mode-width:40px;--ge-electric-sidebar-width:0px;grid-template-columns:var(--ge-electric-mode-width) minmax(0,1fr) min-content;}' +
 			'.geEditor.geElectricModes>.geElectricModePanel{grid-column:1;grid-row:3;box-sizing:border-box;width:var(--ge-electric-mode-width);min-width:0;min-height:0;border-right:1px solid light-dark(var(--border-color),var(--dark-border-color));background:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 3px;overflow:hidden;z-index:8;transition:transform ' + transition + ' ease-in-out,opacity ' + transition + ' ease-in-out;}' +
-			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer){grid-column:2;grid-row:3;position:absolute!important;left:0;top:0;bottom:0;z-index:6;min-width:0!important;box-shadow:3px 0 8px rgba(0,0,0,.12);transform:translateX(0);transition:transform ' + transition + ' ease-in-out;will-change:transform;}' +
-			'.geEditor.geElectricModes>.geHsplit{grid-column:2;grid-row:3;position:absolute;left:var(--ge-electric-sidebar-width);top:0;bottom:0;z-index:7;transition:opacity ' + transition + ' ease-in-out;}' +
+			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer){grid-column:2/3;grid-row:3/4;position:absolute!important;left:0;top:0;bottom:0;z-index:6;min-width:0!important;background-color:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));box-shadow:3px 0 8px rgba(0,0,0,.12);transform:translateX(0);transition:transform ' + transition + ' ease-in-out;will-change:transform;}' +
+			'.geEditor.geElectricModes>.geHsplit{grid-column:2/3;grid-row:3/4;position:absolute;left:var(--ge-electric-sidebar-width);top:0;bottom:0;z-index:7;transition:opacity ' + transition + ' ease-in-out;}' +
 			'.geEditor.geElectricModes>.geDiagramContainer{grid-column:2;grid-row:3;min-width:0;}' +
 			'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer{grid-column:3;grid-row:3;}' +
 			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geSidebarContainer:not(.geFormatContainer){transform:translateX(calc(-100% - 1px));pointer-events:none;}' +
@@ -957,6 +957,7 @@ SetElectricPageMode.prototype.execute = function()
 
 		Editor.ensureElectricModeStyles();
 		this.installElectricModeListeners();
+		this.installElectricFullscreenViewportGuard();
 		this.installElectricToolbarViewButton();
 		window.setTimeout(mxUtils.bind(this, function()
 		{
@@ -1014,6 +1015,7 @@ SetElectricPageMode.prototype.execute = function()
 		}
 
 		this.restoreElectricToolbarViewButton();
+		this.removeElectricFullscreenViewportGuard();
 		this.electricLeftPanelCollapsed = null;
 		this.electricFullscreenState = null;
 
@@ -1026,6 +1028,134 @@ SetElectricPageMode.prototype.execute = function()
 
 			this.electricModePanel = null;
 		}
+	};
+
+	EditorUi.prototype.getElectricCanvasViewportState = function()
+	{
+		if (this.diagramContainer == null)
+		{
+			return null;
+		}
+
+		var page = this.diagramContainer.querySelector('.geBackgroundPage');
+		var containerBounds = this.diagramContainer.getBoundingClientRect();
+		var pageBounds = (page != null) ? page.getBoundingClientRect() : null;
+
+		return {
+			scrollLeft: this.diagramContainer.scrollLeft,
+			scrollTop: this.diagramContainer.scrollTop,
+			pageLeft: (pageBounds != null) ?
+				pageBounds.left - containerBounds.left : null,
+			pageTop: (pageBounds != null) ?
+				pageBounds.top - containerBounds.top : null
+		};
+	};
+
+	EditorUi.prototype.restoreElectricCanvasViewport = function()
+	{
+		var state = this.electricCanvasViewportState;
+
+		if (state == null || this.diagramContainer == null)
+		{
+			return;
+		}
+
+		var page = this.diagramContainer.querySelector('.geBackgroundPage');
+
+		if (page != null && state.pageLeft != null && state.pageTop != null)
+		{
+			var containerBounds = this.diagramContainer.getBoundingClientRect();
+			var pageBounds = page.getBoundingClientRect();
+			this.diagramContainer.scrollLeft += Math.round(
+				pageBounds.left - containerBounds.left - state.pageLeft);
+			this.diagramContainer.scrollTop += Math.round(
+				pageBounds.top - containerBounds.top - state.pageTop);
+		}
+		else
+		{
+			this.diagramContainer.scrollLeft = state.scrollLeft;
+			this.diagramContainer.scrollTop = state.scrollTop;
+		}
+	};
+
+	EditorUi.prototype.scheduleElectricCanvasViewportRestore = function()
+	{
+		this.clearElectricCanvasViewportRestore();
+
+		var restore = mxUtils.bind(this, function()
+		{
+			this.restoreElectricCanvasViewport();
+		});
+
+		this.electricCanvasViewportFrame = window.requestAnimationFrame(
+			mxUtils.bind(this, function()
+			{
+				this.electricCanvasViewportFrame = null;
+				restore();
+			}));
+
+		this.electricCanvasViewportTimers = [];
+		var delays = [80, 180, 350];
+
+		for (var i = 0; i < delays.length; i++)
+		{
+			this.electricCanvasViewportTimers.push(window.setTimeout(
+				restore, delays[i]));
+		}
+	};
+
+	EditorUi.prototype.clearElectricCanvasViewportRestore = function()
+	{
+		if (this.electricCanvasViewportFrame != null)
+		{
+			window.cancelAnimationFrame(this.electricCanvasViewportFrame);
+			this.electricCanvasViewportFrame = null;
+		}
+
+		if (this.electricCanvasViewportTimers != null)
+		{
+			for (var i = 0; i < this.electricCanvasViewportTimers.length; i++)
+			{
+				window.clearTimeout(this.electricCanvasViewportTimers[i]);
+			}
+		}
+
+		this.electricCanvasViewportTimers = null;
+	};
+
+	EditorUi.prototype.installElectricFullscreenViewportGuard = function()
+	{
+		var action = (this.actions != null) ? this.actions.get('fullscreen') : null;
+
+		if (action == null || this.electricFullscreenAction != null)
+		{
+			return;
+		}
+
+		this.electricFullscreenAction = action;
+		this.electricFullscreenActionFunct = action.funct;
+		action.funct = mxUtils.bind(this, function()
+		{
+			this.electricCanvasViewportState =
+				this.getElectricCanvasViewportState();
+			return this.electricFullscreenActionFunct.apply(action, arguments);
+		});
+	};
+
+	EditorUi.prototype.removeElectricFullscreenViewportGuard = function()
+	{
+		this.clearElectricCanvasViewportRestore();
+
+		if (this.electricFullscreenAction != null &&
+			this.electricFullscreenActionFunct != null)
+		{
+			this.electricFullscreenAction.funct =
+				this.electricFullscreenActionFunct;
+		}
+
+		this.electricFullscreenAction = null;
+		this.electricFullscreenActionFunct = null;
+		this.electricCanvasViewportState = null;
 	};
 
 	EditorUi.prototype.updateElectricModePanel = function()
@@ -1118,6 +1248,7 @@ SetElectricPageMode.prototype.execute = function()
 
 			this.updateElectricLeftPanelState();
 			this.updateElectricLeftOverlayGeometry(true);
+			this.scheduleElectricCanvasViewportRestore();
 		});
 
 		this.editor.addListener('fileLoaded', this.electricModeRefreshHandler);
