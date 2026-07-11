@@ -1196,6 +1196,13 @@ SetElectricPageMode.prototype.execute = function()
 		}
 
 		this.electricLayerToRename = layer;
+
+		if (this.electricLayersRefreshFrame != null)
+		{
+			window.cancelAnimationFrame(this.electricLayersRefreshFrame);
+			this.electricLayersRefreshFrame = null;
+		}
+
 		this.updateElectricLayersPanel();
 	};
 

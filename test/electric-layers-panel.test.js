@@ -32,3 +32,5 @@ assert(electric.includes("this.editor.graph.addListener('defaultParentChanged'")
 	'The tree must track layer, model, and active-parent changes');
 assert(electric.includes('this.addElectricLayer();'),
 	'The Layers header must provide an add-layer command');
+assert(electric.includes('window.cancelAnimationFrame(this.electricLayersRefreshFrame);'),
+	'Inline layer naming must not be detached by a pending tree refresh');
