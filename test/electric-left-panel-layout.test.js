@@ -14,7 +14,8 @@ assert(electric.includes('grid-column:2/3;grid-row:3/4;position:absolute!importa
 	'The Shapes sidebar must overlay the diagram instead of taking layout space');
 assert(electric.includes('background-color:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));'),
 	'The overlay Shapes sidebar must have an opaque theme background');
-assert(electric.includes('geElectricShapesCollapsed>.geSidebarContainer:not(.geFormatContainer){transform:translateX'),
+assert(electric.includes('geElectricShapesCollapsed>.geSidebarContainer:not(.geFormatContainer),') &&
+	electric.includes('transform:translateX(calc(-100% - 1px))'),
 	'Collapsing Shapes must animate the overlay rather than resize it to zero');
 assert(!electric.includes('geElectricShapesCollapsed>.geElectricModePanel{width:0'),
 	'The Electric mode panel must remain visible when Shapes is collapsed');

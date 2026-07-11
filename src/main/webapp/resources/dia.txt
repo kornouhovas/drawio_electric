@@ -274,6 +274,7 @@ electricCabinetMode=Cabinets
 electricCabinetModeTitle=Cabinet layout
 electricSchematicsMode=Schematics
 electricSchematicsModeTitle=Project schematics
+electricLibrary=Library
 showElectricLeftPanel=Show left panel
 hideElectricLeftPanel=Hide left panel
 electricShapesLoadError=Could not load Electric device

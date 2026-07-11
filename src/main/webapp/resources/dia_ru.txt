@@ -275,6 +275,7 @@ electricCabinetMode=Шкафы
 electricCabinetModeTitle=Компоновка шкафов
 electricSchematicsMode=Схемы
 electricSchematicsModeTitle=Проектные схемы
+electricLibrary=Библиотека
 showElectricLeftPanel=Показать левую панель
 hideElectricLeftPanel=Скрыть левую панель
 electricShapesLoadError=Не удалось загрузить устройство Electric

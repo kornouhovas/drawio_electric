@@ -108,6 +108,22 @@ Editor.electricModes = [
 	}
 ];
 
+Editor.defaultElectricPanelView = 'library';
+Editor.electricPanelViews = [
+	{
+		id: 'layers',
+		titleKey: 'layers',
+		title: 'Layers',
+		icon: Editor.createElectricModeIcon('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z"/><path d="m4 12 8 4.5 8-4.5"/><path d="m4 16.5 8 4.5 8-4.5"/></svg>')
+	},
+	{
+		id: 'library',
+		titleKey: 'electricLibrary',
+		title: 'Library',
+		icon: Editor.createElectricModeIcon('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#111827" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v16h4.5a2.5 2.5 0 0 1 2.5 2.5v-16Z"/></svg>')
+	}
+];
+
 Editor.addElectricStyleValue = function(cell, key, value)
 {
 	if (cell == null || key == null || value == null)
@@ -549,21 +565,50 @@ SetElectricPageMode.prototype.execute = function()
 		style.appendChild(document.createTextNode(
 			'.geEditor.geElectricModes{--ge-electric-mode-width:40px;--ge-electric-sidebar-width:0px;grid-template-columns:var(--ge-electric-mode-width) minmax(0,1fr) min-content;}' +
 			'.geEditor.geElectricModes>.geElectricModePanel{grid-column:1;grid-row:3;box-sizing:border-box;width:var(--ge-electric-mode-width);min-width:0;min-height:0;border-right:1px solid light-dark(var(--border-color),var(--dark-border-color));background:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 3px;overflow:hidden;z-index:8;transition:transform ' + transition + ' ease-in-out,opacity ' + transition + ' ease-in-out;}' +
-			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer){grid-column:2/3;grid-row:3/4;position:absolute!important;left:0;top:0;bottom:0;z-index:6;min-width:0!important;background-color:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));box-shadow:3px 0 8px rgba(0,0,0,.12);transform:translateX(0);transition:transform ' + transition + ' ease-in-out;will-change:transform;}' +
+			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer),.geEditor.geElectricModes>.geElectricLayersPanel{grid-column:2/3;grid-row:3/4;position:absolute!important;left:0;top:0;bottom:0;z-index:6;min-width:0!important;background-color:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));box-shadow:3px 0 8px rgba(0,0,0,.12);transform:translateX(0);transition:transform ' + transition + ' ease-in-out;will-change:transform;}' +
+			'.geEditor.geElectricModes>.geElectricLayersPanel{box-sizing:border-box;width:var(--ge-electric-sidebar-width);border-right:1px solid light-dark(var(--border-color),var(--dark-border-color));display:none;flex-direction:column;overflow:hidden;}' +
+			'.geEditor.geElectricModes.geElectricPanelLayers>.geSidebarContainer:not(.geFormatContainer){display:none;}' +
+			'.geEditor.geElectricModes.geElectricPanelLayers>.geElectricLayersPanel{display:flex;}' +
 			'.geEditor.geElectricModes>.geHsplit{grid-column:2/3;grid-row:3/4;position:absolute;left:var(--ge-electric-sidebar-width);top:0;bottom:0;z-index:7;transition:opacity ' + transition + ' ease-in-out;}' +
 			'.geEditor.geElectricModes>.geDiagramContainer{grid-column:2;grid-row:3;min-width:0;}' +
 			'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer{grid-column:3;grid-row:3;}' +
-			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geSidebarContainer:not(.geFormatContainer){transform:translateX(calc(-100% - 1px));pointer-events:none;}' +
+			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geSidebarContainer:not(.geFormatContainer),.geEditor.geElectricModes.geElectricShapesCollapsed>.geElectricLayersPanel{transform:translateX(calc(-100% - 1px));pointer-events:none;}' +
 			'.geEditor.geElectricModes.geElectricShapesCollapsed>.geHsplit{opacity:0!important;pointer-events:none;}' +
 			'.geEditor.geElectricModes.geElectricFullscreen>.geElectricModePanel{opacity:0;transform:translateX(-100%);pointer-events:none;}' +
-			'.geEditor.geElectricModes.geElectricFullscreen>.geSidebarContainer:not(.geFormatContainer){transform:translateX(calc(-100% - 1px));pointer-events:none;}' +
+			'.geEditor.geElectricModes.geElectricFullscreen>.geSidebarContainer:not(.geFormatContainer),.geEditor.geElectricModes.geElectricFullscreen>.geElectricLayersPanel{transform:translateX(calc(-100% - 1px));pointer-events:none;}' +
 			'.geEditor.geElectricModes.geElectricFullscreen>.geHsplit{opacity:0!important;pointer-events:none;}' +
 			'.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a.geElectricToolbarViewButton,.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[data-electric-toolbar-toggle="1"],.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Скрыть левую панель"],.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Показать левую панель"]{box-sizing:border-box!important;display:flex!important;width:34px!important;min-width:34px!important;height:30px!important;margin:4px 3px 4px -13px!important;padding:3px!important;align-items:center!important;justify-content:center!important;}' +
 			'.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[data-electric-toolbar-toggle="1"]+.geSeparator,.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Скрыть левую панель"]+.geSeparator,.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Показать левую панель"]+.geSeparator{margin-left:0!important;}' +
-			'.geElectricModeButton{box-sizing:border-box;width:34px;min-height:30px;border:1px solid transparent;border-radius:5px;background:transparent;color:light-dark(var(--text-color),var(--dark-text-color));display:flex;align-items:center;justify-content:center;padding:3px;cursor:pointer;overflow:hidden;}' +
-			'.geElectricModeButton:hover{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
-			'.geElectricModeButton.geActive{background:light-dark(var(--accent-color),var(--dark-accent-color));border-color:light-dark(var(--primary-hover-color),var(--dark-active-accent-color));color:light-dark(var(--accent-text-color),var(--dark-accent-text-color));}' +
+			'.geElectricModeButton,.geElectricPanelViewButton{box-sizing:border-box;width:34px;min-height:30px;border:1px solid transparent;border-radius:5px;background:transparent;color:light-dark(var(--text-color),var(--dark-text-color));display:flex;align-items:center;justify-content:center;padding:3px;cursor:pointer;overflow:hidden;}' +
+			'.geElectricModeButton:hover,.geElectricPanelViewButton:hover{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
+			'.geElectricModeButton.geActive,.geElectricPanelViewButton.geActive{background:light-dark(var(--accent-color),var(--dark-accent-color));border-color:light-dark(var(--primary-hover-color),var(--dark-active-accent-color));color:light-dark(var(--accent-text-color),var(--dark-accent-text-color));}' +
 			'.geElectricModeIcon{width:16px;height:16px;flex:0 0 16px;background-repeat:no-repeat;background-position:center;background-size:16px 16px;opacity:.9;}' +
+			'.geElectricModeSeparator{width:24px;height:1px;margin:2px 0;background:light-dark(var(--border-color),var(--dark-border-color));flex:0 0 1px;}' +
+			'.geElectricLayersHeader{box-sizing:border-box;height:40px;min-height:40px;padding:0 8px 0 12px;border-bottom:1px solid light-dark(var(--border-color),var(--dark-border-color));display:flex;align-items:center;gap:4px;}' +
+			'.geElectricLayersTitle{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;font-size:13px;font-weight:600;}' +
+			'.geElectricLayersAction{box-sizing:border-box;width:28px;height:28px;border:0;border-radius:4px;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;}' +
+			'.geElectricLayersAction:hover{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
+			'.geElectricLayersActionIcon{width:16px;height:16px;background-repeat:no-repeat;background-position:center;background-size:16px 16px;}' +
+			'.geElectricLayersTree{min-height:0;flex:1;overflow:auto;padding:4px 0 8px;}' +
+			'.geElectricLayerRow{box-sizing:border-box;height:30px;display:flex;align-items:center;padding-right:6px;color:light-dark(var(--text-color),var(--dark-text-color));cursor:default;user-select:none;}' +
+			'.geElectricLayerRow:hover{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
+			'.geElectricLayerRow.geActiveLayer{background:light-dark(var(--accent-color),var(--dark-accent-color));font-weight:600;}' +
+			'.geElectricLayerRow.geSelectedElement{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
+			'.geElectricLayerRow.geHidden>.geElectricLayerMain{opacity:.45;}' +
+			'.geElectricTreeToggle{box-sizing:border-box;width:20px;height:28px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;}' +
+			'.geElectricTreeToggle:before{content:"";width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:5px solid currentColor;transition:transform .12s ease-in-out;}' +
+			'.geElectricTreeToggle.geExpanded:before{transform:rotate(90deg);}' +
+			'.geElectricTreeToggle.geEmpty{visibility:hidden;}' +
+			'.geElectricLayerVisibility{box-sizing:border-box;width:25px;height:28px;border:0;background:transparent no-repeat center;background-size:16px 16px;cursor:pointer;opacity:.75;}' +
+			'.geElectricLayerMain{min-width:0;flex:1;display:flex;align-items:center;gap:7px;height:100%;}' +
+			'.geElectricLayerMarker{width:3px;height:16px;border-radius:2px;background:#7c3aed;flex:0 0 3px;}' +
+			'.geElectricElementMarker{box-sizing:border-box;width:12px;height:12px;border:1.5px solid currentColor;border-radius:2px;opacity:.7;flex:0 0 12px;}' +
+			'.geElectricElementMarker.geEdgeMarker{border-radius:0;border-width:0 0 1.5px 0;transform:rotate(-30deg);}' +
+			'.geElectricLayerLabel{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;}' +
+			'.geElectricActiveLayerMark{box-sizing:border-box;width:14px;height:14px;border:1px solid currentColor;border-radius:50%;display:none;align-items:center;justify-content:center;flex:0 0 14px;}' +
+			'.geElectricActiveLayerMark:after{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}' +
+			'.geElectricLayerRow.geActiveLayer>.geElectricActiveLayerMark{display:flex;}' +
+			'.geElectricLayersEmpty{padding:20px 16px;color:light-dark(var(--placeholder-color),var(--dark-placeholder-color));font-size:12px;text-align:center;white-space:normal;}' +
 			'html body.geDarkMode .geElectricModeIcon{filter:invert(1);}'
 		));
 
@@ -932,6 +977,30 @@ SetElectricPageMode.prototype.execute = function()
 		return button;
 	};
 
+	EditorUi.prototype.createElectricPanelViewButton = function(view)
+	{
+		var button = document.createElement('button');
+		var title = mxResources.get(view.titleKey) || view.title;
+		button.setAttribute('type', 'button');
+		button.setAttribute('title', title);
+		button.setAttribute('aria-label', title);
+		button.setAttribute('data-electric-panel-view', view.id);
+		button.className = 'geElectricPanelViewButton';
+
+		var icon = document.createElement('span');
+		icon.className = 'geElectricModeIcon';
+		icon.style.backgroundImage = 'url("' + view.icon + '")';
+		button.appendChild(icon);
+
+		mxEvent.addListener(button, 'click', mxUtils.bind(this, function(evt)
+		{
+			this.setElectricLeftPanelView(view.id);
+			mxEvent.consume(evt);
+		}));
+
+		return button;
+	};
+
 	EditorUi.prototype.createElectricModePanel = function()
 	{
 		var panel = document.createElement('div');
@@ -940,12 +1009,432 @@ SetElectricPageMode.prototype.execute = function()
 		panel.setAttribute('aria-label', mxResources.get('electricModes') ||
 			'Electric modes');
 
+		for (var i = 0; i < Editor.electricPanelViews.length; i++)
+		{
+			panel.appendChild(this.createElectricPanelViewButton(
+				Editor.electricPanelViews[i]));
+		}
+
+		var separator = document.createElement('div');
+		separator.className = 'geElectricModeSeparator';
+		separator.setAttribute('aria-hidden', 'true');
+		panel.appendChild(separator);
+
 		for (var i = 0; i < Editor.electricModes.length; i++)
 		{
 			panel.appendChild(this.createElectricModeButton(Editor.electricModes[i]));
 		}
 
 		return panel;
+	};
+
+	EditorUi.prototype.setElectricLeftPanelView = function(viewId)
+	{
+		viewId = (viewId == 'layers') ? 'layers' : 'library';
+		this.electricLeftPanelView = viewId;
+		this.electricLeftPanelCollapsed = false;
+
+		if (viewId == 'layers')
+		{
+			this.container.classList.add('geElectricPanelLayers');
+			this.scheduleElectricLayersPanelRefresh();
+		}
+		else
+		{
+			this.container.classList.remove('geElectricPanelLayers');
+		}
+
+		this.updateElectricPanelViewButtons();
+		this.updateElectricLeftPanelState();
+		this.updateElectricLeftOverlayGeometry(false);
+	};
+
+	EditorUi.prototype.updateElectricPanelViewButtons = function()
+	{
+		if (this.electricModePanel == null)
+		{
+			return;
+		}
+
+		var buttons = this.electricModePanel.querySelectorAll(
+			'button[data-electric-panel-view]');
+
+		for (var i = 0; i < buttons.length; i++)
+		{
+			var active = buttons[i].getAttribute('data-electric-panel-view') ==
+				this.electricLeftPanelView;
+
+			if (active)
+			{
+				buttons[i].classList.add('geActive');
+			}
+			else
+			{
+				buttons[i].classList.remove('geActive');
+			}
+
+			buttons[i].setAttribute('aria-pressed', active ? 'true' : 'false');
+		}
+	};
+
+	EditorUi.prototype.createElectricLayersAction = function(title, icon, fn)
+	{
+		var button = document.createElement('button');
+		button.setAttribute('type', 'button');
+		button.setAttribute('title', title);
+		button.setAttribute('aria-label', title);
+		button.className = 'geElectricLayersAction';
+
+		var image = document.createElement('span');
+		image.className = 'geElectricLayersActionIcon';
+		image.style.backgroundImage = 'url("' + icon + '")';
+		button.appendChild(image);
+		mxEvent.addListener(button, 'click', mxUtils.bind(this, function(evt)
+		{
+			fn();
+			mxEvent.consume(evt);
+		}));
+
+		return button;
+	};
+
+	EditorUi.prototype.createElectricLayersPanel = function()
+	{
+		var panel = document.createElement('div');
+		panel.className = 'geElectricLayersPanel';
+		panel.setAttribute('role', 'tree');
+		panel.setAttribute('aria-label', mxResources.get('layers') || 'Layers');
+
+		var header = document.createElement('div');
+		header.className = 'geElectricLayersHeader';
+		var title = document.createElement('div');
+		title.className = 'geElectricLayersTitle';
+		mxUtils.write(title, mxResources.get('layers') || 'Layers');
+		header.appendChild(title);
+		header.appendChild(this.createElectricLayersAction(
+			mxResources.get('addLayer') || 'Add Layer', Editor.plusImage,
+			mxUtils.bind(this, function()
+			{
+				this.addElectricLayer();
+			})));
+		panel.appendChild(header);
+
+		this.electricLayersTree = document.createElement('div');
+		this.electricLayersTree.className = 'geElectricLayersTree';
+		panel.appendChild(this.electricLayersTree);
+
+		return panel;
+	};
+
+	EditorUi.prototype.getElectricLayerTreeLabel = function(cell, index)
+	{
+		var graph = this.editor.graph;
+		var model = graph.getModel();
+		var label = graph.convertValueToString(cell);
+
+		if (label == null || String(label).replace(/\s/g, '').length == 0)
+		{
+			if (model.isEdge(cell))
+			{
+				label = mxResources.get('connector') || 'Connector';
+			}
+			else if (model.getChildCount(cell) > 0)
+			{
+				label = mxResources.get('group') || 'Group';
+			}
+			else
+			{
+				label = (mxResources.get('shape') || 'Shape') + ' ' + (index + 1);
+			}
+		}
+
+		return String(label);
+	};
+
+	EditorUi.prototype.getElectricActiveLayer = function()
+	{
+		var graph = this.editor.graph;
+		var model = graph.getModel();
+		var cell = graph.getDefaultParent();
+
+		while (cell != null && model.getParent(cell) != model.root)
+		{
+			cell = model.getParent(cell);
+		}
+
+		return cell;
+	};
+
+	EditorUi.prototype.addElectricLayer = function()
+	{
+		var graph = this.editor.graph;
+		var model = graph.getModel();
+		var layer = null;
+
+		if (!graph.isEnabled())
+		{
+			return;
+		}
+
+		model.beginUpdate();
+
+		try
+		{
+			layer = graph.addCell(new mxCell(mxResources.get('untitledLayer') ||
+				'Untitled Layer'), model.root);
+			graph.setDefaultParent(layer);
+		}
+		finally
+		{
+			model.endUpdate();
+		}
+
+		this.electricLayerToRename = layer;
+		this.updateElectricLayersPanel();
+	};
+
+	EditorUi.prototype.startElectricLayerRename = function(layer, labelNode)
+	{
+		var graph = this.editor.graph;
+
+		if (!graph.isEnabled() || layer == null || labelNode == null)
+		{
+			return;
+		}
+
+		var oldValue = mxUtils.getTextContent(labelNode);
+		labelNode.contentEditable = 'true';
+		labelNode.style.textOverflow = '';
+		labelNode.focus();
+		document.execCommand('selectAll', false, null);
+
+		var stopEditing = mxUtils.bind(this, function(applyValue)
+		{
+			if (labelNode.contentEditable == 'true')
+			{
+				labelNode.contentEditable = 'false';
+				var value = mxUtils.getTextContent(labelNode);
+
+				if (applyValue && value != oldValue)
+				{
+					graph.cellLabelChanged(layer, value.length > 0 ? value :
+						(mxResources.get('untitledLayer') || 'Untitled Layer'));
+				}
+				else
+				{
+					this.scheduleElectricLayersPanelRefresh();
+				}
+			}
+		});
+
+		mxEvent.addListener(labelNode, 'keydown', function(evt)
+		{
+			if (evt.keyCode == 13 || evt.keyCode == 27)
+			{
+				stopEditing(evt.keyCode == 13);
+				mxEvent.consume(evt);
+			}
+		});
+		mxEvent.addListener(labelNode, 'blur', function()
+		{
+			stopEditing(true);
+		});
+	};
+
+	EditorUi.prototype.addElectricLayerTreeRow = function(cell, layer, depth,
+		index, isLayer, parentVisible)
+	{
+		var graph = this.editor.graph;
+		var model = graph.getModel();
+		var childCount = model.getChildCount(cell);
+		var id = cell.getId();
+		var expanded = this.electricLayersExpanded[id];
+
+		if (expanded == null)
+		{
+			expanded = isLayer;
+			this.electricLayersExpanded[id] = expanded;
+		}
+
+		var visible = model.isVisible(cell);
+		var effectiveVisible = parentVisible && visible;
+		var row = document.createElement('div');
+		row.className = 'geElectricLayerRow';
+		row.style.paddingLeft = (4 + depth * 16) + 'px';
+		row.setAttribute('role', 'treeitem');
+		row.setAttribute('aria-level', String(depth + 1));
+		row.setAttribute('data-cell-id', id);
+		row.setAttribute('data-layer-id', layer.getId());
+		row.setAttribute('data-electric-kind', isLayer ? 'layer' : 'element');
+
+		if (childCount > 0)
+		{
+			row.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+		}
+
+		if (!effectiveVisible)
+		{
+			row.classList.add('geHidden');
+		}
+
+		if (isLayer && this.electricActiveLayer == cell)
+		{
+			row.classList.add('geActiveLayer');
+		}
+		else if (!isLayer && graph.isCellSelected(cell))
+		{
+			row.classList.add('geSelectedElement');
+		}
+
+		var toggle = document.createElement('button');
+		toggle.setAttribute('type', 'button');
+		toggle.setAttribute('aria-label', mxResources.get(
+			expanded ? 'collapse' : 'expand') || (expanded ? 'Collapse' : 'Expand'));
+		toggle.className = 'geElectricTreeToggle' +
+			(childCount == 0 ? ' geEmpty' : (expanded ? ' geExpanded' : ''));
+		row.appendChild(toggle);
+
+		if (childCount > 0)
+		{
+			mxEvent.addListener(toggle, 'click', mxUtils.bind(this, function(evt)
+			{
+				this.electricLayersExpanded[id] = !expanded;
+				this.scheduleElectricLayersPanelRefresh();
+				mxEvent.consume(evt);
+			}));
+		}
+
+		var visibility = document.createElement('button');
+		visibility.setAttribute('type', 'button');
+		visibility.setAttribute('title', mxResources.get(visible ? 'hide' : 'show'));
+		visibility.setAttribute('aria-label', mxResources.get(visible ? 'hide' : 'show'));
+		visibility.setAttribute('aria-pressed', visible ? 'true' : 'false');
+		visibility.className = 'geElectricLayerVisibility geAdaptiveAsset';
+		visibility.style.backgroundImage = 'url("' +
+			(visible ? Editor.visibleImage : Editor.hiddenImage) + '")';
+		row.appendChild(visibility);
+		mxEvent.addListener(visibility, 'click', function(evt)
+		{
+			if (graph.isEnabled())
+			{
+				graph.setCellsVisible([cell], !visible);
+			}
+
+			mxEvent.consume(evt);
+		});
+
+		var main = document.createElement('div');
+		main.className = 'geElectricLayerMain';
+		var marker = document.createElement('span');
+		marker.className = isLayer ? 'geElectricLayerMarker' :
+			('geElectricElementMarker' + (model.isEdge(cell) ? ' geEdgeMarker' : ''));
+		main.appendChild(marker);
+		var label = document.createElement('div');
+		label.className = 'geElectricLayerLabel';
+		mxUtils.write(label, this.getElectricLayerTreeLabel(cell, index));
+		main.appendChild(label);
+		row.appendChild(main);
+
+		var active = document.createElement('span');
+		active.className = 'geElectricActiveLayerMark';
+		active.setAttribute('title', mxResources.get('currentLayer') || 'Current Layer');
+		row.appendChild(active);
+
+		mxEvent.addListener(row, 'click', mxUtils.bind(this, function(evt)
+		{
+			if (mxEvent.getSource(evt) != visibility &&
+				mxEvent.getSource(evt) != toggle && label.contentEditable != 'true')
+			{
+				if (isLayer)
+				{
+					graph.setDefaultParent(cell);
+					graph.view.setCurrentRoot(null);
+				}
+				else
+				{
+					graph.setSelectionCell(cell);
+					graph.scrollCellToVisible(cell, true);
+				}
+
+				mxEvent.consume(evt);
+			}
+		}));
+
+		if (isLayer)
+		{
+			mxEvent.addListener(label, 'dblclick', mxUtils.bind(this, function(evt)
+			{
+				this.startElectricLayerRename(cell, label);
+				mxEvent.consume(evt);
+			}));
+		}
+
+		this.electricLayersTree.appendChild(row);
+		this.electricLayerLabelNodes[id] = label;
+
+		if (expanded)
+		{
+			for (var i = 0; i < childCount; i++)
+			{
+				this.addElectricLayerTreeRow(model.getChildAt(cell, i), layer,
+					depth + 1, i, false, effectiveVisible);
+			}
+		}
+	};
+
+	EditorUi.prototype.updateElectricLayersPanel = function()
+	{
+		if (this.electricLayersTree == null || this.editor == null)
+		{
+			return;
+		}
+
+		var graph = this.editor.graph;
+		var model = graph.getModel();
+		this.electricLayersTree.innerText = '';
+		this.electricLayersExpanded = this.electricLayersExpanded || {};
+		this.electricLayerLabelNodes = {};
+		this.electricActiveLayer = this.getElectricActiveLayer();
+		var count = model.getChildCount(model.root);
+
+		for (var i = count - 1; i >= 0; i--)
+		{
+			var layer = model.getChildAt(model.root, i);
+			this.addElectricLayerTreeRow(layer, layer, 0, i, true, true);
+		}
+
+		if (count == 0)
+		{
+			var empty = document.createElement('div');
+			empty.className = 'geElectricLayersEmpty';
+			mxUtils.write(empty, mxResources.get('noResults') || 'No layers');
+			this.electricLayersTree.appendChild(empty);
+		}
+
+		if (this.electricLayerToRename != null)
+		{
+			var layerToRename = this.electricLayerToRename;
+			this.electricLayerToRename = null;
+			this.startElectricLayerRename(layerToRename,
+				this.electricLayerLabelNodes[layerToRename.getId()]);
+		}
+	};
+
+	EditorUi.prototype.scheduleElectricLayersPanelRefresh = function()
+	{
+		if (this.electricLayersPanel == null ||
+			this.electricLeftPanelView != 'layers' ||
+			this.electricLayersRefreshFrame != null)
+		{
+			return;
+		}
+
+		this.electricLayersRefreshFrame = window.requestAnimationFrame(
+			mxUtils.bind(this, function()
+			{
+				this.electricLayersRefreshFrame = null;
+				this.updateElectricLayersPanel();
+			}));
 	};
 
 	EditorUi.prototype.installElectricModePanel = function()
@@ -972,12 +1461,33 @@ SetElectricPageMode.prototype.execute = function()
 			this.electricLeftPanelCollapsed = false;
 		}
 
+		if (this.electricLeftPanelView == null)
+		{
+			this.electricLeftPanelView = Editor.defaultElectricPanelView;
+		}
+
 		this.container.classList.add('geElectricModes');
 
 		if (this.electricModePanel == null)
 		{
 			this.electricModePanel = this.createElectricModePanel();
 			this.container.insertBefore(this.electricModePanel, this.sidebarContainer);
+		}
+
+		if (this.electricLayersPanel == null)
+		{
+			this.electricLayersPanel = this.createElectricLayersPanel();
+			this.container.insertBefore(this.electricLayersPanel,
+				this.sidebarContainer);
+		}
+
+		if (this.electricLeftPanelView == 'layers')
+		{
+			this.container.classList.add('geElectricPanelLayers');
+		}
+		else
+		{
+			this.container.classList.remove('geElectricPanelLayers');
 		}
 
 		if (this.hsplit != null)
@@ -989,6 +1499,8 @@ SetElectricPageMode.prototype.execute = function()
 		}
 
 		this.updateElectricModePanel();
+		this.updateElectricPanelViewButtons();
+		this.scheduleElectricLayersPanelRefresh();
 		this.updateElectricLeftPanelState();
 		this.updateElectricLeftOverlayGeometry(false);
 	};
@@ -1000,12 +1512,19 @@ SetElectricPageMode.prototype.execute = function()
 			this.container.classList.remove('geElectricModes');
 			this.container.classList.remove('geElectricShapesCollapsed');
 			this.container.classList.remove('geElectricFullscreen');
+			this.container.classList.remove('geElectricPanelLayers');
 		}
 
 		if (this.electricRulerFrame != null)
 		{
 			window.cancelAnimationFrame(this.electricRulerFrame);
 			this.electricRulerFrame = null;
+		}
+
+		if (this.electricLayersRefreshFrame != null)
+		{
+			window.cancelAnimationFrame(this.electricLayersRefreshFrame);
+			this.electricLayersRefreshFrame = null;
 		}
 
 		if (this.hsplit != null)
@@ -1017,7 +1536,11 @@ SetElectricPageMode.prototype.execute = function()
 		this.restoreElectricToolbarViewButton();
 		this.removeElectricFullscreenViewportGuard();
 		this.electricLeftPanelCollapsed = null;
+		this.electricLeftPanelView = null;
 		this.electricFullscreenState = null;
+		this.electricLayersExpanded = null;
+		this.electricLayerLabelNodes = null;
+		this.electricLayerToRename = null;
 
 		if (this.electricModePanel != null)
 		{
@@ -1027,6 +1550,18 @@ SetElectricPageMode.prototype.execute = function()
 			}
 
 			this.electricModePanel = null;
+		}
+
+		if (this.electricLayersPanel != null)
+		{
+			if (this.electricLayersPanel.parentNode != null)
+			{
+				this.electricLayersPanel.parentNode.removeChild(
+					this.electricLayersPanel);
+			}
+
+			this.electricLayersPanel = null;
+			this.electricLayersTree = null;
 		}
 	};
 
@@ -1183,6 +1718,9 @@ SetElectricPageMode.prototype.execute = function()
 				buttons[i].setAttribute('aria-pressed', 'false');
 			}
 		}
+
+		this.updateElectricPanelViewButtons();
+		this.scheduleElectricLayersPanelRefresh();
 	};
 
 	EditorUi.prototype.installElectricModeListeners = function()
@@ -1197,6 +1735,12 @@ SetElectricPageMode.prototype.execute = function()
 			this.updateElectricModePanel();
 			this.updateElectricLeftPanelState();
 			this.updateElectricLeftOverlayGeometry(false);
+			this.scheduleElectricLayersPanelRefresh();
+		});
+
+		this.electricLayersModelHandler = mxUtils.bind(this, function()
+		{
+			this.scheduleElectricLayersPanelRefresh();
 		});
 
 		this.electricShapesPanelHandler = mxUtils.bind(this, function()
@@ -1260,6 +1804,12 @@ SetElectricPageMode.prototype.execute = function()
 		this.addListener('currentThemeChanged', this.electricModeRefreshHandler);
 		this.addListener('shapesPanelChanged', this.electricShapesPanelHandler);
 		this.addListener('sidebarWidthChanged', this.electricSidebarWidthHandler);
+		this.editor.graph.getModel().addListener(mxEvent.CHANGE,
+			this.electricLayersModelHandler);
+		this.editor.graph.getSelectionModel().addListener(mxEvent.CHANGE,
+			this.electricLayersModelHandler);
+		this.editor.graph.addListener('defaultParentChanged',
+			this.electricLayersModelHandler);
 		document.addEventListener('fullscreenchange', this.electricFullscreenHandler);
 		this.electricModeListenersInstalled = true;
 	};
@@ -1272,6 +1822,11 @@ SetElectricPageMode.prototype.execute = function()
 			this.removeListener(this.electricShapesPanelHandler);
 			this.removeListener(this.electricSidebarWidthHandler);
 			this.removeListener(this.electricModeRefreshHandler);
+			this.editor.graph.getModel().removeListener(
+				this.electricLayersModelHandler);
+			this.editor.graph.getSelectionModel().removeListener(
+				this.electricLayersModelHandler);
+			this.editor.graph.removeListener(this.electricLayersModelHandler);
 		}
 
 		if (this.electricFullscreenHandler != null)
@@ -1283,6 +1838,7 @@ SetElectricPageMode.prototype.execute = function()
 		this.electricModeRefreshHandler = null;
 		this.electricShapesPanelHandler = null;
 		this.electricSidebarWidthHandler = null;
+		this.electricLayersModelHandler = null;
 		this.electricFullscreenHandler = null;
 	};
 })();
