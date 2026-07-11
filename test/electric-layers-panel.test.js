@@ -19,6 +19,8 @@ assert(electric.includes('geElectricPanelLayers>.geSidebarContainer:not(.geForma
 assert(electric.includes('EditorUi.prototype.addElectricLayerTreeRow') &&
 	electric.includes('this.addElectricLayerTreeRow(model.getChildAt(cell, i), layer,'),
 	'The Layers panel must recursively render child elements');
+assert(electric.includes("label = mxResources.get('background') || ('Layer ' + (index + 1));"),
+	'Unnamed root layers must not be mislabeled as element groups');
 assert(electric.includes('graph.setCellsVisible([cell], !visible);'),
 	'Every layer and element must have an independent visibility toggle');
 assert(electric.includes('graph.setDefaultParent(cell);'),

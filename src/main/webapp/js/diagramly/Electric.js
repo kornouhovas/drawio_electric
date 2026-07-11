@@ -109,6 +109,8 @@ Editor.electricModes = [
 ];
 
 Editor.defaultElectricPanelView = 'library';
+Editor.electricLayerColors = ['#7c3aed', '#0ea5e9', '#f59e0b',
+	'#10b981', '#ec4899', '#6366f1'];
 Editor.electricPanelViews = [
 	{
 		id: 'layers',
@@ -1126,7 +1128,7 @@ SetElectricPageMode.prototype.execute = function()
 		return panel;
 	};
 
-	EditorUi.prototype.getElectricLayerTreeLabel = function(cell, index)
+	EditorUi.prototype.getElectricLayerTreeLabel = function(cell, index, isLayer)
 	{
 		var graph = this.editor.graph;
 		var model = graph.getModel();
@@ -1134,7 +1136,11 @@ SetElectricPageMode.prototype.execute = function()
 
 		if (label == null || String(label).replace(/\s/g, '').length == 0)
 		{
-			if (model.isEdge(cell))
+			if (isLayer)
+			{
+				label = mxResources.get('background') || ('Layer ' + (index + 1));
+			}
+			else if (model.isEdge(cell))
 			{
 				label = mxResources.get('connector') || 'Connector';
 			}
@@ -1328,10 +1334,18 @@ SetElectricPageMode.prototype.execute = function()
 		var marker = document.createElement('span');
 		marker.className = isLayer ? 'geElectricLayerMarker' :
 			('geElectricElementMarker' + (model.isEdge(cell) ? ' geEdgeMarker' : ''));
+
+		if (isLayer)
+		{
+			var layerIndex = model.root.getIndex(layer);
+			marker.style.backgroundColor = Editor.electricLayerColors[
+				layerIndex % Editor.electricLayerColors.length];
+		}
+
 		main.appendChild(marker);
 		var label = document.createElement('div');
 		label.className = 'geElectricLayerLabel';
-		mxUtils.write(label, this.getElectricLayerTreeLabel(cell, index));
+		mxUtils.write(label, this.getElectricLayerTreeLabel(cell, index, isLayer));
 		main.appendChild(label);
 		row.appendChild(main);
 
