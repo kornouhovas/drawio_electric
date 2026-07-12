@@ -1410,39 +1410,39 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 
 	EditorUi.prototype.installElectricConnectorToolbar = function()
 	{
-		if (!Editor.isElectricTheme() || this.toolbar == null ||
-			this.toolbar.edgeStyleMenu == null)
+		if (!Editor.isElectricTheme() || this.toolbar == null)
 		{
 			return;
 		}
 
-		var host = this.getElectricConnectorToolbarHost();
+		this.removeElectricConnectorToolbar();
+		this.hideElectricConnectorToolbarControls();
+	};
 
-		if (host == null)
+	EditorUi.prototype.hideElectricConnectorToolbarControls = function()
+	{
+		if (this.toolbar != null && this.toolbar.edgeStyleMenu != null)
 		{
-			return;
+			if (this.electricEdgeStyleMenuDisplay == null)
+			{
+				this.electricEdgeStyleMenuDisplay =
+					this.toolbar.edgeStyleMenu.style.display;
+			}
+
+			this.toolbar.edgeStyleMenu.style.display = 'none';
+		}
+	};
+
+	EditorUi.prototype.restoreElectricConnectorToolbarControls = function()
+	{
+		if (this.toolbar != null && this.toolbar.edgeStyleMenu != null &&
+			this.electricEdgeStyleMenuDisplay != null)
+		{
+			this.toolbar.edgeStyleMenu.style.display =
+				this.electricEdgeStyleMenuDisplay;
 		}
 
-		if (this.electricConnectorToolbar == null)
-		{
-			var holder = document.createElement('span');
-			holder.className = 'geElectricConnectorToolbar';
-			holder.setAttribute('data-electric-connector-toolbar', '1');
-			holder.setAttribute('data-min-width', '600');
-			var primary = this.addButton(Editor.electricConnectorIcon,
-				mxResources.get('electricConnector') || 'Connector',
-				mxUtils.bind(this, function()
-				{
-					this.openElectricConnectorSettings();
-				}), holder);
-			primary.classList.add('geElectricConnectorPrimary');
-			primary.setAttribute('data-electric-connector-open', '1');
-			host.insertBefore(holder, this.toolbar.edgeStyleMenu.nextSibling);
-			this.electricConnectorToolbar = holder;
-			this.electricConnectorToolbarPrimary = primary;
-		}
-
-		this.updateElectricConnectorToolbar();
+		this.electricEdgeStyleMenuDisplay = null;
 	};
 
 	EditorUi.prototype.removeElectricConnectorToolbar = function()
@@ -3346,6 +3346,7 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		}
 
 		this.restoreElectricToolbarViewButton();
+		this.restoreElectricConnectorToolbarControls();
 		this.removeElectricConnectorToolbar();
 		this.removeElectricFullscreenViewportGuard();
 		this.removeElectricLayersActionGuard();

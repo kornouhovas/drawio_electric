@@ -29,9 +29,12 @@ assert(electric.includes('graph.currentEdgeStyle = next;') &&
 assert(electric.includes("evt.getProperty('force') === true") &&
 	electric.includes('Editor.electricConnectorStyleKeys.indexOf(keys[j]) >= 0'),
 	'Existing toolbar connector controls must also persist the current default style');
-assert(electric.includes("data-electric-connector-open', '1'") &&
+assert(!electric.includes("data-electric-connector-open', '1'") &&
+	electric.includes('hideElectricConnectorToolbarControls') &&
+	electric.includes("this.toolbar.edgeStyleMenu.style.display = 'none'") &&
+	electric.includes('restoreElectricConnectorToolbarControls') &&
 	!electric.includes("data-electric-connector-menu', '1'"),
-	'The top toolbar must expose one connector-settings button without a second menu');
+	'Electric must use the right Style panel instead of top connector toolbar controls');
 assert(electric.includes('StyleFormatPanel.prototype.addStyleOps = function(div)') &&
 	electric.includes('DiagramFormatPanel.prototype.addStyleOps = function(div)') &&
 	electric.includes('EditorUi.prototype.addElectricConnectorStyleOps') &&
