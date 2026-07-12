@@ -1640,13 +1640,15 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		}
 	};
 
-	EditorUi.prototype.addElectricConnectorStyleOps = function(container)
+	EditorUi.prototype.addElectricConnectorStyleOps = function(container,
+		allowDefaultStyle)
 	{
 		var selected = this.editor.graph.getSelectionCells();
+		var edges = this.getElectricSelectedConnectorEdges();
 
-		if (!Editor.isElectricTheme() ||
-			this.getElectricSelectedConnectorEdges().length != selected.length ||
-			selected.length == 0)
+		if (!Editor.isElectricTheme() || (allowDefaultStyle !== true &&
+			(edges.length != selected.length || selected.length == 0)) ||
+			(allowDefaultStyle === true && selected.length != 0))
 		{
 			return;
 		}
@@ -3457,6 +3459,26 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 				this.editorUi.addElectricConnectorStyleOps != null)
 			{
 				this.editorUi.addElectricConnectorStyleOps(div);
+			}
+
+			return result;
+		};
+	}
+
+	if (typeof DiagramFormatPanel != 'undefined' &&
+		DiagramFormatPanel.prototype.addStyleOps != null)
+	{
+		var addElectricConnectorDefaultStyleOps =
+			DiagramFormatPanel.prototype.addStyleOps;
+
+		DiagramFormatPanel.prototype.addStyleOps = function(div)
+		{
+			var result = addElectricConnectorDefaultStyleOps.apply(this, arguments);
+
+			if (Editor.isElectricTheme() && this.editorUi != null &&
+				this.editorUi.addElectricConnectorStyleOps != null)
+			{
+				this.editorUi.addElectricConnectorStyleOps(div, true);
 			}
 
 			return result;
