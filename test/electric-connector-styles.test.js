@@ -39,9 +39,13 @@ assert(electric.includes('StyleFormatPanel.prototype.addStyleOps = function(div)
 	!electric.includes('EditorUi.prototype.renderElectricConnectorFormatPanel') &&
 	!electric.includes('Format.prototype.immediateRefresh = function()'),
 	'Preset controls must extend native Style panels for selected and future connectors');
-assert(electric.includes('showElectricConnectorSaveMenu') &&
+assert(electric.includes("mxResources.get('electricConnectorStyleName')") &&
+	electric.includes("mxResources.get('electricConnectorSaveMyShort')") &&
+	electric.includes("mxResources.get('electricConnectorSaveProjectShort')") &&
+	electric.includes("saveNamedPreset('profile')") &&
+	electric.includes("saveNamedPreset('project')") &&
 	electric.includes('showElectricConnectorPresetManageMenu'),
-	'Saving and managing named presets must be available from the native Style panel');
+	'Saving named presets must expose a visible name field and direct save actions');
 assert(electric.includes('graph.setCellStyles(key, clean[key] != null ? clean[key] : null,') &&
 	electric.includes('graph.getModel().beginUpdate()'),
 	'Applying a preset to selected connectors must use a single model transaction');
@@ -51,7 +55,8 @@ for (const resource of [english, russian]) {
 		'electricConnector=', 'electricConnectorStyles=', 'electricConnectorLast=',
 		'electricConnectorMyStyles=', 'electricConnectorProjectStyles=',
 		'electricConnectorSaveMy=', 'electricConnectorSaveProject=',
-		'electricConnectorSaveAs='
+		'electricConnectorSaveAs=', 'electricConnectorStyleName=',
+		'electricConnectorSaveMyShort=', 'electricConnectorSaveProjectShort='
 	]) {
 		assert(resource.includes(key), `Missing connector resource: ${key}`);
 	}
