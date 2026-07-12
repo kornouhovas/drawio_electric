@@ -717,10 +717,24 @@ SetElectricPageMode.prototype.execute = function()
 			'.geElectricConnectorToolbar>a.geElectricConnectorPrimary:after{content:"";position:absolute;left:6px;right:6px;bottom:3px;height:2px;border-radius:1px;background:var(--ge-electric-connector-color,#1f2937);}' +
 			'.geElectricConnectorStyleOps{border-top:1px solid light-dark(var(--border-color),var(--dark-border-color));margin-top:6px;padding-top:8px;}' +
 			'.geElectricConnectorStyleOpsTitle{font-size:12px;font-weight:600;margin:0 0 5px;}' +
-			'.geElectricConnectorStyleOps select{height:28px;margin-bottom:4px;}' +
-			'.geElectricConnectorStyleOps input{box-sizing:border-box;width:100%;height:28px;margin:0 0 4px;padding:2px 6px;}' +
+			'.geElectricConnectorStyleButton{box-sizing:border-box!important;position:relative;width:100%;height:32px;margin:0 0 6px!important;padding:0 28px 0 10px!important;text-align:left!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
+			'.geElectricConnectorStyleButton:after{content:"";position:absolute;right:10px;top:50%;width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-65%) rotate(45deg);opacity:.75;}' +
 			'.geElectricConnectorStyleOpsActions{display:flex;gap:4px;}' +
 			'.geElectricConnectorStyleOpsActions button{min-width:0;flex:1;height:28px;margin:0!important;}' +
+			'.geElectricConnectorStylePicker{box-sizing:border-box;height:100%;min-height:0;padding:16px;display:flex;flex-direction:column;color:light-dark(var(--text-color),var(--dark-text-color));}' +
+			'.geElectricConnectorStylePickerTitle{font-size:20px;font-weight:600;margin:0 0 12px;}' +
+			'.geElectricConnectorStylePickerSearch{box-sizing:border-box;width:100%;height:36px;margin:0 0 10px;padding:4px 10px;border:1px solid light-dark(var(--border-color),var(--dark-border-color));border-radius:6px;font-size:14px;}' +
+			'.geElectricConnectorStylePickerList{min-height:0;flex:1;overflow:auto;padding-right:4px;}' +
+			'.geElectricConnectorStylePickerSection{font-size:12px;font-weight:600;color:light-dark(var(--placeholder-color),var(--dark-placeholder-color));margin:10px 0 5px;}' +
+			'.geElectricConnectorStylePickerRow{box-sizing:border-box;display:flex;align-items:center;gap:10px;min-height:48px;padding:6px 8px;border-radius:6px;cursor:pointer;}' +
+			'.geElectricConnectorStylePickerRow:hover,.geElectricConnectorStylePickerRow.geSelected{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
+			'.geElectricConnectorStylePreview{box-sizing:border-box;width:54px;height:34px;border:1px solid light-dark(var(--border-color),var(--dark-border-color));border-radius:4px;background:light-dark(#fff,#222);display:flex;align-items:center;padding:0 7px;flex:0 0 54px;}' +
+			'.geElectricConnectorStylePreviewLine{width:100%;height:0;position:relative;}' +
+			'.geElectricConnectorStylePreviewLine.geArrow:after{content:"";position:absolute;right:-1px;top:-4px;width:7px;height:7px;border-right:2px solid currentColor;border-top:2px solid currentColor;transform:rotate(45deg);}' +
+			'.geElectricConnectorStylePickerText{min-width:0;flex:1;}' +
+			'.geElectricConnectorStylePickerName{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
+			'.geElectricConnectorStylePickerSummary{font-size:12px;color:light-dark(var(--placeholder-color),var(--dark-placeholder-color));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
+			'.geElectricConnectorStylePickerEmpty{padding:18px 8px;color:light-dark(var(--placeholder-color),var(--dark-placeholder-color));font-size:13px;text-align:center;}' +
 			'html body.geDarkMode .geElectricModeIcon{filter:invert(1);}'
 		));
 
@@ -1455,33 +1469,17 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 			mxResources.get('electricConnector') || 'Connector');
 	};
 
-	EditorUi.prototype.createElectricConnectorPresetOptions = function(select)
+	EditorUi.prototype.getElectricConnectorPresetGroups = function()
 	{
-		var addGroup = function(label, entries)
-		{
-			if (entries.length == 0)
-			{
-				return;
-			}
+		var groups = [];
+		var lastName = mxResources.get('electricConnectorLast') || 'Last used';
 
-			var group = document.createElement('optgroup');
-			group.setAttribute('label', label);
-
-			for (var i = 0; i < entries.length; i++)
-			{
-				var option = document.createElement('option');
-				option.setAttribute('value', entries[i].value);
-				mxUtils.write(option, entries[i].name);
-				group.appendChild(option);
-			}
-
-			select.appendChild(group);
-		};
-
-		addGroup(mxResources.get('electricConnectorLast') || 'Last used', [{
-			value: 'last',
-			name: mxResources.get('electricConnectorLast') || 'Last used'
-		}]);
+		groups.push({
+			label: mxResources.get('electricConnectorRecentStyles') ||
+				'Recent styles',
+			entries: [{value: 'last', name: lastName,
+				style: this.getElectricConnectorCurrentStyle()}]
+		});
 
 		var builtins = [];
 
@@ -1490,69 +1488,249 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 			var builtin = Editor.electricConnectorBuiltins[i];
 			builtins.push({
 				value: 'builtin:' + builtin.id,
-				name: mxResources.get(builtin.key) || builtin.title
+				name: mxResources.get(builtin.key) || builtin.title,
+				style: Editor.cloneElectricConnectorStyle(builtin.style)
 			});
 		}
 
-		addGroup(mxResources.get('electricConnectorBuiltins') || 'Built-in styles',
-			builtins);
-
-		var profile = this.getElectricConnectorStyleStore('profile', true).presets;
-		var profileEntries = [];
-
-		for (var j = 0; j < profile.length; j++)
-		{
-			profileEntries.push({
-				value: 'profile:' + profile[j].id,
-				name: profile[j].name
-			});
-		}
-
-		addGroup(mxResources.get('electricConnectorMyStyles') || 'My styles',
-			profileEntries);
-
-		var project = this.getElectricConnectorStyleStore('project', true).presets;
-		var projectEntries = [];
-
-		for (var k = 0; k < project.length; k++)
-		{
-			projectEntries.push({
-				value: 'project:' + project[k].id,
-				name: project[k].name
-			});
-		}
-
-		addGroup(mxResources.get('electricConnectorProjectStyles') ||
-			'Project styles', projectEntries);
-	};
-
-	EditorUi.prototype.showElectricConnectorSaveMenu = function(evt, button)
-	{
-		var menu = new mxPopupMenu(mxUtils.bind(this, function(menu, parent)
-		{
-			menu.addItem(mxResources.get('electricConnectorSaveMy') ||
-				'Save to My styles', null, mxUtils.bind(this, function()
-			{
-				this.promptElectricConnectorPresetSave('profile');
-			}), parent);
-			menu.addItem(mxResources.get('electricConnectorSaveProject') ||
-				'Save to Project styles', null, mxUtils.bind(this, function()
-			{
-				this.promptElectricConnectorPresetSave('project');
-			}), parent);
-		}));
-
-		menu.autoExpand = true;
-		menu.hideMenu = mxUtils.bind(this, function()
-		{
-			mxPopupMenu.prototype.hideMenu.apply(menu, arguments);
-			menu.destroy();
+		groups.push({
+			label: mxResources.get('electricConnectorBuiltins') ||
+				'Built-in styles',
+			entries: builtins
 		});
 
-		var bounds = button.getBoundingClientRect();
-		menu.popup(bounds.left, bounds.bottom, null, evt);
-		this.setCurrentMenu(menu);
-		mxEvent.consume(evt);
+		var saved = [];
+		var addSaved = mxUtils.bind(this, function(scope)
+		{
+			var presets = this.getElectricConnectorStyleStore(scope, true).presets;
+
+			for (var j = 0; j < presets.length; j++)
+			{
+				saved.push({
+					value: scope + ':' + presets[j].id,
+					name: presets[j].name,
+					style: Editor.cloneElectricConnectorStyle(presets[j].style)
+				});
+			}
+		});
+
+		addSaved('profile');
+		addSaved('project');
+
+		if (saved.length > 0)
+		{
+			groups.push({
+				label: mxResources.get('electricConnectorSavedStyles') ||
+					'Saved styles',
+				entries: saved
+			});
+		}
+
+		return groups;
+	};
+
+	EditorUi.prototype.getElectricConnectorPresetName = function(value)
+	{
+		var preset = this.findElectricConnectorPreset(value ||
+			this.electricConnectorSelectedPreset || 'last');
+
+		return (preset != null) ? preset.name :
+			(mxResources.get('electricConnectorLast') || 'Last used');
+	};
+
+	EditorUi.prototype.getElectricConnectorPresetSummary = function(style)
+	{
+		style = style || {};
+		var width = style.strokeWidth || '1';
+		var line = (style.dashed == '1') ?
+			(mxResources.get('dashed') || 'Dashed') :
+			(mxResources.get('solid') || 'Solid');
+		var color = style.strokeColor || (mxResources.get('default') || 'Default');
+
+		return width + ' pt - ' + line + ' - ' + color;
+	};
+
+	EditorUi.prototype.createElectricConnectorStylePreview = function(style)
+	{
+		style = style || {};
+		var preview = document.createElement('div');
+		preview.className = 'geElectricConnectorStylePreview';
+		var line = document.createElement('div');
+		line.className = 'geElectricConnectorStylePreviewLine';
+
+		if (style.endArrow != null && style.endArrow != 'none')
+		{
+			line.className += ' geArrow';
+		}
+
+		var width = parseInt(style.strokeWidth || '1');
+		width = Math.max(1, Math.min(4, isNaN(width) ? 1 : width));
+		var color = style.strokeColor || '#1f2937';
+		line.style.borderTop = width + 'px ' +
+			((style.dashed == '1') ? 'dashed' : 'solid') + ' ' + color;
+		line.style.color = color;
+		preview.appendChild(line);
+
+		return preview;
+	};
+
+	EditorUi.prototype.showElectricConnectorStylePicker = function()
+	{
+		var ui = this;
+		var container = document.createElement('div');
+		container.className = 'geElectricConnectorStylePicker';
+		var title = document.createElement('div');
+		title.className = 'geElectricConnectorStylePickerTitle';
+		mxUtils.write(title, mxResources.get('electricConnectorSelectStyle') ||
+			'Select style');
+		container.appendChild(title);
+
+		var search = document.createElement('input');
+		search.className = 'geElectricConnectorStylePickerSearch';
+		search.setAttribute('type', 'search');
+		search.setAttribute('placeholder',
+			mxResources.get('electricConnectorSearchStyles') || 'Search styles');
+		search.setAttribute('aria-label',
+			mxResources.get('electricConnectorSearchStyles') || 'Search styles');
+		container.appendChild(search);
+
+		var list = document.createElement('div');
+		list.className = 'geElectricConnectorStylePickerList';
+		container.appendChild(list);
+
+		function clearList()
+		{
+			while (list.firstChild != null)
+			{
+				list.removeChild(list.firstChild);
+			}
+		};
+
+		function applyEntry(entry)
+		{
+			ui.electricConnectorSelectedPreset = entry.value;
+			ui.applyElectricConnectorStyle(entry.style);
+			ui.hideDialog(null, null, container);
+			ui.refreshElectricConnectorStyleOps();
+		};
+
+		function render()
+		{
+			clearList();
+			var query = String(search.value || '').toLowerCase();
+			var groups = ui.getElectricConnectorPresetGroups();
+			var selectedValue = ui.electricConnectorSelectedPreset || 'last';
+			var firstRow = null;
+			var found = false;
+
+			for (var i = 0; i < groups.length; i++)
+			{
+				var rows = [];
+
+				for (var j = 0; j < groups[i].entries.length; j++)
+				{
+					var entry = groups[i].entries[j];
+
+					if (query.length == 0 ||
+						entry.name.toLowerCase().indexOf(query) >= 0)
+					{
+						rows.push(entry);
+					}
+				}
+
+				if (rows.length == 0)
+				{
+					continue;
+				}
+
+				found = true;
+				var section = document.createElement('div');
+				section.className = 'geElectricConnectorStylePickerSection';
+				mxUtils.write(section, groups[i].label);
+				list.appendChild(section);
+
+				for (var k = 0; k < rows.length; k++)
+				{
+					(function(entry)
+					{
+						var row = document.createElement('div');
+						row.className = 'geElectricConnectorStylePickerRow' +
+							((entry.value == selectedValue) ? ' geSelected' : '');
+						row.setAttribute('data-electric-connector-style', entry.value);
+						row.appendChild(ui.createElectricConnectorStylePreview(entry.style));
+						var text = document.createElement('div');
+						text.className = 'geElectricConnectorStylePickerText';
+						var name = document.createElement('div');
+						name.className = 'geElectricConnectorStylePickerName';
+						mxUtils.write(name, entry.name);
+						text.appendChild(name);
+						var summary = document.createElement('div');
+						summary.className = 'geElectricConnectorStylePickerSummary';
+						mxUtils.write(summary,
+							ui.getElectricConnectorPresetSummary(entry.style));
+						text.appendChild(summary);
+						row.appendChild(text);
+						mxEvent.addListener(row, 'click', function(evt)
+						{
+							applyEntry(entry);
+							mxEvent.consume(evt);
+						});
+
+						if (firstRow == null)
+						{
+							firstRow = {row: row, entry: entry};
+						}
+
+						list.appendChild(row);
+					})(rows[k]);
+				}
+			}
+
+			if (!found)
+			{
+				var empty = document.createElement('div');
+				empty.className = 'geElectricConnectorStylePickerEmpty';
+				mxUtils.write(empty, mxResources.get('noResults') ||
+					'No results');
+				list.appendChild(empty);
+			}
+
+			list.electricFirstRow = firstRow;
+		};
+
+		mxEvent.addListener(search, 'input', render);
+		mxEvent.addListener(search, 'keydown', function(evt)
+		{
+			if (evt.keyCode == 13 && list.electricFirstRow != null)
+			{
+				applyEntry(list.electricFirstRow.entry);
+				mxEvent.consume(evt);
+			}
+		});
+
+		render();
+		this.showDialog(container, 420, 440, true, true);
+
+		window.setTimeout(function()
+		{
+			search.focus();
+		}, 0);
+	};
+
+	EditorUi.prototype.saveElectricConnectorCurrentPreset = function()
+	{
+		var value = this.electricConnectorSelectedPreset || 'last';
+		var preset = this.findElectricConnectorPreset(value);
+
+		if (preset != null && (preset.scope == 'profile' ||
+			preset.scope == 'project'))
+		{
+			this.updateElectricConnectorPreset(value);
+		}
+		else
+		{
+			this.promptElectricConnectorPresetSave('project');
+		}
 	};
 
 	EditorUi.prototype.showElectricConnectorPresetManageMenu = function(evt, button,
@@ -1608,7 +1786,8 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 
 	EditorUi.prototype.promptElectricConnectorPresetSave = function(scope)
 	{
-		this.prompt(mxResources.get('name') || 'Name', '', mxUtils.bind(this,
+		this.prompt(mxResources.get('electricConnectorStyleName') ||
+			(mxResources.get('name') || 'Name'), '', mxUtils.bind(this,
 			function(name)
 			{
 				if (name != null)
@@ -1666,117 +1845,40 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 			'Connector styles');
 		section.appendChild(title);
 
-		var presets = document.createElement('select');
-		presets.className = 'geFullWidthElement';
-		this.createElectricConnectorPresetOptions(presets);
-		presets.value = this.electricConnectorSelectedPreset || 'last';
-
-		if (!presets.value)
-		{
-			presets.value = 'last';
-		}
-
-		section.appendChild(presets);
-		mxEvent.addListener(presets, 'change', function(evt)
-		{
-			var preset = ui.findElectricConnectorPreset(presets.value);
-
-			if (preset != null)
+		var selectStyle = mxUtils.button(this.getElectricConnectorPresetName(),
+			mxUtils.bind(this, function(evt)
 			{
-				ui.electricConnectorSelectedPreset = presets.value;
-				ui.applyElectricConnectorStyle(preset.style);
-
-				if (nameInput != null && (preset.scope == 'profile' ||
-					preset.scope == 'project'))
-				{
-					nameInput.value = preset.name;
-				}
-
-				ui.refreshElectricConnectorStyleOps();
-			}
-
-			mxEvent.consume(evt);
-		});
-
-		var currentPreset = this.findElectricConnectorPreset(presets.value);
-		var nameInput = document.createElement('input');
-		nameInput.setAttribute('type', 'text');
-		nameInput.setAttribute('maxlength', '64');
-		nameInput.setAttribute('placeholder',
-			mxResources.get('electricConnectorStyleName') || 'Style name');
-		nameInput.setAttribute('aria-label',
-			mxResources.get('electricConnectorStyleName') || 'Style name');
-
-		if (currentPreset != null && (currentPreset.scope == 'profile' ||
-			currentPreset.scope == 'project'))
-		{
-			nameInput.value = currentPreset.name;
-		}
-
-		section.appendChild(nameInput);
-
-		function saveNamedPreset(scope)
-		{
-			var name = String(nameInput.value || '').replace(/^\s+|\s+$/g, '');
-
-			if (name.length == 0)
-			{
-				nameInput.focus();
-				return;
-			}
-
-			ui.saveElectricConnectorPreset(scope, name,
-				ui.getElectricConnectorCurrentStyle());
-		};
-
-		mxEvent.addListener(nameInput, 'keydown', function(evt)
-		{
-			if (evt.keyCode == 13)
-			{
-				saveNamedPreset('profile');
+				this.showElectricConnectorStylePicker();
 				mxEvent.consume(evt);
-			}
-		});
+			}));
+		selectStyle.className = 'geBtn geElectricConnectorStyleButton';
+		selectStyle.setAttribute('title',
+			mxResources.get('electricConnectorSelectStyle') || 'Select style');
+		section.appendChild(selectStyle);
 
 		var actions = document.createElement('div');
 		actions.className = 'geElectricConnectorStyleOpsActions';
-		var saveProfile = mxUtils.button(
-			mxResources.get('electricConnectorSaveMyShort') || 'My',
+		var save = mxUtils.button(
+			mxResources.get('electricConnectorSaveStyle') || 'Save style',
 			mxUtils.bind(this, function(evt)
 			{
-				saveNamedPreset('profile');
+				this.saveElectricConnectorCurrentPreset();
 				mxEvent.consume(evt);
 			}));
-		saveProfile.setAttribute('title',
-			mxResources.get('electricConnectorSaveMy') || 'Save to My styles');
-		actions.appendChild(saveProfile);
+		save.setAttribute('title',
+			mxResources.get('electricConnectorSaveStyle') || 'Save style');
+		actions.appendChild(save);
 
-		var saveProject = mxUtils.button(
-			mxResources.get('electricConnectorSaveProjectShort') || 'Project',
+		var saveAs = mxUtils.button(
+			mxResources.get('electricConnectorSaveAsStyle') || 'Save as style',
 			mxUtils.bind(this, function(evt)
 			{
-				saveNamedPreset('project');
+				this.promptElectricConnectorPresetSave('project');
 				mxEvent.consume(evt);
 			}));
-		saveProject.setAttribute('title',
-			mxResources.get('electricConnectorSaveProject') ||
-			'Save to Project styles');
-		actions.appendChild(saveProject);
-
-		var selected = currentPreset;
-
-		if (selected != null && (selected.scope == 'profile' ||
-			selected.scope == 'project'))
-		{
-			var manage = mxUtils.button(mxResources.get('edit') || 'Edit',
-				mxUtils.bind(this, function(evt)
-				{
-					this.showElectricConnectorPresetManageMenu(evt, manage,
-						presets.value);
-				}));
-			manage.setAttribute('title', mxResources.get('edit') || 'Edit');
-			actions.appendChild(manage);
-		}
+		saveAs.setAttribute('title',
+			mxResources.get('electricConnectorSaveAsStyle') || 'Save as style');
+		actions.appendChild(saveAs);
 
 		section.appendChild(actions);
 		container.appendChild(section);
@@ -3372,16 +3474,15 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 			var cells = evt.getProperty('cells') || [];
 			var graph = this.editor.graph;
 
-			for (var i = 0; i < cells.length; i++)
-			{
-				if (graph.getModel().isEdge(cells[i]))
+				for (var i = 0; i < cells.length; i++)
 				{
-					this.electricConnectorSelectedPreset = 'last';
-					this.setElectricConnectorCurrentStyle(
-						this.getElectricConnectorStyleFromCell(cells[i]), true, true);
-					return;
+					if (graph.getModel().isEdge(cells[i]))
+					{
+						this.setElectricConnectorCurrentStyle(
+							this.getElectricConnectorStyleFromCell(cells[i]), true, true);
+						return;
+					}
 				}
-			}
 
 			if (evt.getProperty('force') === true)
 			{
@@ -3391,7 +3492,6 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 				{
 					if (Editor.electricConnectorStyleKeys.indexOf(keys[j]) >= 0)
 					{
-						this.electricConnectorSelectedPreset = 'last';
 						this.setElectricConnectorCurrentStyle(
 							this.getElectricConnectorCurrentStyle(), true, true);
 						return;

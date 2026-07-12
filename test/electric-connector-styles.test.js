@@ -39,13 +39,16 @@ assert(electric.includes('StyleFormatPanel.prototype.addStyleOps = function(div)
 	!electric.includes('EditorUi.prototype.renderElectricConnectorFormatPanel') &&
 	!electric.includes('Format.prototype.immediateRefresh = function()'),
 	'Preset controls must extend native Style panels for selected and future connectors');
-assert(electric.includes("mxResources.get('electricConnectorStyleName')") &&
-	electric.includes("mxResources.get('electricConnectorSaveMyShort')") &&
-	electric.includes("mxResources.get('electricConnectorSaveProjectShort')") &&
-	electric.includes("saveNamedPreset('profile')") &&
-	electric.includes("saveNamedPreset('project')") &&
-	electric.includes('showElectricConnectorPresetManageMenu'),
-	'Saving named presets must expose a visible name field and direct save actions');
+assert(electric.includes('EditorUi.prototype.showElectricConnectorStylePicker') &&
+	electric.includes('geElectricConnectorStylePickerSearch') &&
+	electric.includes('EditorUi.prototype.getElectricConnectorPresetGroups') &&
+	electric.includes('EditorUi.prototype.saveElectricConnectorCurrentPreset') &&
+	electric.includes("mxResources.get('electricConnectorSaveStyle')") &&
+	electric.includes("mxResources.get('electricConnectorSaveAsStyle')") &&
+	!electric.includes("mxResources.get('electricConnectorSaveMyShort')") &&
+	!electric.includes("mxResources.get('electricConnectorSaveProjectShort')") &&
+	!electric.includes('showElectricConnectorSaveMenu'),
+	'Connector presets must use a searchable picker and simple save/save-as actions');
 assert(electric.includes('graph.setCellStyles(key, clean[key] != null ? clean[key] : null,') &&
 	electric.includes('graph.getModel().beginUpdate()'),
 	'Applying a preset to selected connectors must use a single model transaction');
@@ -53,11 +56,19 @@ assert(electric.includes('graph.setCellStyles(key, clean[key] != null ? clean[ke
 for (const resource of [english, russian]) {
 	for (const key of [
 		'electricConnector=', 'electricConnectorStyles=', 'electricConnectorLast=',
-		'electricConnectorMyStyles=', 'electricConnectorProjectStyles=',
-		'electricConnectorSaveMy=', 'electricConnectorSaveProject=',
-		'electricConnectorSaveAs=', 'electricConnectorStyleName=',
-		'electricConnectorSaveMyShort=', 'electricConnectorSaveProjectShort='
+		'electricConnectorRecentStyles=', 'electricConnectorBuiltins=',
+		'electricConnectorSavedStyles=', 'electricConnectorStyleName=',
+		'electricConnectorSelectStyle=', 'electricConnectorSearchStyles=',
+		'electricConnectorSaveStyle=', 'electricConnectorSaveAsStyle='
 	]) {
 		assert(resource.includes(key), `Missing connector resource: ${key}`);
+	}
+
+	for (const key of [
+		'electricConnectorMyStyles=', 'electricConnectorProjectStyles=',
+		'electricConnectorSaveMy=', 'electricConnectorSaveProject=',
+		'electricConnectorSaveMyShort=', 'electricConnectorSaveProjectShort='
+	]) {
+		assert(!resource.includes(key), `Obsolete connector resource remains: ${key}`);
 	}
 }
