@@ -57,3 +57,9 @@ assert(electric.includes('groupElectricLayerTreeSelection') &&
 	electric.includes('ungroupElectricLayerTreeCell') &&
 	electric.includes("kind == 'group'"),
 	'Only ordinary groups may be grouped and ungrouped through Layers');
+assert(electric.includes('installElectricLayersActionGuard') &&
+	electric.includes("this.actions.get('layers')") &&
+	electric.includes('hideElectricNativeLayersWindow') &&
+	electric.includes("this.setElectricLeftPanelView('layers')") &&
+	electric.includes('removeElectricLayersActionGuard'),
+	'The native floating Layers window must be replaced by the Electric left panel');

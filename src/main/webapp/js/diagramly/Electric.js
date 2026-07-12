@@ -3255,6 +3255,7 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		Editor.ensureElectricModeStyles();
 		this.installElectricModeListeners();
 		this.installElectricFullscreenViewportGuard();
+		this.installElectricLayersActionGuard();
 		this.installElectricToolbarViewButton();
 		this.installElectricConnectorToolbar();
 		this.syncElectricConnectorProjectStyle();
@@ -3347,6 +3348,7 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		this.restoreElectricToolbarViewButton();
 		this.removeElectricConnectorToolbar();
 		this.removeElectricFullscreenViewportGuard();
+		this.removeElectricLayersActionGuard();
 		this.electricLeftPanelCollapsed = null;
 		this.electricLeftPanelView = null;
 		this.electricFullscreenState = null;
@@ -3503,6 +3505,72 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		this.electricFullscreenAction = null;
 		this.electricFullscreenActionFunct = null;
 		this.electricCanvasViewportState = null;
+	};
+
+	EditorUi.prototype.hideElectricNativeLayersWindow = function()
+	{
+		var actions = this.actions;
+
+		if (actions != null && actions.layersWindow != null &&
+			actions.layersWindow.window != null &&
+			actions.layersWindow.window.isVisible())
+		{
+			actions.layersWindow.window.setVisible(false);
+		}
+	};
+
+	EditorUi.prototype.installElectricLayersActionGuard = function()
+	{
+		var action = (this.actions != null) ? this.actions.get('layers') : null;
+
+		if (action == null || this.electricLayersAction != null)
+		{
+			return;
+		}
+
+		this.electricLayersAction = action;
+		this.electricLayersActionFunct = action.funct;
+		this.electricLayersActionSelectedCallback = action.selectedCallback;
+		action.funct = mxUtils.bind(this, function()
+		{
+			this.hideElectricNativeLayersWindow();
+
+			if (this.electricLeftPanelView == 'layers' &&
+				this.electricLeftPanelCollapsed !== true)
+			{
+				this.electricLeftPanelCollapsed = true;
+				this.updateElectricLeftPanelState();
+				this.updateElectricLeftOverlayGeometry(false);
+			}
+			else
+			{
+				this.setElectricLeftPanelView('layers');
+			}
+
+			this.fireEvent(new mxEventObject('layers'));
+		});
+		action.setSelectedCallback(mxUtils.bind(this, function()
+		{
+			return Editor.isElectricTheme() &&
+				this.electricLeftPanelView == 'layers' &&
+				this.electricLeftPanelCollapsed !== true;
+		}));
+		this.hideElectricNativeLayersWindow();
+	};
+
+	EditorUi.prototype.removeElectricLayersActionGuard = function()
+	{
+		if (this.electricLayersAction != null &&
+			this.electricLayersActionFunct != null)
+		{
+			this.electricLayersAction.funct = this.electricLayersActionFunct;
+			this.electricLayersAction.selectedCallback =
+				this.electricLayersActionSelectedCallback;
+		}
+
+		this.electricLayersAction = null;
+		this.electricLayersActionFunct = null;
+		this.electricLayersActionSelectedCallback = null;
 	};
 
 	EditorUi.prototype.updateElectricModePanel = function()
