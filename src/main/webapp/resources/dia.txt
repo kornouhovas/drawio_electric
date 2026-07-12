@@ -283,6 +283,7 @@ electricConnectorMyStyles=My styles
 electricConnectorProjectStyles=Project styles
 electricConnectorSaveMy=Save to My styles
 electricConnectorSaveProject=Save to Project styles
+electricConnectorSaveAs=Save as...
 electricConnectorStandard=Standard
 electricConnectorArrow=Arrow
 showElectricLeftPanel=Show left panel

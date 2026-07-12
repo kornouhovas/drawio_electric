@@ -284,6 +284,7 @@ electricConnectorMyStyles=Мои стили
 electricConnectorProjectStyles=Стили проекта
 electricConnectorSaveMy=Сохранить в мои стили
 electricConnectorSaveProject=Сохранить в стили проекта
+electricConnectorSaveAs=Сохранить как...
 electricConnectorStandard=Стандартный
 electricConnectorArrow=Стрелка
 showElectricLeftPanel=Показать левую панель

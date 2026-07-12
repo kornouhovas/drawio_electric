@@ -30,11 +30,17 @@ assert(electric.includes("evt.getProperty('force') === true") &&
 	electric.includes('Editor.electricConnectorStyleKeys.indexOf(keys[j]) >= 0'),
 	'Existing toolbar connector controls must also persist the current default style');
 assert(electric.includes("data-electric-connector-open', '1'") &&
-	electric.includes("data-electric-connector-menu', '1'"),
-	'The top toolbar must expose connector settings and preset-menu controls');
-assert(electric.includes('EditorUi.prototype.renderElectricConnectorFormatPanel') &&
-	electric.includes('Format.prototype.immediateRefresh = function()'),
-	'Opening connector settings without a selected edge must render the Electric editor in Format');
+	!electric.includes("data-electric-connector-menu', '1'"),
+	'The top toolbar must expose one connector-settings button without a second menu');
+assert(electric.includes('StyleFormatPanel.prototype.addStyleOps = function(div)') &&
+	electric.includes('EditorUi.prototype.addElectricConnectorStyleOps') &&
+	electric.includes('this.getElectricSelectedConnectorEdges().length != selected.length') &&
+	!electric.includes('EditorUi.prototype.renderElectricConnectorFormatPanel') &&
+	!electric.includes('Format.prototype.immediateRefresh = function()'),
+	'Preset controls must extend the native Style panel, not replace it with a custom panel');
+assert(electric.includes('showElectricConnectorSaveMenu') &&
+	electric.includes('showElectricConnectorPresetManageMenu'),
+	'Saving and managing named presets must be available from the native Style panel');
 assert(electric.includes('graph.setCellStyles(key, clean[key] != null ? clean[key] : null,') &&
 	electric.includes('graph.getModel().beginUpdate()'),
 	'Applying a preset to selected connectors must use a single model transaction');
@@ -43,7 +49,8 @@ for (const resource of [english, russian]) {
 	for (const key of [
 		'electricConnector=', 'electricConnectorStyles=', 'electricConnectorLast=',
 		'electricConnectorMyStyles=', 'electricConnectorProjectStyles=',
-		'electricConnectorSaveMy=', 'electricConnectorSaveProject='
+		'electricConnectorSaveMy=', 'electricConnectorSaveProject=',
+		'electricConnectorSaveAs='
 	]) {
 		assert(resource.includes(key), `Missing connector resource: ${key}`);
 	}

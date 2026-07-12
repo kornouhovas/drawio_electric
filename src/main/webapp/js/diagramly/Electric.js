@@ -713,23 +713,13 @@ SetElectricPageMode.prototype.execute = function()
 			'.geElectricConnectorToolbar{display:inline-flex;align-items:center;height:30px;margin:4px 3px;vertical-align:top;}' +
 			'.geElectricConnectorToolbar>a{box-sizing:border-box!important;display:flex!important;align-items:center;justify-content:center;width:30px;height:30px;margin:0!important;padding:3px!important;border-radius:4px;cursor:pointer;}' +
 			'.geElectricConnectorToolbar>a:hover{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
-			'.geElectricConnectorToolbar>a.geElectricConnectorMenu{width:14px;padding:0!important;background-image:url("' + Editor.thinExpandImage + '")!important;background-repeat:no-repeat!important;background-position:center!important;background-size:10px 10px!important;}' +
 			'.geElectricConnectorToolbar>a.geElectricConnectorPrimary{position:relative;background-repeat:no-repeat;background-position:center;background-size:20px 20px;}' +
 			'.geElectricConnectorToolbar>a.geElectricConnectorPrimary:after{content:"";position:absolute;left:6px;right:6px;bottom:3px;height:2px;border-radius:1px;background:var(--ge-electric-connector-color,#1f2937);}' +
-			'.geElectricConnectorFormat{box-sizing:border-box;padding:10px 12px 16px;overflow:auto;}' +
-			'.geElectricConnectorFormatTitle{font-size:13px;font-weight:600;margin:0 0 8px;}' +
-			'.geElectricConnectorPreview{box-sizing:border-box;width:100%;height:56px;border:1px solid light-dark(var(--border-color),var(--dark-border-color));border-radius:4px;background:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));margin:0 0 10px;}' +
-			'.geElectricConnectorSection{border-top:1px solid light-dark(var(--border-color),var(--dark-border-color));padding:9px 0 2px;}' +
-			'.geElectricConnectorSectionTitle{font-size:12px;font-weight:600;margin:0 0 7px;}' +
-			'.geElectricConnectorField{display:grid;grid-template-columns:72px minmax(0,1fr);gap:6px;align-items:center;min-height:30px;font-size:12px;}' +
-			'.geElectricConnectorField>label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
-			'.geElectricConnectorField input,.geElectricConnectorField select{box-sizing:border-box;min-width:0;width:100%;height:26px;border:1px solid light-dark(var(--border-color),var(--dark-border-color));border-radius:3px;background:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));color:light-dark(var(--text-color),var(--dark-text-color));padding:2px 5px;}' +
-			'.geElectricConnectorField input[type="color"]{padding:2px;}' +
-			'.geElectricConnectorField input[type="checkbox"]{width:16px;height:16px;justify-self:start;}' +
-			'.geElectricConnectorGrid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px;}' +
-			'.geElectricConnectorActions{display:flex;gap:6px;padding-top:8px;}' +
-			'.geElectricConnectorActions button{box-sizing:border-box;min-width:0;flex:1;height:28px;border:1px solid light-dark(var(--border-color),var(--dark-border-color));border-radius:3px;background:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));color:light-dark(var(--text-color),var(--dark-text-color));font-size:12px;cursor:pointer;}' +
-			'.geElectricConnectorActions button:hover{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
+			'.geElectricConnectorStyleOps{border-top:1px solid light-dark(var(--border-color),var(--dark-border-color));margin-top:6px;padding-top:8px;}' +
+			'.geElectricConnectorStyleOpsTitle{font-size:12px;font-weight:600;margin:0 0 5px;}' +
+			'.geElectricConnectorStyleOps select{height:28px;margin-bottom:4px;}' +
+			'.geElectricConnectorStyleOpsActions{display:flex;gap:4px;}' +
+			'.geElectricConnectorStyleOpsActions button{min-width:0;flex:1;height:28px;margin:0!important;}' +
 			'html body.geDarkMode .geElectricModeIcon{filter:invert(1);}'
 		));
 
@@ -1143,11 +1133,6 @@ SetElectricPageMode.prototype.execute = function()
 
 		this.updateElectricConnectorToolbar();
 		this.fireEvent(new mxEventObject('electricConnectorStyleChanged'));
-
-		if (this.electricConnectorStyleMode && this.format != null)
-		{
-			this.format.refresh();
-		}
 	};
 
 	EditorUi.prototype.updateElectricConnectorCurrentStyle = function(changes)
@@ -1249,6 +1234,14 @@ SetElectricPageMode.prototype.execute = function()
 		this.setElectricConnectorCurrentStyle(clean, true, true);
 	};
 
+	EditorUi.prototype.refreshElectricConnectorStyleOps = function()
+	{
+		if (this.format != null && this.getElectricSelectedConnectorEdges().length > 0)
+		{
+			this.format.refresh();
+		}
+	};
+
 	EditorUi.prototype.saveElectricConnectorPreset = function(scope, name, style)
 	{
 		var store = this.getElectricConnectorStyleStore(scope, true);
@@ -1286,6 +1279,7 @@ SetElectricPageMode.prototype.execute = function()
 		this.saveElectricConnectorStyleStore(scope);
 		this.electricConnectorSelectedPreset = scope + ':' + found.id;
 		this.fireEvent(new mxEventObject('electricConnectorStyleChanged'));
+		this.refreshElectricConnectorStyleOps();
 		return found;
 	};
 
@@ -1307,6 +1301,7 @@ SetElectricPageMode.prototype.execute = function()
 				store.presets[i].style = this.getElectricConnectorCurrentStyle();
 				this.saveElectricConnectorStyleStore(preset.scope);
 				this.fireEvent(new mxEventObject('electricConnectorStyleChanged'));
+				this.refreshElectricConnectorStyleOps();
 				return;
 			}
 		}
@@ -1336,6 +1331,7 @@ SetElectricPageMode.prototype.execute = function()
 		this.saveElectricConnectorStyleStore(preset.scope);
 		this.electricConnectorSelectedPreset = 'last';
 		this.fireEvent(new mxEventObject('electricConnectorStyleChanged'));
+		this.refreshElectricConnectorStyleOps();
 	};
 
 	EditorUi.prototype.renameElectricConnectorPreset = function(value, name)
@@ -1378,9 +1374,10 @@ SetElectricPageMode.prototype.execute = function()
 
 		this.saveElectricConnectorStyleStore(preset.scope);
 		this.fireEvent(new mxEventObject('electricConnectorStyleChanged'));
+		this.refreshElectricConnectorStyleOps();
 	};
 
-	EditorUi.prototype.getElectricConnectorToolbarHost = function()
+EditorUi.prototype.getElectricConnectorToolbarHost = function()
 	{
 		return (this.toolbar != null && this.toolbar.edgeStyleMenu != null) ?
 			this.toolbar.edgeStyleMenu.parentNode : null;
@@ -1415,13 +1412,6 @@ SetElectricPageMode.prototype.execute = function()
 				}), holder);
 			primary.classList.add('geElectricConnectorPrimary');
 			primary.setAttribute('data-electric-connector-open', '1');
-			var menu = this.addButton(null, mxResources.get('electricConnectorStyles') ||
-				'Connector styles', mxUtils.bind(this, function(evt)
-				{
-					this.showElectricConnectorStylesMenu(evt, menu);
-				}), holder);
-			menu.classList.add('geElectricConnectorMenu');
-			menu.setAttribute('data-electric-connector-menu', '1');
 			host.insertBefore(holder, this.toolbar.edgeStyleMenu.nextSibling);
 			this.electricConnectorToolbar = holder;
 			this.electricConnectorToolbarPrimary = primary;
@@ -1461,88 +1451,151 @@ SetElectricPageMode.prototype.execute = function()
 			mxResources.get('electricConnector') || 'Connector');
 	};
 
-	EditorUi.prototype.addElectricConnectorPresetMenuItems = function(menu, parent,
-		scope, presets)
+	EditorUi.prototype.createElectricConnectorPresetOptions = function(select)
 	{
-		for (var i = 0; i < presets.length; i++)
+		var addGroup = function(label, entries)
 		{
-			(mxUtils.bind(this, function(preset)
+			if (entries.length == 0)
 			{
-				menu.addItem(preset.name, null, mxUtils.bind(this, function()
-				{
-					this.electricConnectorSelectedPreset = preset.value;
-					this.applyElectricConnectorStyle(preset.style);
-				}), parent);
-			}))(presets[i]);
+				return;
+			}
+
+			var group = document.createElement('optgroup');
+			group.setAttribute('label', label);
+
+			for (var i = 0; i < entries.length; i++)
+			{
+				var option = document.createElement('option');
+				option.setAttribute('value', entries[i].value);
+				mxUtils.write(option, entries[i].name);
+				group.appendChild(option);
+			}
+
+			select.appendChild(group);
+		};
+
+		addGroup(mxResources.get('electricConnectorLast') || 'Last used', [{
+			value: 'last',
+			name: mxResources.get('electricConnectorLast') || 'Last used'
+		}]);
+
+		var builtins = [];
+
+		for (var i = 0; i < Editor.electricConnectorBuiltins.length; i++)
+		{
+			var builtin = Editor.electricConnectorBuiltins[i];
+			builtins.push({
+				value: 'builtin:' + builtin.id,
+				name: mxResources.get(builtin.key) || builtin.title
+			});
 		}
+
+		addGroup(mxResources.get('electricConnectorBuiltins') || 'Built-in styles',
+			builtins);
+
+		var profile = this.getElectricConnectorStyleStore('profile', true).presets;
+		var profileEntries = [];
+
+		for (var j = 0; j < profile.length; j++)
+		{
+			profileEntries.push({
+				value: 'profile:' + profile[j].id,
+				name: profile[j].name
+			});
+		}
+
+		addGroup(mxResources.get('electricConnectorMyStyles') || 'My styles',
+			profileEntries);
+
+		var project = this.getElectricConnectorStyleStore('project', true).presets;
+		var projectEntries = [];
+
+		for (var k = 0; k < project.length; k++)
+		{
+			projectEntries.push({
+				value: 'project:' + project[k].id,
+				name: project[k].name
+			});
+		}
+
+		addGroup(mxResources.get('electricConnectorProjectStyles') ||
+			'Project styles', projectEntries);
 	};
 
-	EditorUi.prototype.showElectricConnectorStylesMenu = function(evt, button)
+	EditorUi.prototype.showElectricConnectorSaveMenu = function(evt, button)
 	{
 		var menu = new mxPopupMenu(mxUtils.bind(this, function(menu, parent)
 		{
-			var last = this.findElectricConnectorPreset('last');
-			menu.addItem(last.name, null, mxUtils.bind(this, function()
+			menu.addItem(mxResources.get('electricConnectorSaveMy') ||
+				'Save to My styles', null, mxUtils.bind(this, function()
 			{
-				this.electricConnectorSelectedPreset = 'last';
-				this.applyElectricConnectorStyle(last.style);
+				this.promptElectricConnectorPresetSave('profile');
 			}), parent);
-			menu.addSeparator(parent);
-
-			var builtins = menu.addItem(mxResources.get('electricConnectorBuiltins') ||
-				'Built-in styles', null, null, parent);
-			var builtinItems = [];
-
-			for (var i = 0; i < Editor.electricConnectorBuiltins.length; i++)
-			{
-				var builtin = Editor.electricConnectorBuiltins[i];
-				builtinItems.push({value: 'builtin:' + builtin.id,
-					name: mxResources.get(builtin.key) || builtin.title,
-					style: Editor.cloneElectricConnectorStyle(builtin.style)});
-			}
-
-			this.addElectricConnectorPresetMenuItems(menu, builtins, 'builtin', builtinItems);
-			var profile = menu.addItem(mxResources.get('electricConnectorMyStyles') ||
-				'My styles', null, null, parent);
-			var profileItems = this.getElectricConnectorStyleStore('profile', true).presets;
-
-			for (var j = 0; j < profileItems.length; j++)
-			{
-				profileItems[j].value = 'profile:' + profileItems[j].id;
-			}
-
-			this.addElectricConnectorPresetMenuItems(menu, profile, 'profile', profileItems);
-			var project = menu.addItem(mxResources.get('electricConnectorProjectStyles') ||
-				'Project styles', null, null, parent);
-			var projectItems = this.getElectricConnectorStyleStore('project', true).presets;
-
-			for (var k = 0; k < projectItems.length; k++)
-			{
-				projectItems[k].value = 'project:' + projectItems[k].id;
-			}
-
-			this.addElectricConnectorPresetMenuItems(menu, project, 'project', projectItems);
-			menu.addSeparator(parent);
-			menu.addItem(mxResources.get('electricConnectorSaveMy') || 'Save to My styles',
-				null, mxUtils.bind(this, function()
-				{
-					this.promptElectricConnectorPresetSave('profile');
-				}), parent);
 			menu.addItem(mxResources.get('electricConnectorSaveProject') ||
 				'Save to Project styles', null, mxUtils.bind(this, function()
-				{
-					this.promptElectricConnectorPresetSave('project');
-				}), parent);
+			{
+				this.promptElectricConnectorPresetSave('project');
+			}), parent);
 		}));
 
-		menu.smartSeparators = true;
-		menu.showDisabled = true;
 		menu.autoExpand = true;
 		menu.hideMenu = mxUtils.bind(this, function()
 		{
 			mxPopupMenu.prototype.hideMenu.apply(menu, arguments);
 			menu.destroy();
 		});
+
+		var bounds = button.getBoundingClientRect();
+		menu.popup(bounds.left, bounds.bottom, null, evt);
+		this.setCurrentMenu(menu);
+		mxEvent.consume(evt);
+	};
+
+	EditorUi.prototype.showElectricConnectorPresetManageMenu = function(evt, button,
+		value)
+	{
+		var preset = this.findElectricConnectorPreset(value);
+
+		if (preset == null || (preset.scope != 'profile' &&
+			preset.scope != 'project'))
+		{
+			return;
+		}
+
+		var menu = new mxPopupMenu(mxUtils.bind(this, function(menu, parent)
+		{
+			menu.addItem(mxResources.get('update') || 'Update', null,
+				mxUtils.bind(this, function()
+			{
+				this.updateElectricConnectorPreset(value);
+			}), parent);
+			menu.addItem(mxResources.get('rename') || 'Rename', null,
+				mxUtils.bind(this, function()
+			{
+				this.prompt(mxResources.get('name') || 'Name', preset.name,
+					mxUtils.bind(this, function(name)
+					{
+						if (name != null)
+						{
+							this.renameElectricConnectorPreset(value, name);
+						}
+					}), true);
+			}), parent);
+			menu.addSeparator(parent);
+			menu.addItem(mxResources.get('delete') || 'Delete', null,
+				mxUtils.bind(this, function()
+			{
+				this.deleteElectricConnectorPreset(value);
+			}), parent);
+		}));
+
+		menu.autoExpand = true;
+		menu.hideMenu = mxUtils.bind(this, function()
+		{
+			mxPopupMenu.prototype.hideMenu.apply(menu, arguments);
+			menu.destroy();
+		});
+
 		var bounds = button.getBoundingClientRect();
 		menu.popup(bounds.left, bounds.bottom, null, evt);
 		this.setCurrentMenu(menu);
@@ -1564,19 +1617,6 @@ SetElectricPageMode.prototype.execute = function()
 
 	EditorUi.prototype.openElectricConnectorSettings = function()
 	{
-		var graph = this.editor.graph;
-		var edges = this.getElectricSelectedConnectorEdges();
-
-		if (edges.length > 0)
-		{
-			graph.setSelectionCells(edges);
-			this.electricConnectorStyleMode = false;
-		}
-		else
-		{
-			this.electricConnectorStyleMode = true;
-		}
-
 		if (!this.isFormatPanelVisible())
 		{
 			this.toggleFormatPanel(true);
@@ -1600,428 +1640,80 @@ SetElectricPageMode.prototype.execute = function()
 		}
 	};
 
-	EditorUi.prototype.renderElectricConnectorFormatPanel = function(format)
+	EditorUi.prototype.addElectricConnectorStyleOps = function(container)
 	{
-		format.clear();
+		var selected = this.editor.graph.getSelectionCells();
+
+		if (!Editor.isElectricTheme() ||
+			this.getElectricSelectedConnectorEdges().length != selected.length ||
+			selected.length == 0)
+		{
+			return;
+		}
+
 		var ui = this;
-		var style = this.getElectricConnectorCurrentStyle();
-		var container = document.createElement('div');
-		container.className = 'geElectricConnectorFormat';
+		var section = document.createElement('div');
+		section.className = 'geElectricConnectorStyleOps';
 		var title = document.createElement('div');
-		title.className = 'geElectricConnectorFormatTitle';
-		mxUtils.write(title, mxResources.get('electricConnector') || 'Connector');
-		container.appendChild(title);
-
-		var preview = document.createElementNS(mxConstants.NS_SVG, 'svg');
-		preview.setAttribute('viewBox', '0 0 220 56');
-		preview.setAttribute('class', 'geElectricConnectorPreview');
-		var defs = document.createElementNS(mxConstants.NS_SVG, 'defs');
-		var marker = document.createElementNS(mxConstants.NS_SVG, 'marker');
-		marker.setAttribute('id', 'geElectricConnectorPreviewArrow');
-		marker.setAttribute('markerWidth', '7');
-		marker.setAttribute('markerHeight', '7');
-		marker.setAttribute('refX', '6');
-		marker.setAttribute('refY', '3.5');
-		marker.setAttribute('orient', 'auto');
-		var arrow = document.createElementNS(mxConstants.NS_SVG, 'path');
-		arrow.setAttribute('d', 'M0,0 L7,3.5 L0,7 z');
-		marker.appendChild(arrow);
-		defs.appendChild(marker);
-		preview.appendChild(defs);
-		var previewPath = document.createElementNS(mxConstants.NS_SVG, 'path');
-		previewPath.setAttribute('fill', 'none');
-		previewPath.setAttribute('d', 'M16 40 L72 40 L72 17 L196 17');
-		preview.appendChild(previewPath);
-		container.appendChild(preview);
-
-		function createSection(label)
-		{
-			var section = document.createElement('div');
-			section.className = 'geElectricConnectorSection';
-			var heading = document.createElement('div');
-			heading.className = 'geElectricConnectorSectionTitle';
-			mxUtils.write(heading, label);
-			section.appendChild(heading);
-			container.appendChild(section);
-			return section;
-		};
-
-		function createField(parent, label, control)
-		{
-			var field = document.createElement('div');
-			field.className = 'geElectricConnectorField';
-			var caption = document.createElement('label');
-			mxUtils.write(caption, label);
-			field.appendChild(caption);
-			field.appendChild(control);
-			parent.appendChild(field);
-			return field;
-		};
-
-		function createSelect(options, value)
-		{
-			var select = document.createElement('select');
-
-			for (var i = 0; i < options.length; i++)
-			{
-				var option = document.createElement('option');
-				option.setAttribute('value', options[i][0]);
-				mxUtils.write(option, options[i][1]);
-				select.appendChild(option);
-			}
-
-			select.value = value;
-
-			if (select.value != value)
-			{
-				select.selectedIndex = 0;
-			}
-
-			return select;
-		};
-
-		function createNumber(value, min, max, step)
-		{
-			var input = document.createElement('input');
-			input.setAttribute('type', 'number');
-			input.setAttribute('min', String(min));
-			input.setAttribute('max', String(max));
-			input.setAttribute('step', String(step));
-			input.value = value;
-			return input;
-		};
-
-		function updatePreview()
-		{
-			var current = ui.getElectricConnectorCurrentStyle();
-			var color = current.strokeColor || '#1f2937';
-			var width = Math.max(1, Math.min(8, parseFloat(current.strokeWidth || 1)));
-			var route = current.edgeStyle || 'orthogonalEdgeStyle';
-			previewPath.setAttribute('stroke', color);
-			arrow.setAttribute('fill', color);
-			previewPath.setAttribute('stroke-width', String(width));
-			previewPath.setAttribute('stroke-dasharray', current.dashed == '1' ?
-				(current.dashPattern || '8 8') : 'none');
-			previewPath.setAttribute('stroke-linecap', current.linecap || 'round');
-			previewPath.setAttribute('stroke-linejoin', current.linejoin || 'round');
-			previewPath.setAttribute('marker-end', current.endArrow != null &&
-				current.endArrow != 'none' ? 'url(#geElectricConnectorPreviewArrow)' : '');
-			previewPath.setAttribute('marker-start', current.startArrow != null &&
-				current.startArrow != 'none' ? 'url(#geElectricConnectorPreviewArrow)' : '');
-
-			if (current.curved == '1')
-			{
-				previewPath.setAttribute('d', 'M16 40 C54 40, 56 12, 102 20 S158 42, 196 17');
-			}
-			else if (route == 'none')
-			{
-				previewPath.setAttribute('d', 'M16 40 L196 17');
-			}
-			else if (route == 'elbowEdgeStyle')
-			{
-				previewPath.setAttribute('d', current.elbow == 'vertical' ?
-					'M16 40 L16 17 L196 17' : 'M16 40 L106 40 L106 17 L196 17');
-			}
-			else
-			{
-				previewPath.setAttribute('d', 'M16 40 L72 40 L72 17 L196 17');
-			}
-		};
-
-		var presetSection = createSection(mxResources.get('electricConnectorStyles') ||
+		title.className = 'geElectricConnectorStyleOpsTitle';
+		mxUtils.write(title, mxResources.get('electricConnectorStyles') ||
 			'Connector styles');
-		var presetSelect = document.createElement('select');
-		presetSelect.className = 'geElectricConnectorPresetSelect';
+		section.appendChild(title);
 
-		function addPresetGroup(label, entries)
+		var presets = document.createElement('select');
+		presets.className = 'geFullWidthElement';
+		this.createElectricConnectorPresetOptions(presets);
+		presets.value = this.electricConnectorSelectedPreset || 'last';
+
+		if (!presets.value)
 		{
-			var group = document.createElement('optgroup');
-			group.setAttribute('label', label);
-
-			for (var i = 0; i < entries.length; i++)
-			{
-				var option = document.createElement('option');
-				option.setAttribute('value', entries[i].value);
-				mxUtils.write(option, entries[i].name);
-				group.appendChild(option);
-			}
-
-			presetSelect.appendChild(group);
-		};
-
-		addPresetGroup(mxResources.get('electricConnectorLast') || 'Last used', [{
-			value: 'last', name: mxResources.get('electricConnectorLast') || 'Last used'}]);
-		var builtins = [];
-
-		for (var i = 0; i < Editor.electricConnectorBuiltins.length; i++)
-		{
-			var builtin = Editor.electricConnectorBuiltins[i];
-			builtins.push({value: 'builtin:' + builtin.id,
-				name: mxResources.get(builtin.key) || builtin.title});
+			presets.value = 'last';
 		}
 
-		addPresetGroup(mxResources.get('electricConnectorBuiltins') || 'Built-in styles', builtins);
-		var profile = this.getElectricConnectorStyleStore('profile', true).presets;
-		var profileEntries = [];
-
-		for (var j = 0; j < profile.length; j++)
+		section.appendChild(presets);
+		mxEvent.addListener(presets, 'change', function(evt)
 		{
-			profileEntries.push({value: 'profile:' + profile[j].id, name: profile[j].name});
-		}
-
-		addPresetGroup(mxResources.get('electricConnectorMyStyles') || 'My styles', profileEntries);
-		var project = this.getElectricConnectorStyleStore('project', true).presets;
-		var projectEntries = [];
-
-		for (var k = 0; k < project.length; k++)
-		{
-			projectEntries.push({value: 'project:' + project[k].id, name: project[k].name});
-		}
-
-		addPresetGroup(mxResources.get('electricConnectorProjectStyles') ||
-			'Project styles', projectEntries);
-		presetSelect.value = this.electricConnectorSelectedPreset || 'last';
-
-		if (!presetSelect.value)
-		{
-			presetSelect.value = 'last';
-		}
-
-		presetSection.appendChild(presetSelect);
-		mxEvent.addListener(presetSelect, 'change', function(evt)
-		{
-			var preset = ui.findElectricConnectorPreset(presetSelect.value);
+			var preset = ui.findElectricConnectorPreset(presets.value);
 
 			if (preset != null)
 			{
-				ui.electricConnectorSelectedPreset = presetSelect.value;
+				ui.electricConnectorSelectedPreset = presets.value;
 				ui.applyElectricConnectorStyle(preset.style);
 			}
 
 			mxEvent.consume(evt);
 		});
 
-		var routing = createSection(mxResources.get('line') || 'Line');
-		var route = createSelect([
-			['orthogonal', mxResources.get('orthogonal') || 'Orthogonal'],
-			['straight', mxResources.get('straight') || 'Straight'],
-			['horizontal', mxResources.get('horizontal') || 'Horizontal elbow'],
-			['vertical', mxResources.get('vertical') || 'Vertical elbow'],
-			['curved', mxResources.get('curved') || 'Curved']
-		], style.curved == '1' ? 'curved' : (style.edgeStyle == 'none' ? 'straight' :
-			(style.edgeStyle == 'elbowEdgeStyle' ? (style.elbow == 'vertical' ?
-			'vertical' : 'horizontal') : 'orthogonal')));
-		createField(routing, mxResources.get('waypoints') || 'Route', route);
-		mxEvent.addListener(route, 'change', function(evt)
-		{
-			var routes = {
-				orthogonal: {edgeStyle: 'orthogonalEdgeStyle', elbow: null, curved: '0'},
-				straight: {edgeStyle: 'none', elbow: null, curved: '0'},
-				horizontal: {edgeStyle: 'elbowEdgeStyle', elbow: 'horizontal', curved: '0'},
-				vertical: {edgeStyle: 'elbowEdgeStyle', elbow: 'vertical', curved: '0'},
-				curved: {edgeStyle: 'none', elbow: null, curved: '1'}
-			};
-			ui.updateElectricConnectorCurrentStyle(routes[route.value]);
-			mxEvent.consume(evt);
-		});
-
-		var lineShape = createSelect([
-			['connector', mxResources.get('line') || 'Line'], ['link', mxResources.get('link') || 'Link'],
-			['flexArrow', mxResources.get('arrow') || 'Arrow'], ['arrow', mxResources.get('simpleArrow') || 'Simple arrow'],
-			['filledEdge', 'Filled edge'], ['pipe', 'Pipe'], ['wire', 'Wire']
-		], style.shape || 'connector');
-		createField(routing, mxResources.get('connection') || 'Shape', lineShape);
-		mxEvent.addListener(lineShape, 'change', function(evt)
-		{
-			ui.updateElectricConnectorCurrentStyle({shape: lineShape.value == 'connector' ? null : lineShape.value});
-			mxEvent.consume(evt);
-		});
-
-		var pathStyle = createSelect([
-			['sharp', mxResources.get('sharp') || 'Sharp'],
-			['rounded', mxResources.get('rounded') || 'Rounded'],
-			['curved', mxResources.get('curved') || 'Curved']
-		], style.curved == '1' ? 'curved' : (style.rounded == '1' ? 'rounded' : 'sharp'));
-		createField(routing, mxResources.get('style') || 'Style', pathStyle);
-		mxEvent.addListener(pathStyle, 'change', function(evt)
-		{
-			ui.updateElectricConnectorCurrentStyle(pathStyle.value == 'rounded' ?
-				{rounded: '1', curved: '0'} : (pathStyle.value == 'curved' ?
-					{rounded: '0', curved: '1', edgeStyle: 'none'} :
-					{rounded: '0', curved: '0'}));
-			mxEvent.consume(evt);
-		});
-
-		var appearance = createSection(mxResources.get('appearance') || 'Appearance');
-		var color = document.createElement('input');
-		color.setAttribute('type', 'color');
-		color.value = /^#[0-9a-f]{6}$/i.test(style.strokeColor || '') ?
-			style.strokeColor : '#1f2937';
-		createField(appearance, mxResources.get('color') || 'Color', color);
-		mxEvent.addListener(color, 'change', function(evt)
-		{
-			ui.updateElectricConnectorCurrentStyle({strokeColor: color.value});
-			mxEvent.consume(evt);
-		});
-		var width = createNumber(style.strokeWidth || 1, 0.25, 24, 0.25);
-		createField(appearance, mxResources.get('linewidth') || 'Width', width);
-		mxEvent.addListener(width, 'change', function(evt)
-		{
-			ui.updateElectricConnectorCurrentStyle({strokeWidth: Math.max(.25,
-				Math.min(24, parseFloat(width.value) || 1))});
-			mxEvent.consume(evt);
-		});
-		var dashed = document.createElement('input');
-		dashed.setAttribute('type', 'checkbox');
-		dashed.checked = style.dashed == '1';
-		createField(appearance, mxResources.get('dashed') || 'Dashed', dashed);
-		mxEvent.addListener(dashed, 'change', function(evt)
-		{
-			var current = ui.getElectricConnectorCurrentStyle();
-			ui.updateElectricConnectorCurrentStyle({dashed: dashed.checked ? '1' : null,
-				dashPattern: dashed.checked ? (current.dashPattern || '8 8') : null});
-			mxEvent.consume(evt);
-		});
-
-		var markers = createSection(mxResources.get('lineStart') || 'Line ends');
-		var markerValues = [['none', mxResources.get('none') || 'None'],
-			['classic', 'Classic'], ['block', 'Block'], ['open', 'Open'],
-			['diamond', 'Diamond'], ['oval', 'Oval']];
-		var startArrow = createSelect(markerValues, style.startArrow || 'none');
-		createField(markers, mxResources.get('lineStart') || 'Start', startArrow);
-		var endArrow = createSelect(markerValues, style.endArrow || 'none');
-		createField(markers, mxResources.get('lineEnd') || 'End', endArrow);
-		function updateMarker(input, key)
-		{
-			ui.updateElectricConnectorCurrentStyle((function()
-			{
-				var value = input.value;
-				var result = {};
-				result[key] = value == 'none' ? null : value;
-				result[key == 'startArrow' ? 'startFill' : 'endFill'] =
-					(value == 'open' || value == 'none') ? null : '1';
-				return result;
-			})());
-		};
-		mxEvent.addListener(startArrow, 'change', function(evt)
-		{
-			updateMarker(startArrow, 'startArrow');
-			mxEvent.consume(evt);
-		});
-		mxEvent.addListener(endArrow, 'change', function(evt)
-		{
-			updateMarker(endArrow, 'endArrow');
-			mxEvent.consume(evt);
-		});
-		var sizes = document.createElement('div');
-		sizes.className = 'geElectricConnectorGrid';
-		markers.appendChild(sizes);
-		var startSize = createNumber(style.startSize || 8, 1, 100, 1);
-		createField(sizes, mxResources.get('size') || 'Size', startSize);
-		var endSize = createNumber(style.endSize || 8, 1, 100, 1);
-		createField(sizes, mxResources.get('size') || 'Size', endSize);
-		mxEvent.addListener(startSize, 'change', function(evt)
-		{
-			ui.updateElectricConnectorCurrentStyle({startSize: startSize.value});
-			mxEvent.consume(evt);
-		});
-		mxEvent.addListener(endSize, 'change', function(evt)
-		{
-			ui.updateElectricConnectorCurrentStyle({endSize: endSize.value});
-			mxEvent.consume(evt);
-		});
-
-		var advanced = createSection(mxResources.get('lineJumps') || 'Advanced');
-		var jump = createSelect([['none', mxResources.get('none') || 'None'],
-			['arc', 'Arc'], ['gap', 'Gap'], ['sharp', mxResources.get('sharp') || 'Sharp'],
-			['line', mxResources.get('line') || 'Line']], style.jumpStyle || 'none');
-		createField(advanced, mxResources.get('lineJumps') || 'Jumps', jump);
-		mxEvent.addListener(jump, 'change', function(evt)
-		{
-			ui.updateElectricConnectorCurrentStyle({jumpStyle: jump.value == 'none' ? null : jump.value});
-			mxEvent.consume(evt);
-		});
-		var opacity = createNumber(style.opacity || 100, 0, 100, 1);
-		createField(advanced, mxResources.get('opacity') || 'Opacity', opacity);
-		mxEvent.addListener(opacity, 'change', function(evt)
-		{
-			ui.updateElectricConnectorCurrentStyle({opacity: opacity.value});
-			mxEvent.consume(evt);
-		});
-		var shadow = document.createElement('input');
-		shadow.setAttribute('type', 'checkbox');
-		shadow.checked = style.shadow == '1';
-		createField(advanced, mxResources.get('shadow') || 'Shadow', shadow);
-		mxEvent.addListener(shadow, 'change', function(evt)
-		{
-			ui.updateElectricConnectorCurrentStyle({shadow: shadow.checked ? '1' : null});
-			mxEvent.consume(evt);
-		});
-
 		var actions = document.createElement('div');
-		actions.className = 'geElectricConnectorActions';
-		var saveMy = document.createElement('button');
-		mxUtils.write(saveMy, mxResources.get('electricConnectorSaveMy') || 'Save to My');
-		actions.appendChild(saveMy);
-		var saveProject = document.createElement('button');
-		mxUtils.write(saveProject, mxResources.get('electricConnectorSaveProject') || 'Save to Project');
-		actions.appendChild(saveProject);
-		container.appendChild(actions);
-		mxEvent.addListener(saveMy, 'click', function(evt)
-		{
-			ui.promptElectricConnectorPresetSave('profile');
-			mxEvent.consume(evt);
-		});
-		mxEvent.addListener(saveProject, 'click', function(evt)
-		{
-			ui.promptElectricConnectorPresetSave('project');
-			mxEvent.consume(evt);
-		});
+		actions.className = 'geElectricConnectorStyleOpsActions';
+		var save = mxUtils.button(mxResources.get('electricConnectorSaveAs') ||
+			'Save as...',
+			mxUtils.bind(this, function(evt)
+			{
+				this.showElectricConnectorSaveMenu(evt, save);
+			}));
+		save.setAttribute('title', mxResources.get('electricConnectorSaveAs') ||
+			'Save as...');
+		actions.appendChild(save);
 
-		var preset = this.findElectricConnectorPreset(presetSelect.value);
+		var selected = this.findElectricConnectorPreset(presets.value);
 
-		if (preset != null && (preset.scope == 'profile' || preset.scope == 'project'))
+		if (selected != null && (selected.scope == 'profile' ||
+			selected.scope == 'project'))
 		{
-			var manage = document.createElement('div');
-			manage.className = 'geElectricConnectorActions';
-			var update = document.createElement('button');
-			mxUtils.write(update, mxResources.get('update') || 'Update');
-			manage.appendChild(update);
-			var rename = document.createElement('button');
-			mxUtils.write(rename, mxResources.get('rename') || 'Rename');
-			manage.appendChild(rename);
-			var remove = document.createElement('button');
-			mxUtils.write(remove, mxResources.get('delete') || 'Delete');
-			manage.appendChild(remove);
-			container.appendChild(manage);
-			mxEvent.addListener(update, 'click', function(evt)
-			{
-				ui.updateElectricConnectorPreset(presetSelect.value);
-				mxEvent.consume(evt);
-			});
-			mxEvent.addListener(rename, 'click', function(evt)
-			{
-				ui.prompt(mxResources.get('name') || 'Name', preset.name,
-					mxUtils.bind(ui, function(name)
-					{
-						if (name != null)
-						{
-							ui.renameElectricConnectorPreset(presetSelect.value, name);
-						}
-					}), true);
-				mxEvent.consume(evt);
-			});
-			mxEvent.addListener(remove, 'click', function(evt)
-			{
-				ui.deleteElectricConnectorPreset(presetSelect.value);
-				mxEvent.consume(evt);
-			});
+			var manage = mxUtils.button(mxResources.get('edit') || 'Edit',
+				mxUtils.bind(this, function(evt)
+				{
+					this.showElectricConnectorPresetManageMenu(evt, manage,
+						presets.value);
+				}));
+			manage.setAttribute('title', mxResources.get('edit') || 'Edit');
+			actions.appendChild(manage);
 		}
 
-		format.container.appendChild(container);
-		updatePreview();
+		section.appendChild(actions);
+		container.appendChild(section);
 	};
-
 	EditorUi.prototype.toggleElectricLeftPanel = function(visible)
 	{
 		var next = (visible != null) ? visible :
@@ -3394,7 +3086,6 @@ SetElectricPageMode.prototype.execute = function()
 
 		this.restoreElectricToolbarViewButton();
 		this.removeElectricConnectorToolbar();
-		this.electricConnectorStyleMode = false;
 		this.removeElectricFullscreenViewportGuard();
 		this.electricLeftPanelCollapsed = null;
 		this.electricLeftPanelView = null;
@@ -3618,6 +3309,7 @@ SetElectricPageMode.prototype.execute = function()
 			{
 				if (graph.getModel().isEdge(cells[i]))
 				{
+					this.electricConnectorSelectedPreset = 'last';
 					this.setElectricConnectorCurrentStyle(
 						this.getElectricConnectorStyleFromCell(cells[i]), true, true);
 					return;
@@ -3632,6 +3324,7 @@ SetElectricPageMode.prototype.execute = function()
 				{
 					if (Editor.electricConnectorStyleKeys.indexOf(keys[j]) >= 0)
 					{
+						this.electricConnectorSelectedPreset = 'last';
 						this.setElectricConnectorCurrentStyle(
 							this.getElectricConnectorCurrentStyle(), true, true);
 						return;
@@ -3751,28 +3444,22 @@ SetElectricPageMode.prototype.execute = function()
 		this.electricFullscreenHandler = null;
 	};
 
-	if (typeof Format != 'undefined' && Format.prototype.immediateRefresh != null)
+	if (typeof StyleFormatPanel != 'undefined' &&
+		StyleFormatPanel.prototype.addStyleOps != null)
 	{
-		var electricConnectorImmediateRefresh = Format.prototype.immediateRefresh;
+		var addElectricConnectorStyleOps = StyleFormatPanel.prototype.addStyleOps;
 
-		Format.prototype.immediateRefresh = function()
+		StyleFormatPanel.prototype.addStyleOps = function(div)
 		{
-			var ui = this.editorUi;
+			var result = addElectricConnectorStyleOps.apply(this, arguments);
 
-			if (Editor.isElectricTheme() && ui != null &&
-				ui.electricConnectorStyleMode === true &&
-				ui.getElectricSelectedConnectorEdges != null &&
-				ui.getElectricSelectedConnectorEdges().length == 0)
+			if (Editor.isElectricTheme() && this.editorUi != null &&
+				this.editorUi.addElectricConnectorStyleOps != null)
 			{
-				if (this.container.offsetWidth != 0)
-				{
-					ui.renderElectricConnectorFormatPanel(this);
-				}
-
-				return;
+				this.editorUi.addElectricConnectorStyleOps(div);
 			}
 
-			return electricConnectorImmediateRefresh.apply(this, arguments);
+			return result;
 		};
 	}
 })();
