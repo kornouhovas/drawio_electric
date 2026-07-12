@@ -63,3 +63,24 @@ assert(electric.includes('installElectricLayersActionGuard') &&
 	electric.includes("this.setElectricLeftPanelView('layers')") &&
 	electric.includes('removeElectricLayersActionGuard'),
 	'The native floating Layers window must be replaced by the Electric left panel');
+assert(electric.includes('this.electricLeftPanelView == viewId &&') &&
+	electric.includes('this.electricLeftPanelCollapsed !== true') &&
+	electric.includes('this.electricLeftPanelCollapsed = true;'),
+	'Clicking the active rail view must collapse it while a collapsed view reopens');
+assert(electric.includes("row.setAttribute('tabindex', '0')") &&
+	electric.includes("row.setAttribute('tabindex', '-1')") &&
+	electric.includes('this.electricLayerKeyboardFocusId == id') &&
+	electric.includes('this.electricLayerKeyboardFocusId = id;') &&
+	electric.includes("'.geElectricLayerRow[tabindex=\"0\"]'") &&
+	electric.includes("mxEvent.addListener(row, 'keydown'") &&
+	electric.includes('evt.keyCode == 13 || evt.keyCode == 32') &&
+	electric.includes('evt.keyCode == 39 && !expanded') &&
+	electric.includes('evt.keyCode == 37 && expanded') &&
+	electric.includes('evt.keyCode == 38 || evt.keyCode == 40') &&
+	electric.includes('evt.keyCode == 36 || evt.keyCode == 35') &&
+	electric.includes('rows[targetIndex].focus();') &&
+	electric.includes('evt.keyCode == 113') &&
+	electric.includes('evt.keyCode == 93 || (evt.shiftKey && evt.keyCode == 121)') &&
+	electric.includes('while (sourceControl != null && sourceControl != row)') &&
+	electric.includes("sourceName == 'button' || sourceName == 'input'"),
+	'Layers must expose a roving, fully keyboard-operable tree without hijacking controls');

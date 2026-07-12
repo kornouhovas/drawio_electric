@@ -6,6 +6,8 @@ const vm = require('vm');
 const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root,
 	'src/main/webapp/js/diagramly/ElectricShapes.js'), 'utf8');
+const electricUi = fs.readFileSync(path.join(root,
+	'src/main/webapp/js/diagramly/Electric.js'), 'utf8');
 const manifest = JSON.parse(fs.readFileSync(path.join(root,
 	'src/main/webapp/electric/shapes/manifest.json'), 'utf8'));
 
@@ -62,3 +64,17 @@ assert(!standardSidebar.entries.some((entry) => entry.title == 'Electric'));
 assert(!Sidebar.prototype.configuration.some((entry) =>
 	String(entry.id).startsWith('electric-')),
 	'Electric configuration must not leak into standard themes');
+assert(electricUi.includes('.geEditor.geElectricModes>.geElectricBottomToolbar') &&
+	electricUi.includes('.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer') &&
+	electricUi.includes('.geEditor.geElectricModes>.geDiagramContainer'),
+	'Rayon shell visuals must be rooted in the Electric editor class');
+assert(!electricUi.includes("'.geElectricBottomToolbar") &&
+	!electricUi.includes("'.geDiagramContainer{background-color:light-dark(#f7f7f8"),
+	'New shell and workspace selectors must not affect non-Electric themes');
+assert(electricUi.includes('this.removeElectricModeListeners();') &&
+	electricUi.includes('this.removeElectricBottomToolbar();'),
+	'Theme removal must clean Electric-only listeners and DOM');
+assert(electricUi.includes("'--ge-electric-sidebar-width', state.sidebarToken") &&
+	electricUi.includes("'--ge-electric-visible-format-width', state.formatToken") &&
+	electricUi.includes('this.hsplitPosition = state.hsplitPosition;'),
+	'Theme removal must restore Electric custom properties and native split state');
