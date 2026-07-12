@@ -26,6 +26,9 @@ assert(electric.includes('this.fileNode.setAttribute(Editor.electricConnectorMet
 assert(electric.includes('graph.currentEdgeStyle = next;') &&
 	electric.includes('graph.pasteEdgeStyle = true;'),
 	'The last connector style must become the default for the next connector');
+assert(electric.includes("evt.getProperty('force') === true") &&
+	electric.includes('Editor.electricConnectorStyleKeys.indexOf(keys[j]) >= 0'),
+	'Existing toolbar connector controls must also persist the current default style');
 assert(electric.includes("data-electric-connector-open', '1'") &&
 	electric.includes("data-electric-connector-menu', '1'"),
 	'The top toolbar must expose connector settings and preset-menu controls');

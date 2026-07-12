@@ -3623,6 +3623,21 @@ SetElectricPageMode.prototype.execute = function()
 					return;
 				}
 			}
+
+			if (evt.getProperty('force') === true)
+			{
+				var keys = evt.getProperty('keys') || [];
+
+				for (var j = 0; j < keys.length; j++)
+				{
+					if (Editor.electricConnectorStyleKeys.indexOf(keys[j]) >= 0)
+					{
+						this.setElectricConnectorCurrentStyle(
+							this.getElectricConnectorCurrentStyle(), true, true);
+						return;
+					}
+				}
+			}
 		});
 
 		this.electricConnectorFileHandler = mxUtils.bind(this, function()
