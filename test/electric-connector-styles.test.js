@@ -41,6 +41,9 @@ assert(electric.includes('StyleFormatPanel.prototype.addStyleOps = function(div)
 	'Preset controls must extend native Style panels for selected and future connectors');
 assert(electric.includes('EditorUi.prototype.showElectricConnectorStylePicker') &&
 	electric.includes('geElectricConnectorStylePickerSearch') &&
+	electric.includes('geElectricConnectorStylePickerMenu') &&
+	electric.includes("mxResources.get('rename') || 'Rename'") &&
+	electric.includes("mxResources.get('delete') || 'Delete'") &&
 	electric.includes('EditorUi.prototype.getElectricConnectorPresetGroups') &&
 	electric.includes('EditorUi.prototype.saveElectricConnectorCurrentPreset') &&
 	electric.includes("mxResources.get('electricConnectorSaveStyle')") &&

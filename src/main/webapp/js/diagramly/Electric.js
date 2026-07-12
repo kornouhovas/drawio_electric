@@ -734,6 +734,9 @@ SetElectricPageMode.prototype.execute = function()
 			'.geElectricConnectorStylePickerText{min-width:0;flex:1;}' +
 			'.geElectricConnectorStylePickerName{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
 			'.geElectricConnectorStylePickerSummary{font-size:12px;color:light-dark(var(--placeholder-color),var(--dark-placeholder-color));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
+			'.geElectricConnectorStylePickerMenu{box-sizing:border-box;width:28px;height:28px;border:0;border-radius:4px;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 28px;color:light-dark(var(--text-color),var(--dark-text-color));}' +
+			'.geElectricConnectorStylePickerMenu:hover{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
+			'.geElectricConnectorStylePickerMenu:before{content:"";width:4px;height:4px;border-radius:50%;background:currentColor;box-shadow:0 -7px 0 currentColor,0 7px 0 currentColor;opacity:.75;}' +
 			'.geElectricConnectorStylePickerEmpty{padding:18px 8px;color:light-dark(var(--placeholder-color),var(--dark-placeholder-color));font-size:13px;text-align:center;}' +
 			'html body.geDarkMode .geElectricModeIcon{filter:invert(1);}'
 		));
@@ -1614,6 +1617,53 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 			ui.refreshElectricConnectorStyleOps();
 		};
 
+		function showEntryMenu(evt, button, entry)
+		{
+			var preset = ui.findElectricConnectorPreset(entry.value);
+
+			if (preset == null || (preset.scope != 'profile' &&
+				preset.scope != 'project'))
+			{
+				return;
+			}
+
+			var menu = new mxPopupMenu(function(menu, parent)
+			{
+				menu.addItem(mxResources.get('rename') || 'Rename', null,
+					function()
+				{
+					ui.prompt(mxResources.get('electricConnectorStyleName') ||
+						(mxResources.get('name') || 'Name'), preset.name,
+						function(name)
+					{
+						if (name != null)
+						{
+							ui.renameElectricConnectorPreset(entry.value, name);
+							render();
+						}
+					}, true);
+				}, parent);
+				menu.addItem(mxResources.get('delete') || 'Delete', null,
+					function()
+				{
+					ui.deleteElectricConnectorPreset(entry.value);
+					render();
+				}, parent);
+			});
+
+			menu.autoExpand = true;
+			menu.hideMenu = function()
+			{
+				mxPopupMenu.prototype.hideMenu.apply(menu, arguments);
+				menu.destroy();
+			};
+
+			var bounds = button.getBoundingClientRect();
+			menu.popup(bounds.left, bounds.bottom, null, evt);
+			ui.setCurrentMenu(menu);
+			mxEvent.consume(evt);
+		};
+
 		function render()
 		{
 			clearList();
@@ -1670,6 +1720,24 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 							ui.getElectricConnectorPresetSummary(entry.style));
 						text.appendChild(summary);
 						row.appendChild(text);
+
+						if (entry.value.indexOf('profile:') == 0 ||
+							entry.value.indexOf('project:') == 0)
+						{
+							var menuButton = document.createElement('button');
+							menuButton.className = 'geElectricConnectorStylePickerMenu';
+							menuButton.setAttribute('type', 'button');
+							menuButton.setAttribute('title',
+								mxResources.get('edit') || 'Edit');
+							menuButton.setAttribute('aria-label',
+								mxResources.get('edit') || 'Edit');
+							mxEvent.addListener(menuButton, 'click', function(evt)
+							{
+								showEntryMenu(evt, this, entry);
+							});
+							row.appendChild(menuButton);
+						}
+
 						mxEvent.addListener(row, 'click', function(evt)
 						{
 							applyEntry(entry);
