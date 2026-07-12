@@ -596,16 +596,23 @@ SetElectricPageMode.prototype.execute = function()
 			'.geElectricLayerRow:hover{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
 			'.geElectricLayerRow.geActiveLayer{background:light-dark(var(--accent-color),var(--dark-accent-color));font-weight:600;}' +
 			'.geElectricLayerRow.geSelectedElement{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
+			'.geElectricLayerRow.geDragging{opacity:.45;}' +
+			'.geElectricLayerRow.geDragOverBefore{box-shadow:inset 0 2px 0 light-dark(var(--accent-color),var(--dark-accent-color));}' +
+			'.geElectricLayerRow.geDragOverAfter{box-shadow:inset 0 -2px 0 light-dark(var(--accent-color),var(--dark-accent-color));}' +
+			'.geElectricLayerRow.geDragOverInside{background:light-dark(var(--accent-color),var(--dark-accent-color));outline:1px solid light-dark(var(--primary-hover-color),var(--dark-active-accent-color));outline-offset:-1px;}' +
 			'.geElectricLayerRow.geHidden>.geElectricLayerMain{opacity:.45;}' +
 			'.geElectricTreeToggle{box-sizing:border-box;width:20px;height:28px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;}' +
 			'.geElectricTreeToggle:before{content:"";width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:5px solid currentColor;transition:transform .12s ease-in-out;}' +
 			'.geElectricTreeToggle.geExpanded:before{transform:rotate(90deg);}' +
 			'.geElectricTreeToggle.geEmpty{visibility:hidden;}' +
+			'.geElectricTreeToggle.geDevice{visibility:hidden;}' +
 			'.geElectricLayerVisibility{box-sizing:border-box;width:25px;height:28px;border:0;background:transparent no-repeat center;background-size:16px 16px;cursor:pointer;opacity:.75;}' +
 			'.geElectricLayerMain{min-width:0;flex:1;display:flex;align-items:center;gap:7px;height:100%;}' +
 			'.geElectricLayerMarker{width:3px;height:16px;border-radius:2px;background:#7c3aed;flex:0 0 3px;}' +
 			'.geElectricElementMarker{box-sizing:border-box;width:12px;height:12px;border:1.5px solid currentColor;border-radius:2px;opacity:.7;flex:0 0 12px;}' +
 			'.geElectricElementMarker.geEdgeMarker{border-radius:0;border-width:0 0 1.5px 0;transform:rotate(-30deg);}' +
+			'.geElectricElementMarker.geDeviceMarker{border-radius:2px;border-width:1.5px;position:relative;}' +
+			'.geElectricElementMarker.geDeviceMarker:after{content:"";position:absolute;left:2px;right:2px;top:4px;height:1.5px;background:currentColor;box-shadow:0 3px 0 currentColor;}' +
 			'.geElectricLayerLabel{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;}' +
 			'.geElectricActiveLayerMark{box-sizing:border-box;width:14px;height:14px;border:1px solid currentColor;border-radius:50%;display:none;align-items:center;justify-content:center;flex:0 0 14px;}' +
 			'.geElectricActiveLayerMark:after{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}' +
@@ -1128,7 +1135,57 @@ SetElectricPageMode.prototype.execute = function()
 		return panel;
 	};
 
-	EditorUi.prototype.getElectricLayerTreeLabel = function(cell, index, isLayer)
+	EditorUi.prototype.getElectricLayerTreeKind = function(cell, isLayer)
+	{
+		var graph = this.editor.graph;
+		var model = graph.getModel();
+
+		if (isLayer)
+		{
+			return 'layer';
+		}
+		else if (Editor.isElectricDeviceCell(graph, cell))
+		{
+			return 'device';
+		}
+		else if (model.isEdge(cell))
+		{
+			return 'edge';
+		}
+		else if (model.getChildCount(cell) > 0)
+		{
+			return 'group';
+		}
+
+		return 'element';
+	};
+
+	EditorUi.prototype.isElectricLayerTreeDeviceInternal = function(cell)
+	{
+		var graph = this.editor.graph;
+		var root = Editor.getElectricDeviceRootForCell(graph, cell);
+
+		return root != null && root != cell;
+	};
+
+	EditorUi.prototype.getElectricLayerTreeDeviceEntry = function(cell)
+	{
+		var graph = this.editor.graph;
+		var style = graph.getCellStyle(cell);
+		var shapeId = mxUtils.getValue(style, 'electricShapeId', null);
+
+		try
+		{
+			return shapeId != null && Editor.getElectricShapeEntry != null ?
+				Editor.getElectricShapeEntry(shapeId) : null;
+		}
+		catch (e)
+		{
+			return null;
+		}
+	};
+
+	EditorUi.prototype.getElectricLayerTreeLabel = function(cell, index, kind)
 	{
 		var graph = this.editor.graph;
 		var model = graph.getModel();
@@ -1136,15 +1193,21 @@ SetElectricPageMode.prototype.execute = function()
 
 		if (label == null || String(label).replace(/\s/g, '').length == 0)
 		{
-			if (isLayer)
+			if (kind == 'layer')
 			{
 				label = mxResources.get('background') || ('Layer ' + (index + 1));
 			}
-			else if (model.isEdge(cell))
+			else if (kind == 'device')
+			{
+				var entry = this.getElectricLayerTreeDeviceEntry(cell);
+				label = (entry != null && entry.title != null) ? entry.title :
+					(mxResources.get('device') || 'Electric device');
+			}
+			else if (kind == 'edge')
 			{
 				label = mxResources.get('connector') || 'Connector';
 			}
-			else if (model.getChildCount(cell) > 0)
+			else if (kind == 'group')
 			{
 				label = mxResources.get('group') || 'Group';
 			}
@@ -1171,7 +1234,7 @@ SetElectricPageMode.prototype.execute = function()
 		return cell;
 	};
 
-	EditorUi.prototype.addElectricLayer = function()
+	EditorUi.prototype.addElectricLayer = function(referenceLayer, before)
 	{
 		var graph = this.editor.graph;
 		var model = graph.getModel();
@@ -1186,8 +1249,15 @@ SetElectricPageMode.prototype.execute = function()
 
 		try
 		{
+			var index = model.getChildCount(model.root);
+
+			if (referenceLayer != null && model.getParent(referenceLayer) == model.root)
+			{
+				index = model.root.getIndex(referenceLayer) + (before ? 0 : 1);
+			}
+
 			layer = graph.addCell(new mxCell(mxResources.get('untitledLayer') ||
-				'Untitled Layer'), model.root);
+				'Untitled Layer'), model.root, index);
 			graph.setDefaultParent(layer);
 		}
 		finally
@@ -1206,11 +1276,11 @@ SetElectricPageMode.prototype.execute = function()
 		this.updateElectricLayersPanel();
 	};
 
-	EditorUi.prototype.startElectricLayerRename = function(layer, labelNode)
+	EditorUi.prototype.startElectricCellRename = function(cell, labelNode, fallback)
 	{
 		var graph = this.editor.graph;
 
-		if (!graph.isEnabled() || layer == null || labelNode == null)
+		if (!graph.isEnabled() || cell == null || labelNode == null)
 		{
 			return;
 		}
@@ -1230,8 +1300,7 @@ SetElectricPageMode.prototype.execute = function()
 
 				if (applyValue && value != oldValue)
 				{
-					graph.cellLabelChanged(layer, value.length > 0 ? value :
-						(mxResources.get('untitledLayer') || 'Untitled Layer'));
+					graph.cellLabelChanged(cell, value.length > 0 ? value : fallback);
 				}
 				else
 				{
@@ -1254,12 +1323,519 @@ SetElectricPageMode.prototype.execute = function()
 		});
 	};
 
+	EditorUi.prototype.startElectricLayerRename = function(layer, labelNode)
+	{
+		this.startElectricCellRename(layer, labelNode,
+			mxResources.get('untitledLayer') || 'Untitled Layer');
+	};
+
+	EditorUi.prototype.toggleElectricLayerTreeExpansion = function(cell, kind)
+	{
+		var graph = this.editor.graph;
+		var id = cell.getId();
+
+		if (kind == 'device')
+		{
+			if (graph.electricOpenDeviceCell == cell)
+			{
+				graph.electricOpenDeviceCell = null;
+				graph.setSelectionCell(cell);
+			}
+			else
+			{
+				Editor.openElectricDeviceForEditing(graph, cell);
+				graph.setSelectionCell(cell);
+			}
+		}
+
+		this.electricLayersExpanded[id] = !this.electricLayersExpanded[id];
+		this.scheduleElectricLayersPanelRefresh();
+	};
+
+	EditorUi.prototype.isElectricLayerTreeToggleEvent = function(evt)
+	{
+		return mxEvent.isControlDown(evt) || mxEvent.isMetaDown(evt);
+	};
+
+	EditorUi.prototype.selectElectricLayerTreeElement = function(cell, evt)
+	{
+		var graph = this.editor.graph;
+		var cells = this.electricLayerVisibleCells || [];
+		var anchor = this.electricLayerSelectionAnchor;
+
+		if (mxEvent.isShiftDown(evt) && anchor != null)
+		{
+			var first = mxUtils.indexOf(cells, anchor);
+			var last = mxUtils.indexOf(cells, cell);
+
+			if (first >= 0 && last >= 0)
+			{
+				graph.setSelectionCells(cells.slice(Math.min(first, last),
+					Math.max(first, last) + 1));
+			}
+			else
+			{
+				graph.setSelectionCell(cell);
+				this.electricLayerSelectionAnchor = cell;
+			}
+		}
+		else if (this.isElectricLayerTreeToggleEvent(evt))
+		{
+			if (graph.isCellSelected(cell))
+			{
+				graph.removeSelectionCell(cell);
+			}
+			else
+			{
+				graph.addSelectionCell(cell);
+			}
+
+			this.electricLayerSelectionAnchor = cell;
+		}
+		else
+		{
+			graph.setSelectionCell(cell);
+			this.electricLayerSelectionAnchor = cell;
+		}
+
+		graph.scrollCellToVisible(cell, true);
+	};
+
+	EditorUi.prototype.getElectricLayerTreeMoveCells = function(cell)
+	{
+		var graph = this.editor.graph;
+		var model = graph.getModel();
+		var cells = graph.isCellSelected(cell) ? graph.getSelectionCells() : [cell];
+		var result = [];
+
+		for (var i = 0; i < cells.length; i++)
+		{
+			if (!model.isLayer(cells[i]) &&
+				!this.isElectricLayerTreeDeviceInternal(cells[i]))
+			{
+				result.push(cells[i]);
+			}
+		}
+
+		return model.getTopmostCells(result);
+	};
+
+	EditorUi.prototype.getElectricLayerTreeDropPosition = function(cell, kind, evt)
+	{
+		if (kind == 'layer' || kind == 'group')
+		{
+			var bounds = evt.currentTarget.getBoundingClientRect();
+			var ratio = (evt.clientY - bounds.top) / Math.max(bounds.height, 1);
+
+			if (ratio > .28 && ratio < .72)
+			{
+				return 'inside';
+			}
+
+			return ratio <= .5 ? 'before' : 'after';
+		}
+
+		return evt.clientY - evt.currentTarget.getBoundingClientRect().top <=
+			evt.currentTarget.offsetHeight / 2 ? 'before' : 'after';
+	};
+
+	EditorUi.prototype.canMoveElectricLayerTreeCells = function(cells, target, kind,
+		position)
+	{
+		var graph = this.editor.graph;
+		var model = graph.getModel();
+		var parent = position == 'inside' ? target : model.getParent(target);
+
+		if (cells == null || cells.length == 0 || parent == null || kind == 'device' ||
+			(position == 'inside' && kind != 'layer' && kind != 'group') ||
+			Editor.getElectricDeviceRootForCell(graph, parent) != null)
+		{
+			return false;
+		}
+
+		for (var i = 0; i < cells.length; i++)
+		{
+			if (cells[i] == target || cells[i] == parent ||
+				model.isAncestor(cells[i], target) || model.isAncestor(cells[i], parent))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	};
+
+	EditorUi.prototype.moveElectricLayerTreeCells = function(cells, target, kind,
+		position)
+	{
+		var graph = this.editor.graph;
+		var model = graph.getModel();
+
+		if (!graph.isEnabled() || !this.canMoveElectricLayerTreeCells(cells, target,
+			kind, position))
+		{
+			return;
+		}
+
+		var parent = position == 'inside' ? target : model.getParent(target);
+		model.beginUpdate();
+
+		try
+		{
+			graph.moveCells(cells, 0, 0, false, parent);
+
+			if (position != 'inside')
+			{
+				var index = parent.getIndex(target) + (position == 'after' ? 1 : 0);
+
+				for (var i = 0; i < cells.length; i++)
+				{
+					model.add(parent, cells[i], index + i);
+				}
+			}
+		}
+		finally
+		{
+			model.endUpdate();
+		}
+
+		graph.setSelectionCells(cells);
+	};
+
+	EditorUi.prototype.clearElectricLayerTreeDropState = function()
+	{
+		if (this.electricLayersTree == null)
+		{
+			return;
+		}
+
+		var rows = this.electricLayersTree.querySelectorAll('.geDragOverBefore,' +
+			'.geDragOverAfter,.geDragOverInside,.geDragging');
+
+		for (var i = 0; i < rows.length; i++)
+		{
+			rows[i].classList.remove('geDragOverBefore', 'geDragOverAfter',
+				'geDragOverInside', 'geDragging');
+		}
+	};
+
+	EditorUi.prototype.getElectricLayerTreeMovableSelection = function()
+	{
+		var graph = this.editor.graph;
+		var model = graph.getModel();
+		var selection = graph.getSelectionCells();
+		var result = [];
+
+		for (var i = 0; i < selection.length; i++)
+		{
+			if (!model.isLayer(selection[i]) &&
+				!this.isElectricLayerTreeDeviceInternal(selection[i]))
+			{
+				result.push(selection[i]);
+			}
+		}
+
+		return model.getTopmostCells(result);
+	};
+
+	EditorUi.prototype.canGroupElectricLayerTreeSelection = function()
+	{
+		var graph = this.editor.graph;
+		var cells = this.getElectricLayerTreeMovableSelection();
+
+		if (cells.length < 2)
+		{
+			return false;
+		}
+
+		return graph.getCellsForGroup(cells).length == cells.length;
+	};
+
+	EditorUi.prototype.groupElectricLayerTreeSelection = function()
+	{
+		var graph = this.editor.graph;
+
+		if (graph.isEnabled() && this.canGroupElectricLayerTreeSelection())
+		{
+			var group = graph.groupCells(null, 0,
+				this.getElectricLayerTreeMovableSelection());
+
+			if (group != null)
+			{
+				graph.setSelectionCell(group);
+				this.electricLayersExpanded[group.getId()] = true;
+			}
+		}
+	};
+
+	EditorUi.prototype.ungroupElectricLayerTreeCell = function(cell)
+	{
+		var graph = this.editor.graph;
+		var model = graph.getModel();
+
+		if (!graph.isEnabled() || this.getElectricLayerTreeKind(cell, false) != 'group' ||
+			Editor.isElectricDeviceCell(graph, cell))
+		{
+			return;
+		}
+
+		var cells = graph.ungroupCells([cell]);
+
+		if (cells.length > 0)
+		{
+			graph.setSelectionCells(cells);
+		}
+	};
+
+	EditorUi.prototype.duplicateElectricLayerTreeLayer = function(layer)
+	{
+		var graph = this.editor.graph;
+		var model = graph.getModel();
+		var copy = null;
+
+		if (!graph.isEnabled() || model.getParent(layer) != model.root)
+		{
+			return;
+		}
+
+		model.beginUpdate();
+
+		try
+		{
+			copy = graph.cloneCell(layer);
+			graph.cellLabelChanged(copy, mxResources.get('copyOf', [
+				this.getElectricLayerTreeLabel(layer, 0, 'layer')]));
+			graph.addCell(copy, model.root, model.root.getIndex(layer) + 1);
+			copy.setVisible(true);
+		}
+		finally
+		{
+			model.endUpdate();
+		}
+
+		if (copy != null)
+		{
+			graph.setDefaultParent(copy);
+			graph.selectAll(copy);
+		}
+	};
+
+	EditorUi.prototype.deleteElectricLayerTreeLayer = function(layer)
+	{
+		var graph = this.editor.graph;
+		var model = graph.getModel();
+		var root = model.root;
+
+		if (!graph.isEnabled() || model.getParent(layer) != root ||
+			model.getChildCount(root) <= 1)
+		{
+			return;
+		}
+
+		var count = model.getChildCount(layer);
+		var label = this.getElectricLayerTreeLabel(layer, 0, 'layer');
+		var message = 'Delete layer "' + label + '"' +
+			(count > 0 ? ' and its ' + count + ' item' + (count == 1 ? '' : 's') : '') + '?';
+
+		if (!mxUtils.confirm(message))
+		{
+			return;
+		}
+
+		var index = root.getIndex(layer);
+		var next = model.getChildAt(root, index > 0 ? index - 1 : 1);
+		model.beginUpdate();
+
+		try
+		{
+			graph.removeCells([layer], false);
+		}
+		finally
+		{
+			model.endUpdate();
+		}
+
+		if (next != null && model.contains(next))
+		{
+			graph.setDefaultParent(next);
+			graph.clearSelection();
+		}
+	};
+
+	EditorUi.prototype.deleteElectricLayerTreeCell = function(cell, kind)
+	{
+		var graph = this.editor.graph;
+		var model = graph.getModel();
+		var childCount = model.getChildCount(cell);
+
+		if (!graph.isEnabled() || this.isElectricLayerTreeDeviceInternal(cell))
+		{
+			return;
+		}
+
+		if (childCount > 0 && !mxUtils.confirm('Delete this ' +
+			(kind == 'device' ? 'device' : 'group') + ' and its ' + childCount +
+			' item' + (childCount == 1 ? '' : 's') + '?'))
+		{
+			return;
+		}
+
+		graph.removeCells([cell], false);
+	};
+
+	EditorUi.prototype.showElectricLayersContextMenu = function(evt, cell, layer, kind)
+	{
+		var graph = this.editor.graph;
+		var model = graph.getModel();
+		var isLayer = kind == 'layer';
+		var internal = !isLayer && this.isElectricLayerTreeDeviceInternal(cell);
+		var canEdit = graph.isEnabled() && !internal;
+		var locked = graph.isCellLocked(cell);
+		var selection = this.getElectricLayerTreeMovableSelection();
+		var hasMoveSelection = selection.length > 0;
+		var menu = new mxPopupMenu(mxUtils.bind(this, function(menu, parent)
+		{
+			if (isLayer)
+			{
+				menu.addItem(mxResources.get('setAsDefault') || 'Make active', null,
+					mxUtils.bind(this, function()
+					{
+						graph.setDefaultParent(cell);
+						graph.view.setCurrentRoot(null);
+					}), parent, null, graph.isEnabled());
+				menu.addItem(mxResources.get('addLayer') || 'Add layer', null,
+					mxUtils.bind(this, function()
+					{
+						this.addElectricLayer(cell);
+					}), parent, null, graph.isEnabled());
+				menu.addItem(mxResources.get('rename') || 'Rename', null,
+					mxUtils.bind(this, function()
+					{
+						this.startElectricLayerRename(cell,
+							this.electricLayerLabelNodes[cell.getId()]);
+					}), parent, null, graph.isEnabled());
+				menu.addItem(mxResources.get('duplicate') || 'Duplicate', null,
+					mxUtils.bind(this, function()
+					{
+						this.duplicateElectricLayerTreeLayer(cell);
+					}), parent, null, graph.isEnabled());
+				menu.addSeparator(parent);
+				menu.addItem(mxResources.get(model.isVisible(cell) ? 'hide' : 'show'), null,
+					mxUtils.bind(this, function()
+					{
+						graph.setCellsVisible([cell], !model.isVisible(cell));
+					}), parent, null, graph.isEnabled());
+				menu.addItem(mxResources.get(locked ? 'unlock' : 'lock'), null,
+					mxUtils.bind(this, function()
+					{
+						graph.setCellStyles('locked', locked ? '0' : '1', [cell]);
+					}), parent, null, graph.isEnabled());
+				menu.addItem(mxResources.get('selectObjectsInLayer') || 'Select contents', null,
+					function()
+					{
+						graph.selectAll(cell);
+					}, parent, null, model.getChildCount(cell) > 0);
+				menu.addItem(mxResources.get('moveSelectionTo', ['']) || 'Move selection here',
+					null, mxUtils.bind(this, function()
+					{
+						this.moveElectricLayerTreeCells(selection, cell, 'layer', 'inside');
+					}), parent, null, hasMoveSelection && !locked);
+				menu.addItem(mxResources.get('group') || 'Group', null,
+					mxUtils.bind(this, function()
+					{
+						this.groupElectricLayerTreeSelection();
+					}), parent, null, this.canGroupElectricLayerTreeSelection());
+				menu.addSeparator(parent);
+				menu.addItem(mxResources.get('delete') || 'Delete', null,
+					mxUtils.bind(this, function()
+					{
+						this.deleteElectricLayerTreeLayer(cell);
+					}), parent, null, graph.isEnabled() && model.getChildCount(model.root) > 1);
+			}
+			else
+			{
+				var label = this.getElectricLayerTreeLabel(cell, 0, kind);
+				menu.addItem(mxResources.get('rename') || 'Rename', null,
+					mxUtils.bind(this, function()
+					{
+						this.startElectricCellRename(cell,
+							this.electricLayerLabelNodes[cell.getId()], label);
+					}), parent, null, canEdit);
+				menu.addItem(mxResources.get('duplicate') || 'Duplicate', null,
+					function()
+					{
+						var copies = graph.duplicateCells([cell]);
+						graph.setSelectionCells(copies);
+					}, parent, null, canEdit);
+				menu.addSeparator(parent);
+				menu.addItem(mxResources.get(model.isVisible(cell) ? 'hide' : 'show'), null,
+					function()
+					{
+						graph.setCellsVisible([cell], !model.isVisible(cell));
+					}, parent, null, graph.isEnabled());
+				menu.addItem(mxResources.get(locked ? 'unlock' : 'lock'), null,
+					function()
+					{
+						graph.setCellStyles('locked', locked ? '0' : '1', [cell]);
+					}, parent, null, graph.isEnabled());
+
+				var moveMenu = menu.addItem(mxResources.get('moveSelectionTo', ['']) ||
+					'Move to layer', null, null, parent, null, canEdit);
+
+				for (var i = model.getChildCount(model.root) - 1; i >= 0; i--)
+				{
+					(mxUtils.bind(this, function(targetLayer)
+					{
+						menu.addItem(this.getElectricLayerTreeLabel(targetLayer, 0, 'layer'),
+							null, mxUtils.bind(this, function()
+							{
+								this.moveElectricLayerTreeCells(
+									this.getElectricLayerTreeMovableSelection(), targetLayer,
+									'layer', 'inside');
+							}), moveMenu, null, !graph.isCellLocked(targetLayer));
+					}))(model.getChildAt(model.root, i));
+				}
+
+				menu.addItem(mxResources.get('group') || 'Group', null,
+					mxUtils.bind(this, function()
+					{
+						this.groupElectricLayerTreeSelection();
+					}), parent, null, this.canGroupElectricLayerTreeSelection());
+				menu.addItem(mxResources.get('ungroup') || 'Ungroup', null,
+					mxUtils.bind(this, function()
+					{
+						this.ungroupElectricLayerTreeCell(cell);
+					}), parent, null, canEdit && kind == 'group');
+				menu.addSeparator(parent);
+				menu.addItem(mxResources.get('delete') || 'Delete', null,
+					mxUtils.bind(this, function()
+					{
+						this.deleteElectricLayerTreeCell(cell, kind);
+					}), parent, null, canEdit);
+			}
+		}));
+
+		menu.smartSeparators = true;
+		menu.showDisabled = true;
+		menu.autoExpand = true;
+		menu.hideMenu = mxUtils.bind(this, function()
+		{
+			mxPopupMenu.prototype.hideMenu.apply(menu, arguments);
+			menu.destroy();
+		});
+		menu.popup(mxEvent.getClientX(evt), mxEvent.getClientY(evt), null, evt);
+		this.setCurrentMenu(menu);
+		mxEvent.consume(evt);
+	};
+
 	EditorUi.prototype.addElectricLayerTreeRow = function(cell, layer, depth,
 		index, isLayer, parentVisible)
 	{
 		var graph = this.editor.graph;
 		var model = graph.getModel();
 		var childCount = model.getChildCount(cell);
+		var kind = this.getElectricLayerTreeKind(cell, isLayer);
+		var deviceInternal = !isLayer && this.isElectricLayerTreeDeviceInternal(cell);
 		var id = cell.getId();
 		var expanded = this.electricLayersExpanded[id];
 
@@ -1278,9 +1854,9 @@ SetElectricPageMode.prototype.execute = function()
 		row.setAttribute('aria-level', String(depth + 1));
 		row.setAttribute('data-cell-id', id);
 		row.setAttribute('data-layer-id', layer.getId());
-		row.setAttribute('data-electric-kind', isLayer ? 'layer' : 'element');
+		row.setAttribute('data-electric-kind', kind);
 
-		if (childCount > 0)
+		if (childCount > 0 && kind != 'device')
 		{
 			row.setAttribute('aria-expanded', expanded ? 'true' : 'false');
 		}
@@ -1303,16 +1879,15 @@ SetElectricPageMode.prototype.execute = function()
 		toggle.setAttribute('type', 'button');
 		toggle.setAttribute('aria-label', mxResources.get(
 			expanded ? 'collapse' : 'expand') || (expanded ? 'Collapse' : 'Expand'));
-		toggle.className = 'geElectricTreeToggle' +
-			(childCount == 0 ? ' geEmpty' : (expanded ? ' geExpanded' : ''));
+		toggle.className = 'geElectricTreeToggle' + (kind == 'device' ? ' geDevice' :
+			(childCount == 0 ? ' geEmpty' : (expanded ? ' geExpanded' : '')));
 		row.appendChild(toggle);
 
-		if (childCount > 0)
+		if (childCount > 0 && kind != 'device')
 		{
 			mxEvent.addListener(toggle, 'click', mxUtils.bind(this, function(evt)
 			{
-				this.electricLayersExpanded[id] = !expanded;
-				this.scheduleElectricLayersPanelRefresh();
+				this.toggleElectricLayerTreeExpansion(cell, kind);
 				mxEvent.consume(evt);
 			}));
 		}
@@ -1340,7 +1915,8 @@ SetElectricPageMode.prototype.execute = function()
 		main.className = 'geElectricLayerMain';
 		var marker = document.createElement('span');
 		marker.className = isLayer ? 'geElectricLayerMarker' :
-			('geElectricElementMarker' + (model.isEdge(cell) ? ' geEdgeMarker' : ''));
+			('geElectricElementMarker' + (kind == 'edge' ? ' geEdgeMarker' : '') +
+				(kind == 'device' ? ' geDeviceMarker' : ''));
 
 		if (isLayer)
 		{
@@ -1352,7 +1928,7 @@ SetElectricPageMode.prototype.execute = function()
 		main.appendChild(marker);
 		var label = document.createElement('div');
 		label.className = 'geElectricLayerLabel';
-		mxUtils.write(label, this.getElectricLayerTreeLabel(cell, index, isLayer));
+		mxUtils.write(label, this.getElectricLayerTreeLabel(cell, index, kind));
 		main.appendChild(label);
 		row.appendChild(main);
 
@@ -1371,11 +1947,10 @@ SetElectricPageMode.prototype.execute = function()
 					graph.setDefaultParent(cell);
 					graph.view.setCurrentRoot(null);
 				}
-				else
-				{
-					graph.setSelectionCell(cell);
-					graph.scrollCellToVisible(cell, true);
-				}
+			else
+			{
+				this.selectElectricLayerTreeElement(cell, evt);
+			}
 
 				mxEvent.consume(evt);
 			}
@@ -1389,9 +1964,100 @@ SetElectricPageMode.prototype.execute = function()
 				mxEvent.consume(evt);
 			}));
 		}
+		else if (kind == 'device' || kind == 'group')
+		{
+			mxEvent.addListener(row, 'dblclick', mxUtils.bind(this, function(evt)
+			{
+				if (label.contentEditable != 'true')
+				{
+					this.toggleElectricLayerTreeExpansion(cell, kind);
+				}
+
+				mxEvent.consume(evt);
+			}));
+		}
+
+		mxEvent.addListener(row, 'contextmenu', mxUtils.bind(this, function(evt)
+		{
+			if (!isLayer && !graph.isCellSelected(cell))
+			{
+				graph.setSelectionCell(cell);
+				this.electricLayerSelectionAnchor = cell;
+			}
+			else if (isLayer)
+			{
+				graph.setDefaultParent(cell);
+			}
+
+			this.showElectricLayersContextMenu(evt, cell, layer, kind);
+		}));
+
+		if (!deviceInternal)
+		{
+			if (!isLayer)
+			{
+				row.setAttribute('draggable', 'true');
+				row.addEventListener('dragstart', mxUtils.bind(this, function(evt)
+				{
+					var cells = this.getElectricLayerTreeMoveCells(cell);
+
+					if (cells.length == 0)
+					{
+						evt.preventDefault();
+						return;
+					}
+
+					this.electricLayerDragCells = cells;
+					this.clearElectricLayerTreeDropState();
+					row.classList.add('geDragging');
+
+					try
+					{
+						evt.dataTransfer.effectAllowed = 'move';
+						evt.dataTransfer.setData('text/plain', id);
+					}
+					catch (e)
+					{
+						// Drag data is optional for the in-panel operation.
+					}
+				}));
+			}
+			row.addEventListener('dragover', mxUtils.bind(this, function(evt)
+			{
+				var position = this.getElectricLayerTreeDropPosition(cell, kind, evt);
+
+				if (this.canMoveElectricLayerTreeCells(this.electricLayerDragCells,
+					cell, kind, position))
+				{
+					evt.preventDefault();
+					this.clearElectricLayerTreeDropState();
+					row.classList.add(position == 'inside' ? 'geDragOverInside' :
+						(position == 'before' ? 'geDragOverBefore' : 'geDragOverAfter'));
+				}
+			}));
+			row.addEventListener('drop', mxUtils.bind(this, function(evt)
+			{
+				var position = this.getElectricLayerTreeDropPosition(cell, kind, evt);
+				evt.preventDefault();
+				this.moveElectricLayerTreeCells(this.electricLayerDragCells, cell,
+					kind, position);
+				this.electricLayerDragCells = null;
+				this.clearElectricLayerTreeDropState();
+			}));
+			row.addEventListener('dragend', mxUtils.bind(this, function()
+			{
+				this.electricLayerDragCells = null;
+				this.clearElectricLayerTreeDropState();
+			}));
+		}
 
 		this.electricLayersTree.appendChild(row);
 		this.electricLayerLabelNodes[id] = label;
+
+		if (!isLayer)
+		{
+			this.electricLayerVisibleCells.push(cell);
+		}
 
 		if (expanded)
 		{
@@ -1415,6 +2081,7 @@ SetElectricPageMode.prototype.execute = function()
 		this.electricLayersTree.innerText = '';
 		this.electricLayersExpanded = this.electricLayersExpanded || {};
 		this.electricLayerLabelNodes = {};
+		this.electricLayerVisibleCells = [];
 		this.electricActiveLayer = this.getElectricActiveLayer();
 		var count = model.getChildCount(model.root);
 

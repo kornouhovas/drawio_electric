@@ -34,3 +34,26 @@ assert(electric.includes('this.addElectricLayer();'),
 	'The Layers header must provide an add-layer command');
 assert(electric.includes('window.cancelAnimationFrame(this.electricLayersRefreshFrame);'),
 	'Inline layer naming must not be detached by a pending tree refresh');
+assert(electric.includes('EditorUi.prototype.getElectricLayerTreeKind') &&
+	electric.includes("return 'device';") &&
+	electric.includes("geDeviceMarker"),
+	'Electrical devices must be a distinct Layers tree type');
+assert(electric.includes("kind == 'device' ? ' geDevice'") &&
+	electric.includes('toggleElectricLayerTreeExpansion(cell, kind)'),
+	'Devices must hide their normal group disclosure and open on double click');
+assert(electric.includes('selectElectricLayerTreeElement') &&
+	electric.includes('mxEvent.isShiftDown(evt)') &&
+	electric.includes('graph.addSelectionCell(cell)'),
+	'Layers must support range and Ctrl/Cmd multiselection');
+assert(electric.includes('moveElectricLayerTreeCells') &&
+	electric.includes("position == 'inside'") &&
+	electric.includes('graph.moveCells(cells, 0, 0, false, parent)'),
+	'Layers drag and drop must reparent cells without changing their coordinates');
+assert(electric.includes('showElectricLayersContextMenu') &&
+	electric.includes('new mxPopupMenu') &&
+	electric.includes('deleteElectricLayerTreeLayer'),
+	'Layers must expose model operations through a context menu');
+assert(electric.includes('groupElectricLayerTreeSelection') &&
+	electric.includes('ungroupElectricLayerTreeCell') &&
+	electric.includes("kind == 'group'"),
+	'Only ordinary groups may be grouped and ungrouped through Layers');
