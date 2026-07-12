@@ -1416,33 +1416,6 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		}
 
 		this.removeElectricConnectorToolbar();
-		this.hideElectricConnectorToolbarControls();
-	};
-
-	EditorUi.prototype.hideElectricConnectorToolbarControls = function()
-	{
-		if (this.toolbar != null && this.toolbar.edgeStyleMenu != null)
-		{
-			if (this.electricEdgeStyleMenuDisplay == null)
-			{
-				this.electricEdgeStyleMenuDisplay =
-					this.toolbar.edgeStyleMenu.style.display;
-			}
-
-			this.toolbar.edgeStyleMenu.style.display = 'none';
-		}
-	};
-
-	EditorUi.prototype.restoreElectricConnectorToolbarControls = function()
-	{
-		if (this.toolbar != null && this.toolbar.edgeStyleMenu != null &&
-			this.electricEdgeStyleMenuDisplay != null)
-		{
-			this.toolbar.edgeStyleMenu.style.display =
-				this.electricEdgeStyleMenuDisplay;
-		}
-
-		this.electricEdgeStyleMenuDisplay = null;
 	};
 
 	EditorUi.prototype.removeElectricConnectorToolbar = function()
@@ -3346,7 +3319,6 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		}
 
 		this.restoreElectricToolbarViewButton();
-		this.restoreElectricConnectorToolbarControls();
 		this.removeElectricConnectorToolbar();
 		this.removeElectricFullscreenViewportGuard();
 		this.removeElectricLayersActionGuard();
