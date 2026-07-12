@@ -36,6 +36,9 @@ assert(electric.includes('StyleFormatPanel.prototype.addStyleOps = function(div)
 	electric.includes('DiagramFormatPanel.prototype.addStyleOps = function(div)') &&
 	electric.includes('EditorUi.prototype.addElectricConnectorStyleOps') &&
 	electric.includes('allowDefaultStyle === true && selected.length != 0') &&
+	electric.includes('geElectricConnectorStyleButtonName') &&
+	electric.includes('geElectricConnectorStyleButtonSummary') &&
+	electric.includes('this.createElectricConnectorStylePreview(') &&
 	!electric.includes('EditorUi.prototype.renderElectricConnectorFormatPanel') &&
 	!electric.includes('Format.prototype.immediateRefresh = function()'),
 	'Preset controls must extend native Style panels for selected and future connectors');

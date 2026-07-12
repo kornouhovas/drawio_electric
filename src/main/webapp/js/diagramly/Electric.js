@@ -717,8 +717,12 @@ SetElectricPageMode.prototype.execute = function()
 			'.geElectricConnectorToolbar>a.geElectricConnectorPrimary:after{content:"";position:absolute;left:6px;right:6px;bottom:3px;height:2px;border-radius:1px;background:var(--ge-electric-connector-color,#1f2937);}' +
 			'.geElectricConnectorStyleOps{border-top:1px solid light-dark(var(--border-color),var(--dark-border-color));margin-top:6px;padding-top:8px;}' +
 			'.geElectricConnectorStyleOpsTitle{font-size:12px;font-weight:600;margin:0 0 5px;}' +
-			'.geElectricConnectorStyleButton{box-sizing:border-box!important;position:relative;width:100%;height:32px;margin:0 0 6px!important;padding:0 28px 0 10px!important;text-align:left!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
+			'.geElectricConnectorStyleButton{box-sizing:border-box!important;position:relative;width:100%;min-height:52px;height:auto;margin:0 0 6px!important;padding:6px 28px 6px 8px!important;text-align:left!important;display:flex!important;align-items:center;gap:10px;overflow:hidden;}' +
 			'.geElectricConnectorStyleButton:after{content:"";position:absolute;right:10px;top:50%;width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-65%) rotate(45deg);opacity:.75;}' +
+			'.geElectricConnectorStyleButton .geElectricConnectorStylePreview{width:58px;height:38px;flex:0 0 58px;}' +
+			'.geElectricConnectorStyleButtonText{min-width:0;flex:1;line-height:1.2;}' +
+			'.geElectricConnectorStyleButtonName{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:light-dark(var(--text-color),var(--dark-text-color));}' +
+			'.geElectricConnectorStyleButtonSummary{font-size:12px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:light-dark(var(--placeholder-color),var(--dark-placeholder-color));}' +
 			'.geElectricConnectorStyleOpsActions{display:flex;gap:4px;}' +
 			'.geElectricConnectorStyleOpsActions button{min-width:0;flex:1;height:28px;margin:0!important;}' +
 			'.geElectricConnectorStylePicker{box-sizing:border-box;height:100%;min-height:0;padding:16px;display:flex;flex-direction:column;color:light-dark(var(--text-color),var(--dark-text-color));}' +
@@ -1913,15 +1917,34 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 			'Connector styles');
 		section.appendChild(title);
 
-		var selectStyle = mxUtils.button(this.getElectricConnectorPresetName(),
-			mxUtils.bind(this, function(evt)
+		var currentStyle = this.getElectricConnectorCurrentStyle();
+		var currentName = this.getElectricConnectorPresetName();
+		var currentSummary = this.getElectricConnectorPresetSummary(currentStyle);
+		var selectStyle = document.createElement('button');
+		selectStyle.setAttribute('type', 'button');
+		selectStyle.className = 'geBtn geElectricConnectorStyleButton';
+		selectStyle.setAttribute('title',
+			(mxResources.get('electricConnectorSelectStyle') || 'Select style') +
+			': ' + currentName + ' - ' + currentSummary);
+		selectStyle.appendChild(this.createElectricConnectorStylePreview(
+			currentStyle));
+		var selectText = document.createElement('div');
+		selectText.className = 'geElectricConnectorStyleButtonText';
+		var selectName = document.createElement('div');
+		selectName.className = 'geElectricConnectorStyleButtonName';
+		mxUtils.write(selectName, currentName);
+		selectText.appendChild(selectName);
+		var selectSummary = document.createElement('div');
+		selectSummary.className = 'geElectricConnectorStyleButtonSummary';
+		mxUtils.write(selectSummary, currentSummary);
+		selectText.appendChild(selectSummary);
+		selectStyle.appendChild(selectText);
+		mxEvent.addListener(selectStyle, 'click', mxUtils.bind(this,
+			function(evt)
 			{
 				this.showElectricConnectorStylePicker();
 				mxEvent.consume(evt);
 			}));
-		selectStyle.className = 'geBtn geElectricConnectorStyleButton';
-		selectStyle.setAttribute('title',
-			mxResources.get('electricConnectorSelectStyle') || 'Select style');
 		section.appendChild(selectStyle);
 
 		var actions = document.createElement('div');
