@@ -12,6 +12,12 @@ Editor.isElectricTheme = function(theme)
 	return theme == 'electric';
 };
 
+Editor.getElectricResource = function(key, fallback)
+{
+	var value = mxResources.get(key);
+	return (value == null || value == key) ? fallback : value;
+};
+
 Editor.ensureElectricMath = function()
 {
 	if (Editor.isElectricTheme() && typeof window.MathJax === 'undefined')
@@ -657,13 +663,14 @@ SetElectricPageMode.prototype.execute = function()
 		style.setAttribute('id', 'geElectricModeStyles');
 		style.setAttribute('type', 'text/css');
 		style.appendChild(document.createTextNode(
-			'.geEditor.geElectricModes{--ge-electric-mode-width:56px;--ge-electric-sidebar-width:360px;--ge-electric-format-width:352px;--ge-electric-visible-left-width:calc(var(--ge-electric-mode-width) + var(--ge-electric-sidebar-width));--ge-electric-visible-format-width:var(--ge-electric-format-width);--ge-electric-shell-surface:light-dark(#fff,#242426);--ge-electric-shell-border:light-dark(#e4e4e7,#45454a);--ge-electric-shell-text:light-dark(#27272a,#f4f4f5);--ge-electric-shell-muted:light-dark(#71717a,#a1a1aa);--ge-electric-shell-hover:light-dark(#f4f4f5,#343438);--ge-electric-shell-active:light-dark(#e9e9ec,#414146);--ge-electric-shell-shadow:light-dark(rgba(24,24,27,.14),rgba(0,0,0,.45));--ge-electric-workspace:light-dark(#f7f7f8,#19191b);grid-template-columns:var(--ge-electric-mode-width) minmax(0,1fr) var(--ge-electric-visible-format-width);}' +
+				'.geEditor.geElectricModes{--ge-electric-mode-width:44px;--ge-electric-sidebar-width:264px;--ge-electric-format-width:264px;--ge-electric-visible-left-width:calc(var(--ge-electric-mode-width) + var(--ge-electric-sidebar-width));--ge-electric-visible-format-width:var(--ge-electric-format-width);--ge-electric-shell-surface:light-dark(#fff,#202124);--ge-electric-shell-border:light-dark(#e8e8e8,#3c4043);--ge-electric-shell-text:light-dark(#202124,#f1f3f4);--ge-electric-shell-muted:light-dark(#737373,#9aa0a6);--ge-electric-shell-hover:light-dark(#f5f5f5,#303134);--ge-electric-shell-active:light-dark(#f1f1f1,#35363a);--ge-electric-shell-accent:#146ef5;--ge-electric-shell-active-icon:light-dark(#eef4ff,#1d2a44);--ge-electric-shell-shadow:light-dark(rgba(0,0,0,.12),rgba(0,0,0,.5));--ge-electric-workspace:light-dark(#f7f7f7,#19191b);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:13px;line-height:1.35;letter-spacing:0;grid-template-columns:var(--ge-electric-mode-width) minmax(0,1fr) var(--ge-electric-visible-format-width);}' +
 			'.geEditor.geElectricModes:not(.geElectricLegacyChrome){grid-template-rows:0 0 minmax(0,1fr) min-content;}' +
 			'.geEditor.geElectricModes:not(.geElectricLegacyChrome)>.geMenubarContainer,.geEditor.geElectricModes:not(.geElectricLegacyChrome)>.geToolbarContainer{display:none!important;}' +
+			'.geEditor.geElectricModes>.geTabContainer{display:none!important;}' +
 			'.geEditor.geElectricModes:not(.geElectricLegacyChrome)>.geElectricModePanel,.geEditor.geElectricModes:not(.geElectricLegacyChrome)>.geSidebarContainer:not(.geFormatContainer),.geEditor.geElectricModes:not(.geElectricLegacyChrome)>.geElectricLayersPanel,.geEditor.geElectricModes:not(.geElectricLegacyChrome)>.geHsplit,.geEditor.geElectricModes:not(.geElectricLegacyChrome)>.geDiagramContainer,.geEditor.geElectricModes:not(.geElectricLegacyChrome)>.geSidebarContainer.geFormatContainer{grid-row:1/4;}' +
-			'.geEditor.geElectricModes>.geElectricModePanel{grid-column:1;grid-row:3;box-sizing:border-box;width:var(--ge-electric-mode-width);min-width:0;min-height:0;border-right:1px solid var(--ge-electric-shell-border);background:var(--ge-electric-shell-surface);display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 7px;overflow:hidden;z-index:8;transition:transform ' + transition + ' ease-in-out,opacity ' + transition + ' ease-in-out;}' +
+				'.geEditor.geElectricModes>.geElectricModePanel{grid-column:1;grid-row:3;box-sizing:border-box;width:var(--ge-electric-mode-width);min-width:0;min-height:0;border-right:1px solid var(--ge-electric-shell-border);background:var(--ge-electric-shell-surface);display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;overflow:hidden;z-index:8;transition:transform ' + transition + ' ease-in-out,opacity ' + transition + ' ease-in-out;}' +
 			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer),.geEditor.geElectricModes>.geElectricLayersPanel{grid-column:2/3;grid-row:3/4;position:absolute!important;left:0;top:0;bottom:0;z-index:6;min-width:0!important;background-color:light-dark(var(--ge-panel-color),var(--ge-dark-panel-color));box-shadow:3px 0 8px rgba(0,0,0,.12);transform:translateX(0);transition:transform ' + transition + ' ease-in-out;will-change:transform;}' +
-			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer),.geEditor.geElectricModes>.geElectricLayersPanel{box-sizing:border-box;width:min(var(--ge-electric-sidebar-width),calc(100% - var(--ge-electric-mode-width)));border-right:1px solid var(--ge-electric-shell-border);background-color:var(--ge-electric-shell-surface);box-shadow:4px 0 18px var(--ge-electric-shell-shadow);}' +
+				'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer),.geEditor.geElectricModes>.geElectricLayersPanel{box-sizing:border-box;width:min(var(--ge-electric-sidebar-width),calc(100% - var(--ge-electric-mode-width)));border-right:1px solid var(--ge-electric-shell-border);background-color:var(--ge-electric-shell-surface);box-shadow:none;}' +
 			'.geEditor.geElectricModes>.geElectricLayersPanel{display:none;flex-direction:column;overflow:hidden;}' +
 			'.geEditor.geElectricModes.geElectricPanelLayers>.geSidebarContainer:not(.geFormatContainer){display:none;}' +
 			'.geEditor.geElectricModes.geElectricPanelLayers>.geElectricLayersPanel{display:flex;}' +
@@ -679,19 +686,29 @@ SetElectricPageMode.prototype.execute = function()
 			'.geEditor.geElectricModes.geElectricFullscreen>.geHsplit{opacity:0!important;pointer-events:none;}' +
 			'.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a.geElectricToolbarViewButton,.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[data-electric-toolbar-toggle="1"],.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Скрыть левую панель"],.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Показать левую панель"]{box-sizing:border-box!important;display:flex!important;width:34px!important;min-width:34px!important;height:30px!important;margin:4px 3px 4px -13px!important;padding:3px!important;align-items:center!important;justify-content:center!important;}' +
 			'.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[data-electric-toolbar-toggle="1"]+.geSeparator,.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Скрыть левую панель"]+.geSeparator,.geEditor.geElectricModes .geToolbarContainer>.geToolbar>a[title^="Показать левую панель"]+.geSeparator{margin-left:0!important;}' +
-			'.geEditor.geElectricModes .geElectricModeButton,.geEditor.geElectricModes .geElectricPanelViewButton,.geEditor.geElectricModes .geElectricShellMenuButton{box-sizing:border-box;width:40px;min-height:36px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--ge-electric-shell-text);display:flex;align-items:center;justify-content:center;padding:5px;cursor:pointer;overflow:hidden;}' +
+				'.geEditor.geElectricModes .geElectricModeButton,.geEditor.geElectricModes .geElectricPanelViewButton,.geEditor.geElectricModes .geElectricShellMenuButton{box-sizing:border-box;width:36px;height:36px;min-height:36px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--ge-electric-shell-text);display:flex;align-items:center;justify-content:center;padding:6px;cursor:pointer;overflow:hidden;}' +
 			'.geEditor.geElectricModes .geElectricModeButton:hover,.geEditor.geElectricModes .geElectricPanelViewButton:hover,.geEditor.geElectricModes .geElectricShellMenuButton:hover{background:var(--ge-electric-shell-hover);}' +
 			'.geEditor.geElectricModes .geElectricShellMenuButton[aria-expanded="true"]{background:var(--ge-electric-shell-active);border-color:var(--ge-electric-shell-border);}' +
-			'.geEditor.geElectricModes .geElectricModeButton.geActive,.geEditor.geElectricModes .geElectricPanelViewButton.geActive{background:var(--ge-electric-shell-active);border-color:var(--ge-electric-shell-border);color:var(--ge-electric-shell-text);}' +
-			'.geEditor.geElectricModes .geElectricModeIcon{width:16px;height:16px;flex:0 0 16px;background-repeat:no-repeat;background-position:center;background-size:16px 16px;opacity:.9;}' +
-			'.geEditor.geElectricModes .geElectricModeSeparator{width:24px;height:1px;margin:2px 0;background:light-dark(var(--border-color),var(--dark-border-color));flex:0 0 1px;}' +
-			'.geEditor.geElectricModes .geElectricLayersHeader{box-sizing:border-box;height:48px;min-height:48px;padding:0 12px 0 16px;border-bottom:1px solid var(--ge-electric-shell-border);display:flex;align-items:center;gap:6px;background:var(--ge-electric-shell-surface);}' +
-			'.geEditor.geElectricModes .geElectricLayersTitle{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;font-size:13px;font-weight:600;}' +
-			'.geEditor.geElectricModes .geElectricLayersAction{box-sizing:border-box;width:28px;height:28px;border:0;border-radius:4px;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;}' +
+				'.geEditor.geElectricModes .geElectricModeButton.geActive,.geEditor.geElectricModes .geElectricPanelViewButton.geActive{background:var(--ge-electric-shell-active-icon);border-color:transparent;color:var(--ge-electric-shell-accent);}' +
+				'.geEditor.geElectricModes .geElectricModeButton.geActive .geElectricModeIcon,.geEditor.geElectricModes .geElectricPanelViewButton.geActive .geElectricModeIcon{filter:brightness(0) saturate(100%) invert(37%) sepia(98%) saturate(2717%) hue-rotate(207deg) brightness(97%) contrast(99%);}' +
+				'.geEditor.geElectricModes .geElectricModeIcon{width:18px;height:18px;flex:0 0 18px;background-repeat:no-repeat;background-position:center;background-size:18px 18px;opacity:.88;}' +
+				'.geEditor.geElectricModes .geElectricModeSeparator{width:20px;height:1px;margin:4px 0;background:var(--ge-electric-shell-border);flex:0 0 1px;}' +
+				'.geEditor.geElectricModes .geElectricLayersHeader,.geEditor.geElectricModes .geElectricCanvasesHeader{box-sizing:border-box;height:48px;min-height:48px;padding:0 10px 0 14px;display:flex;align-items:center;gap:6px;background:var(--ge-electric-shell-surface);}' +
+				'.geEditor.geElectricModes .geElectricLayersTitle,.geEditor.geElectricModes .geElectricCanvasesTitle{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;font-size:14px;font-weight:600;}' +
+				'.geEditor.geElectricModes .geElectricLayersAction{box-sizing:border-box;width:30px;height:30px;border:0;border-radius:8px;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;}' +
 			'.geEditor.geElectricModes .geElectricLayersAction:hover{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
 			'.geEditor.geElectricModes .geElectricLayersActionIcon{width:16px;height:16px;background-repeat:no-repeat;background-position:center;background-size:16px 16px;}' +
-			'.geEditor.geElectricModes .geElectricLayersTree{min-height:0;flex:1;overflow:auto;padding:8px;}' +
-			'.geEditor.geElectricModes .geElectricLayerRow{box-sizing:border-box;height:34px;display:flex;align-items:center;padding-right:8px;color:light-dark(var(--text-color),var(--dark-text-color));border-radius:4px;cursor:default;user-select:none;}' +
+				'.geEditor.geElectricModes .geElectricCanvases{flex:0 0 auto;border-bottom:1px solid var(--ge-electric-shell-border);background:var(--ge-electric-shell-surface);}' +
+				'.geEditor.geElectricModes .geElectricCanvasList{padding:0 10px 10px;display:flex;flex-direction:column;gap:2px;max-height:148px;overflow:auto;}' +
+				'.geEditor.geElectricModes .geElectricCanvasRow{box-sizing:border-box;width:100%;height:34px;display:flex;align-items:center;gap:8px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--ge-electric-shell-text);font:inherit;text-align:left;cursor:pointer;}' +
+				'.geEditor.geElectricModes .geElectricCanvasRow:hover{background:var(--ge-electric-shell-hover);}' +
+				'.geEditor.geElectricModes .geElectricCanvasRow:focus-visible{outline:2px solid var(--ge-electric-shell-accent);outline-offset:-2px;}' +
+				'.geEditor.geElectricModes .geElectricCanvasRow.geActive{background:var(--ge-electric-shell-active);font-weight:600;}' +
+				'.geElectricCanvasMenu tr[role="menuitem"]:focus{outline:2px solid var(--ge-electric-shell-accent,#146ef5);outline-offset:-2px;}' +
+				'.geEditor.geElectricModes .geElectricCanvasName{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
+				'.geEditor.geElectricModes .geElectricCanvasType{color:var(--ge-electric-shell-muted);font-size:12px;white-space:nowrap;}' +
+				'.geEditor.geElectricModes .geElectricLayersTree{min-height:0;flex:1;overflow:auto;padding:0 10px 10px;}' +
+				'.geEditor.geElectricModes .geElectricLayerRow{box-sizing:border-box;height:34px;display:flex;align-items:center;padding-right:8px;color:var(--ge-electric-shell-text);border-radius:8px;cursor:default;user-select:none;}' +
 			'.geEditor.geElectricModes .geElectricLayerRow:hover{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
 			'.geEditor.geElectricModes .geElectricLayerRow.geActiveLayer{background:light-dark(var(--accent-color),var(--dark-accent-color));font-weight:600;}' +
 			'.geEditor.geElectricModes .geElectricLayerRow.geSelectedElement{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
@@ -712,7 +729,7 @@ SetElectricPageMode.prototype.execute = function()
 			'.geElectricElementMarker.geEdgeMarker{border-radius:0;border-width:0 0 1.5px 0;transform:rotate(-30deg);}' +
 			'.geElectricElementMarker.geDeviceMarker{border-radius:2px;border-width:1.5px;position:relative;}' +
 			'.geElectricElementMarker.geDeviceMarker:after{content:"";position:absolute;left:2px;right:2px;top:4px;height:1.5px;background:currentColor;box-shadow:0 3px 0 currentColor;}' +
-			'.geElectricLayerLabel{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;}' +
+				'.geElectricLayerLabel{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;}' +
 			'.geElectricActiveLayerMark{box-sizing:border-box;width:14px;height:14px;border:1px solid currentColor;border-radius:50%;display:none;align-items:center;justify-content:center;flex:0 0 14px;}' +
 			'.geElectricActiveLayerMark:after{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}' +
 			'.geElectricLayerRow.geActiveLayer>.geElectricActiveLayerMark{display:flex;}' +
@@ -750,36 +767,50 @@ SetElectricPageMode.prototype.execute = function()
 			'.geElectricConnectorStylePickerMenu{box-sizing:border-box;width:28px;height:28px;border:0;border-radius:4px;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 28px;color:light-dark(var(--text-color),var(--dark-text-color));}' +
 			'.geElectricConnectorStylePickerMenu:hover{background:light-dark(var(--highlight-color),var(--dark-highlight-color));}' +
 			'.geElectricConnectorStylePickerMenu:before{content:"";width:4px;height:4px;border-radius:50%;background:currentColor;box-shadow:0 -7px 0 currentColor,0 7px 0 currentColor;opacity:.75;}' +
-			'.geElectricConnectorStylePickerEmpty{padding:18px 8px;color:light-dark(var(--placeholder-color),var(--dark-placeholder-color));font-size:13px;text-align:center;}' +
-			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer)>div{box-sizing:border-box;padding-left:10px;padding-right:10px;}' +
-			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) .geSearchSidebar input,.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) input[type="text"]{box-sizing:border-box;border:1px solid var(--ge-electric-shell-border);border-radius:6px;background:var(--ge-electric-shell-surface);color:var(--ge-electric-shell-text);box-shadow:none;}' +
-			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) .geTitle{box-sizing:border-box;min-height:36px;padding:9px 8px 9px 32px!important;border:0;border-bottom:1px solid var(--ge-electric-shell-border);border-radius:6px!important;background-color:var(--ge-electric-shell-surface)!important;background-repeat:no-repeat!important;background-position:8px center!important;background-size:16px 16px!important;color:var(--ge-electric-shell-text)!important;font-size:12px;font-weight:600;}' +
-			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) .geSidebar{background:var(--ge-electric-shell-surface);}' +
-			'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) .geSidebarFooter{box-sizing:border-box;height:48px;border-top:1px solid var(--ge-electric-shell-border);background:var(--ge-electric-shell-surface);}' +
+				'.geElectricConnectorStylePickerEmpty{padding:18px 8px;color:light-dark(var(--placeholder-color),var(--dark-placeholder-color));font-size:13px;text-align:center;}' +
+					'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer)>div{box-sizing:border-box;padding-left:10px;padding-right:10px;}' +
+					'.geEditor.geElectricModes .geElectricLibraryTabs{position:sticky;top:0;z-index:5;box-sizing:border-box;display:flex;gap:4px;height:48px;margin:0 -2px 6px;padding:7px 2px 5px;border-bottom:1px solid var(--ge-electric-shell-border);background:var(--ge-electric-shell-surface);}' +
+					'.geEditor.geElectricModes .geElectricLibraryTab{box-sizing:border-box;min-width:0;flex:1;height:34px;padding:0 8px;border:0;border-radius:8px;background:transparent;color:var(--ge-electric-shell-muted);font:inherit;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}' +
+					'.geEditor.geElectricModes .geElectricLibraryTab:hover{background:var(--ge-electric-shell-hover);color:var(--ge-electric-shell-text);}' +
+					'.geEditor.geElectricModes .geElectricLibraryTab.geActive{background:var(--ge-electric-shell-active);color:var(--ge-electric-shell-text);}' +
+					'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) .geSearchSidebar input,.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) input[type="text"]{box-sizing:border-box;min-height:36px;border:1px solid transparent;border-radius:10px;background:var(--ge-electric-shell-hover);color:var(--ge-electric-shell-text);box-shadow:none;font:inherit;}' +
+				'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) .geSearchSidebar input:focus,.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) input[type="text"]:focus{border-color:var(--ge-electric-shell-accent);outline:0;background:var(--ge-electric-shell-surface);}' +
+					'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) .geTitle{box-sizing:border-box;min-height:36px;padding:9px 8px 9px 32px!important;border:0!important;border-radius:8px!important;background-color:var(--ge-electric-shell-surface)!important;background-repeat:no-repeat!important;background-position:8px center!important;background-size:16px 16px!important;color:var(--ge-electric-shell-text)!important;font-size:13px;font-weight:600;}' +
+				'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) .geSidebar{background:var(--ge-electric-shell-surface);}' +
+					'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) .geElectricLibraryGrid{box-sizing:border-box;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px!important;}' +
+					'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) .geElectricLibraryGrid>.geItem{box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:84px!important;margin:0!important;padding:6px!important;border:1px solid transparent!important;border-radius:8px!important;background:var(--ge-electric-shell-hover)!important;overflow:hidden!important;}' +
+					'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) .geElectricLibraryGrid>.geItem:hover{border-color:var(--ge-electric-shell-border)!important;background:var(--ge-electric-shell-active)!important;}' +
+					'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) .geElectricLibraryGrid>.geItem>svg,.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) .geElectricLibraryGrid>.geItem>img,.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) .geElectricLibraryGrid>.geItem>canvas{max-width:100%!important;max-height:72px!important;margin:auto!important;}' +
+					'.geEditor.geElectricModes>.geSidebarContainer:not(.geFormatContainer) .geSidebarFooter{box-sizing:border-box;height:44px;border-top:1px solid var(--ge-electric-shell-border);background:var(--ge-electric-shell-surface);}' +
 			'.geEditor.geElectricModes>.geElectricModePanel,.geEditor.geElectricModes>.geElectricLayersPanel,.geEditor.geElectricModes>.geSidebarContainer{color:var(--ge-electric-shell-text);}' +
 			'.geEditor.geElectricModes .geElectricLayerRow:hover,.geEditor.geElectricModes .geElectricLayerRow.geSelectedElement,.geEditor.geElectricModes .geElectricLayersAction:hover{background:var(--ge-electric-shell-hover);}' +
 			'.geEditor.geElectricModes .geElectricLayerRow.geActiveLayer{background:var(--ge-electric-shell-active);}' +
 			'.geEditor.geElectricModes .geElectricLayerRow:focus-visible{outline:2px solid var(--ge-electric-shell-text);outline-offset:-2px;}' +
-			'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer>div{box-sizing:border-box;padding:0 16px;}' +
-			'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer .geFormatSection{padding:12px 0;border-top-color:var(--ge-electric-shell-border);}' +
-			'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer .geFormatSectionTitle{width:auto;padding-bottom:8px;font-size:12px;font-weight:600;}' +
-			'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer input:not([type="checkbox"],[type="radio"]),.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer select,.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer button{min-height:28px;border-color:var(--ge-electric-shell-border);border-radius:5px;box-shadow:none;}' +
+					'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer{overflow-x:auto!important;}' +
+					'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer>div{box-sizing:border-box;min-width:220px;padding:0 14px;}' +
+				'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer .geFormatSection{padding:14px 0;border-top-color:var(--ge-electric-shell-border);}' +
+				'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer .geFormatSectionTitle{width:auto;padding-bottom:10px;font-size:14px;font-weight:600;}' +
+				'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer input:not([type="checkbox"],[type="radio"]),.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer select,.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer button{min-height:34px;border-color:transparent;border-radius:9px;background-color:var(--ge-electric-shell-hover);box-shadow:none;font:inherit;}' +
 			'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer .geFormatTitleContainer{border-bottom:1px solid var(--ge-electric-shell-border);background:var(--ge-electric-shell-surface);}' +
-			'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer .geFormatTitle{border:0;border-bottom:2px solid transparent;background:transparent;color:var(--ge-electric-shell-muted);}' +
-			'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer .geFormatTitle.geActiveFormatTitle{border-bottom-color:var(--ge-electric-shell-text);background:transparent;color:var(--ge-electric-shell-text);}' +
-			'.geEditor.geElectricModes>.geElectricBottomToolbar{position:absolute;left:calc(var(--ge-electric-visible-left-width) + (100% - var(--ge-electric-visible-left-width) - var(--ge-electric-visible-format-width))/2);bottom:42px;z-index:20;box-sizing:border-box;display:flex;align-items:center;gap:2px;min-height:44px;max-width:max(44px,calc(100% - var(--ge-electric-visible-left-width) - var(--ge-electric-visible-format-width) - 16px));padding:5px 7px;border:1px solid var(--ge-electric-shell-border);border-radius:7px;background:var(--ge-electric-shell-surface);box-shadow:0 8px 24px var(--ge-electric-shell-shadow);overflow-x:auto;overflow-y:hidden;transform:translateX(-50%);}' +
-			'.geEditor.geElectricModes>.geElectricBottomToolbar>.geButton{box-sizing:border-box;display:block;width:32px;height:32px;flex:0 0 32px;margin:0;border:1px solid transparent;border-radius:5px;background-position:center;background-repeat:no-repeat;background-size:20px 20px;cursor:pointer;}' +
-			'.geEditor.geElectricModes>.geElectricBottomToolbar>.geButton:hover{background-color:var(--ge-electric-shell-hover);}' +
-			'.geEditor.geElectricModes>.geElectricBottomToolbar>.geButton.geActive{border-color:var(--ge-electric-shell-border);background-color:var(--ge-electric-shell-active);}' +
-			'.geEditor.geElectricModes>.geElectricBottomToolbar>.geButton[disabled]{cursor:default;opacity:.35;}' +
-			'.geEditor.geElectricModes>.geElectricBottomToolbar>.geElectricBottomToolbarSeparator{width:1px;height:22px;flex:0 0 1px;margin:0 4px;background:var(--ge-electric-shell-border);}' +
-			'.geEditor.geElectricModes>.geElectricBottomToolbar>.geElectricConnectorToolbar{height:32px;margin:0 0 0 3px;}' +
+				'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer .geFormatTitle{border:0;border-bottom:2px solid transparent;background:transparent;color:var(--ge-electric-shell-muted);font-size:13px;font-weight:600;}' +
+				'.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer .geFormatTitle.geActiveFormatTitle{border-bottom-color:var(--ge-electric-shell-text);background:transparent;color:var(--ge-electric-shell-text);}' +
+				'.geEditor.geElectricModes>.geElectricBottomToolbar{position:absolute;left:calc(var(--ge-electric-visible-left-width) + (100% - var(--ge-electric-visible-left-width) - var(--ge-electric-visible-format-width))/2);bottom:12px;z-index:20;box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;min-width:580px;width:min(620px,calc(100% - var(--ge-electric-visible-left-width) - var(--ge-electric-visible-format-width) - 24px));min-height:94px;max-width:620px;padding:6px 8px 0;border:1px solid var(--ge-electric-shell-border);border-radius:14px;background:var(--ge-electric-shell-surface);box-shadow:0 8px 28px var(--ge-electric-shell-shadow);overflow:hidden;transform:translateX(-50%);}' +
+				'.geEditor.geElectricModes>.geElectricBottomToolbar>.geElectricBottomToolbarTools{box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:3px;min-height:58px;overflow-x:auto;overflow-y:hidden;}' +
+				'.geEditor.geElectricModes>.geElectricBottomToolbar .geButton{box-sizing:border-box;display:block;width:36px;height:36px;flex:0 0 36px;margin:0;border:1px solid transparent;border-radius:8px;background-position:center;background-repeat:no-repeat;background-size:20px 20px;cursor:pointer;}' +
+				'.geEditor.geElectricModes>.geElectricBottomToolbar .geButton:hover{background-color:var(--ge-electric-shell-hover);}' +
+				'.geEditor.geElectricModes>.geElectricBottomToolbar .geButton.geActive{border-color:transparent;background-color:var(--ge-electric-shell-active-icon);}' +
+				'.geEditor.geElectricModes>.geElectricBottomToolbar .geButton[disabled]{cursor:default;opacity:.35;}' +
+				'.geEditor.geElectricModes>.geElectricBottomToolbar .geElectricBottomToolbarSeparator{width:1px;height:28px;flex:0 0 1px;margin:0 5px;background:var(--ge-electric-shell-border);}' +
+				'.geEditor.geElectricModes>.geElectricBottomToolbar .geElectricConnectorToolbar{height:36px;margin:0 0 0 2px;}' +
+				'.geEditor.geElectricModes>.geElectricBottomToolbar>.geElectricBottomToolbarStatus{box-sizing:border-box;display:flex;align-items:center;gap:12px;height:28px;min-height:28px;margin:0 -8px;padding:0 12px;border-top:1px solid var(--ge-electric-shell-border);color:var(--ge-electric-shell-muted);font-size:12px;}' +
+				'.geEditor.geElectricModes .geElectricCursorStatus{min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
+				'.geEditor.geElectricModes .geElectricPageStatus{white-space:nowrap;color:var(--ge-electric-shell-text);font-weight:500;}' +
 			'.geDialog.geElectricConnectorStyleDialog{box-sizing:border-box;left:auto!important;top:auto!important;right:calc(var(--ge-electric-visible-format-width,0px) + 16px)!important;bottom:48px!important;width:368px!important;height:min(568px,calc(100vh - 80px))!important;max-height:calc(100vh - 80px);transform:none!important;border-radius:8px!important;box-shadow:0 12px 36px var(--ge-electric-shell-shadow)!important;}' +
 			'.geEditor.geElectricModes.geElectricFullscreen>.geElectricBottomToolbar{display:flex;}' +
-			'html body.geDarkMode.geEditor.geElectricModes .geElectricModeIcon,html body.geDarkMode.geEditor.geElectricModes>.geElectricBottomToolbar>.geButton,html body.geDarkMode.geEditor.geElectricModes .geElectricConnectorPrimary{filter:invert(1);}' +
-			'@media(max-width:1280px){.geEditor.geElectricModes{--ge-electric-format-width:320px;--ge-electric-sidebar-width:336px;}}' +
-			'@media(max-width:960px){.geEditor.geElectricModes{--ge-electric-mode-width:48px;--ge-electric-format-width:288px;--ge-electric-sidebar-width:320px;}.geEditor.geElectricModes>.geElectricModePanel{padding-left:4px;padding-right:4px;}.geEditor.geElectricModes>.geElectricBottomToolbar{bottom:38px;}}' +
-			'@media(max-width:700px){.geEditor.geElectricModes{--ge-electric-mode-width:48px;--ge-electric-format-width:min(280px,46vw);--ge-electric-sidebar-width:max(0px,calc(100% - var(--ge-electric-mode-width) - var(--ge-electric-visible-format-width) - 96px));}.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer>div{padding-left:10px;padding-right:10px;}.geEditor.geElectricModes>.geElectricBottomToolbar{bottom:34px;max-width:max(44px,calc(100% - var(--ge-electric-visible-left-width) - var(--ge-electric-visible-format-width) - 12px));padding:4px;}.geEditor.geElectricModes>.geElectricBottomToolbar>.geButton{width:30px;height:30px;flex-basis:30px;background-size:18px 18px;}.geEditor.geElectricModes>.geElectricBottomToolbar>.geElectricBottomToolbarSeparator{margin:0 2px;}}'
+				'html body.geDarkMode.geEditor.geElectricModes .geElectricModeIcon,html body.geDarkMode.geEditor.geElectricModes>.geElectricBottomToolbar .geButton,html body.geDarkMode.geEditor.geElectricModes .geElectricConnectorPrimary{filter:invert(1);}' +
+					'@media(max-width:1280px){.geEditor.geElectricModes{--ge-electric-format-width:248px;--ge-electric-sidebar-width:248px;}.geEditor.geElectricModes>.geElectricBottomToolbar{min-width:0;width:min(560px,max(44px,calc(100% - var(--ge-electric-visible-left-width) - var(--ge-electric-visible-format-width) - 20px)));}}' +
+					'@media(max-width:960px){.geEditor.geElectricModes{--ge-electric-mode-width:44px;--ge-electric-format-width:248px;--ge-electric-sidebar-width:232px;}.geEditor.geElectricModes>.geElectricModePanel{padding-left:4px;padding-right:4px;}.geEditor.geElectricModes>.geElectricBottomToolbar{min-width:0;width:max(44px,calc(100% - var(--ge-electric-visible-left-width) - var(--ge-electric-visible-format-width) - 16px));}}' +
+					'@media(max-width:700px){.geEditor.geElectricModes{--ge-electric-mode-width:44px;--ge-electric-format-width:min(248px,calc(100vw - 140px));--ge-electric-sidebar-width:max(0px,calc(100% - var(--ge-electric-mode-width) - var(--ge-electric-visible-format-width) - 96px));}.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer>div{padding-left:10px;padding-right:10px;}.geEditor.geElectricModes>.geElectricBottomToolbar{width:max(44px,calc(100% - var(--ge-electric-visible-left-width) - var(--ge-electric-visible-format-width) - 12px));padding-left:4px;padding-right:4px;}.geEditor.geElectricModes>.geElectricBottomToolbar .geButton{width:32px;height:32px;flex-basis:32px;background-size:18px 18px;}.geEditor.geElectricModes>.geElectricBottomToolbar .geElectricBottomToolbarSeparator{margin:0 2px;}}'
 		));
 
 		document.head.appendChild(style);
@@ -820,10 +851,19 @@ SetElectricPageMode.prototype.execute = function()
 		}
 	};
 
+	EditorUi.prototype.isElectricShellActive = function()
+	{
+		return Editor.isElectricTheme() && this.editor != null &&
+			!this.editor.chromeless && this.container != null &&
+			this.container.classList.contains('geElectricModes') &&
+			this.electricModePanel != null &&
+			this.electricLayersPanel != null &&
+			this.electricCanvasList != null;
+	};
+
 	EditorUi.prototype.refresh = function(sizeDidChange)
 	{
-		var electricOverlay = Editor.isElectricTheme() &&
-			this.electricModePanel != null;
+		var electricOverlay = this.isElectricShellActive();
 
 		if (electricOverlay)
 		{
@@ -848,14 +888,17 @@ SetElectricPageMode.prototype.execute = function()
 			refresh.apply(this, arguments);
 		}
 
-		if (Editor.isElectricTheme())
+		if (electricOverlay)
 		{
+			this.hideElectricNativePageTabsForCanvases();
+			this.attachElectricCursorLeaveHandler();
 			this.installElectricToolbarViewButton();
 			this.installElectricConnectorToolbar();
+			this.updateElectricBottomToolbar();
+			this.updateElectricModePanel();
+			this.updateElectricLeftPanelState();
+			this.updateElectricLeftOverlayGeometry(false);
 		}
-		this.updateElectricModePanel();
-		this.updateElectricLeftPanelState();
-		this.updateElectricLeftOverlayGeometry(false);
 	};
 
 	EditorUi.prototype.destroy = function()
@@ -1498,8 +1541,10 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		var separator = document.createElement('span');
 		separator.className = 'geElectricBottomToolbarSeparator';
 		separator.setAttribute('aria-hidden', 'true');
-		this.electricBottomToolbar.appendChild(separator);
-		this.electricBottomToolbar.appendChild(this.electricConnectorToolbar);
+		var host = this.electricBottomToolbarTools ||
+			this.electricBottomToolbar;
+		host.appendChild(separator);
+		host.appendChild(this.electricConnectorToolbar);
 		this.electricConnectorToolbarSeparator = separator;
 	};
 
@@ -2246,11 +2291,15 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		}
 		else if (viewportWidth <= 960)
 		{
-			width = Math.min(width, 320);
+			width = Math.min(width, 232);
 		}
 		else if (viewportWidth <= 1280)
 		{
-			width = Math.min(width, 336);
+			width = Math.min(width, 248);
+		}
+		else
+		{
+			width = Math.min(width, 264);
 		}
 
 		return width;
@@ -2267,17 +2316,17 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 
 		if (viewportWidth <= 700)
 		{
-			return Math.min(280, Math.round(viewportWidth * 0.46));
+			return Math.min(248, Math.max(0, viewportWidth - 140));
 		}
 
-		return (viewportWidth <= 960) ? 288 :
-			((viewportWidth <= 1280) ? 320 : 352);
+		return (viewportWidth <= 960) ? 248 :
+			((viewportWidth <= 1280) ? 248 : 264);
 	};
 
 	EditorUi.prototype.getElectricAvailableLeftPanelWidth = function()
 	{
 		var viewportWidth = this.getElectricShellViewportWidth();
-		var railWidth = (viewportWidth <= 960) ? 48 : 56;
+		var railWidth = 44;
 		var minimumCanvasWidth = (viewportWidth <= 700) ? 96 : 0;
 
 		return Math.max(0, viewportWidth - railWidth -
@@ -2301,8 +2350,25 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 			return this.getElectricAvailableLeftPanelWidth();
 		}
 
-		return (viewportWidth <= 960) ? 320 :
-			((viewportWidth <= 1280) ? 336 : 360);
+		return (viewportWidth <= 960) ? 232 :
+			((viewportWidth <= 1280) ? 248 : 264);
+	};
+
+	EditorUi.prototype.getElectricBottomToolbarWidth = function()
+	{
+		var viewportWidth = this.getElectricShellViewportWidth();
+		var fullscreen = this.container != null && this.container.classList != null &&
+			this.container.classList.contains('geElectricFullscreen');
+		var railWidth = fullscreen ? 0 : 44;
+		var leftWidth = (fullscreen || this.electricLeftPanelCollapsed === true) ? 0 :
+			this.getElectricLeftPanelWidth();
+		var formatWidth = this.getElectricFormatPanelWidth();
+		var gap = (viewportWidth > 1280) ? 24 :
+			((viewportWidth > 960) ? 20 : ((viewportWidth > 700) ? 16 : 12));
+		var maximum = (viewportWidth > 1280) ? 620 : 560;
+
+		return Math.max(44, Math.min(maximum, viewportWidth - railWidth -
+			leftWidth - formatWidth - gap));
 	};
 
 	EditorUi.prototype.ensureElectricLeftPanelWidth = function()
@@ -2337,6 +2403,85 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		{
 			node.style.setProperty(name, state.value, state.priority);
 		}
+	};
+
+	EditorUi.prototype.captureElectricNativePageTabsState = function()
+	{
+		if (this.tabContainer != null &&
+			this.electricNativePageTabsState == null)
+		{
+			this.electricNativePageTabsState = {
+				display: this.captureElectricInlineProperty(
+					this.tabContainer, 'display'),
+				visibility: this.captureElectricInlineProperty(
+					this.tabContainer, 'visibility'),
+				height: this.captureElectricInlineProperty(
+					this.tabContainer, 'height'),
+				ariaHiddenPresent: this.tabContainer.hasAttribute('aria-hidden'),
+				ariaHidden: this.tabContainer.getAttribute('aria-hidden')
+			};
+		}
+	};
+
+	EditorUi.prototype.setElectricNativePageTabsVisible = function(visible)
+	{
+		if (this.tabContainer == null)
+		{
+			return;
+		}
+
+		if (visible)
+		{
+			this.restoreElectricNativePageTabsState();
+		}
+		else
+		{
+			this.tabContainer.style.setProperty('display', 'none', 'important');
+			this.tabContainer.setAttribute('aria-hidden', 'true');
+		}
+	};
+
+	EditorUi.prototype.hideElectricNativePageTabsForCanvases = function()
+	{
+		if (this.electricLayersPanel == null ||
+			this.electricLayersPanel.parentNode == null ||
+			this.electricCanvasList == null ||
+			this.electricCanvasList.parentNode == null ||
+			!this.electricLayersPanel.contains(this.electricCanvasList))
+		{
+			return false;
+		}
+
+		this.captureElectricNativePageTabsState();
+		this.setElectricNativePageTabsVisible(false);
+
+		return true;
+	};
+
+	EditorUi.prototype.restoreElectricNativePageTabsState = function()
+	{
+		if (this.tabContainer != null &&
+			this.electricNativePageTabsState != null)
+		{
+			this.restoreElectricInlineProperty(this.tabContainer, 'display',
+				this.electricNativePageTabsState.display);
+			this.restoreElectricInlineProperty(this.tabContainer, 'visibility',
+				this.electricNativePageTabsState.visibility);
+			this.restoreElectricInlineProperty(this.tabContainer, 'height',
+				this.electricNativePageTabsState.height);
+
+			if (this.electricNativePageTabsState.ariaHiddenPresent)
+			{
+				this.tabContainer.setAttribute('aria-hidden',
+					this.electricNativePageTabsState.ariaHidden);
+			}
+			else
+			{
+				this.tabContainer.removeAttribute('aria-hidden');
+			}
+		}
+
+		this.electricNativePageTabsState = null;
 	};
 
 	EditorUi.prototype.captureElectricRulerInlineState = function()
@@ -2429,6 +2574,7 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		this.sidebarContainer.style.width = width + 'px';
 		this.hsplit.style.left = width + 'px';
 		this.updateElectricRulerPosition(animateRuler);
+		this.updateElectricBottomToolbar();
 	};
 
 	EditorUi.prototype.updateElectricRulerPosition = function(animate)
@@ -2807,12 +2953,509 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		return button;
 	};
 
+	EditorUi.prototype.createElectricCanvasesSection = function()
+	{
+		var section = document.createElement('section');
+		section.className = 'geElectricCanvases';
+		section.setAttribute('aria-label', 'Canvases');
+
+		var header = document.createElement('div');
+		header.className = 'geElectricCanvasesHeader';
+		var title = document.createElement('div');
+		title.className = 'geElectricLayersTitle';
+		mxUtils.write(title, 'Canvases');
+		header.appendChild(title);
+		header.appendChild(this.createElectricLayersAction(
+			mxResources.get('insertPage') || 'Add page', Editor.plusImage,
+			mxUtils.bind(this, function()
+			{
+				var page = this.insertPage();
+
+				if (page != null)
+				{
+					this.selectPage(page);
+				}
+			})));
+		section.appendChild(header);
+
+		this.electricCanvasList = document.createElement('div');
+		this.electricCanvasList.className = 'geElectricCanvasList';
+		this.electricCanvasList.setAttribute('role', 'listbox');
+		this.electricCanvasList.setAttribute('aria-label', 'Canvases');
+		section.appendChild(this.electricCanvasList);
+
+		return section;
+	};
+
+	EditorUi.prototype.updateElectricCanvases = function()
+	{
+		if (this.electricCanvasList == null)
+		{
+			return;
+		}
+
+		var canvasScrollTop = this.electricCanvasList.scrollTop;
+		var canvasScrollLeft = this.electricCanvasList.scrollLeft;
+		var focusedPageId = null;
+		var focusedPageIndex = -1;
+		var activeElement = document.activeElement;
+
+		if (activeElement != null &&
+			this.electricCanvasList.contains(activeElement))
+		{
+			focusedPageId = activeElement.getAttribute('data-page-id');
+
+			for (var i = 0; i < this.electricCanvasList.children.length; i++)
+			{
+				if (this.electricCanvasList.children[i] == activeElement)
+				{
+					focusedPageIndex = i;
+					break;
+				}
+			}
+		}
+
+		while (this.electricCanvasList.firstChild != null)
+		{
+			this.electricCanvasList.removeChild(
+				this.electricCanvasList.firstChild);
+		}
+
+		var pages = this.pages || [];
+		var rowsByPageId = {};
+
+		for (var i = 0; i < pages.length; i++)
+		{
+			(function(page, index, ui)
+			{
+				var name = page.getName() ||
+					(mxResources.get('pageWithNumber', [index + 1]) ||
+						('Page-' + (index + 1)));
+				var row = document.createElement('button');
+				row.setAttribute('type', 'button');
+				row.className = 'geElectricCanvasRow';
+				row.setAttribute('role', 'option');
+				row.setAttribute('data-page-id', page.getId());
+				row.setAttribute('tabindex', page == ui.currentPage ? '0' : '-1');
+				row.setAttribute('aria-label', name);
+				row.setAttribute('aria-haspopup', 'menu');
+				row.setAttribute('title', name + ' - ' +
+					(Editor.getElectricResource('electricPageActionsHint',
+						'Shift+F10 for page actions')));
+				row.electricPage = page;
+				rowsByPageId[String(page.getId())] = row;
+				row.setAttribute('aria-selected', page == ui.currentPage ?
+					'true' : 'false');
+				row.classList.toggle('geActive', page == ui.currentPage);
+
+				var label = document.createElement('span');
+				label.className = 'geElectricCanvasName';
+				mxUtils.write(label, name);
+				row.appendChild(label);
+
+				var type = document.createElement('span');
+				type.className = 'geElectricCanvasType';
+				mxUtils.write(type, mxResources.get('page') || 'Page');
+				row.appendChild(type);
+
+				mxEvent.addListener(row, 'click', function(evt)
+				{
+					ui.selectPage(page);
+					mxEvent.consume(evt);
+				});
+				mxEvent.addListener(row, 'dblclick', function(evt)
+				{
+					ui.renamePage(page);
+					mxEvent.consume(evt);
+				});
+				mxEvent.addListener(row, 'keydown', function(evt)
+				{
+					ui.handleElectricCanvasKeyDown(row, page, evt);
+				});
+				mxEvent.addListener(row, 'contextmenu', function(evt)
+				{
+					ui.showElectricCanvasMenu(evt, page, row);
+				});
+				mxEvent.addListener(row, 'focus', function()
+				{
+					var rows = ui.electricCanvasList.querySelectorAll(
+						'.geElectricCanvasRow');
+
+					for (var j = 0; j < rows.length; j++)
+					{
+						rows[j].setAttribute('tabindex', rows[j] == row ?
+							'0' : '-1');
+					}
+				});
+				ui.electricCanvasList.appendChild(row);
+			})(pages[i], i, this);
+		}
+
+		this.electricCanvasList.scrollTop = canvasScrollTop;
+		this.electricCanvasList.scrollLeft = canvasScrollLeft;
+
+		var focusRow = focusedPageId != null ? rowsByPageId[focusedPageId] : null;
+
+		if (focusRow == null && focusedPageId != null && this.currentPage != null)
+		{
+			focusRow = rowsByPageId[String(this.currentPage.getId())];
+		}
+
+		if (focusRow == null && focusedPageId != null && focusedPageIndex >= 0 &&
+			pages.length > 0)
+		{
+			focusRow = rowsByPageId[String(pages[Math.min(focusedPageIndex,
+				pages.length - 1)].getId())];
+		}
+
+		if (focusRow != null)
+		{
+			try
+			{
+				focusRow.focus({preventScroll: true});
+			}
+			catch (e)
+			{
+				focusRow.focus();
+			}
+
+			this.electricCanvasList.scrollTop = canvasScrollTop;
+			this.electricCanvasList.scrollLeft = canvasScrollLeft;
+		}
+
+		this.updateElectricPageStatus();
+	};
+
+	EditorUi.prototype.scheduleElectricCanvasesRefresh = function()
+	{
+		if (this.electricCanvasList == null ||
+			this.electricCanvasesRefreshFrame != null)
+		{
+			return;
+		}
+
+		this.electricCanvasesRefreshFrame = window.requestAnimationFrame(
+			mxUtils.bind(this, function()
+			{
+				this.electricCanvasesRefreshFrame = null;
+				this.updateElectricCanvases();
+			}));
+	};
+
+	EditorUi.prototype.moveElectricCanvasFocus = function(row, keyCode)
+	{
+		if (this.electricCanvasList == null)
+		{
+			return false;
+		}
+
+		var rows = this.electricCanvasList.querySelectorAll(
+			'.geElectricCanvasRow');
+		var index = mxUtils.indexOf(rows, row);
+
+		if (index < 0 || rows.length == 0)
+		{
+			return false;
+		}
+
+		if (keyCode == 38)
+		{
+			index = Math.max(0, index - 1);
+		}
+		else if (keyCode == 40)
+		{
+			index = Math.min(rows.length - 1, index + 1);
+		}
+		else if (keyCode == 36)
+		{
+			index = 0;
+		}
+		else if (keyCode == 35)
+		{
+			index = rows.length - 1;
+		}
+		else
+		{
+			return false;
+		}
+
+		var target = rows[index];
+		target.focus();
+
+		if (target.electricPage != null)
+		{
+			this.selectPage(target.electricPage);
+		}
+
+		return true;
+	};
+
+	EditorUi.prototype.handleElectricCanvasKeyDown = function(row, page, evt)
+	{
+		if (this.moveElectricCanvasFocus(row, evt.keyCode))
+		{
+			mxEvent.consume(evt);
+		}
+		else if (evt.keyCode == 13 || evt.keyCode == 32)
+		{
+			this.selectPage(page);
+			mxEvent.consume(evt);
+		}
+		else if (evt.keyCode == 113)
+		{
+			this.renamePage(page);
+			mxEvent.consume(evt);
+		}
+		else if (evt.keyCode == 93 || (evt.shiftKey && evt.keyCode == 121))
+		{
+			this.showElectricCanvasMenu(evt, page, row);
+			mxEvent.consume(evt);
+		}
+	};
+
+	EditorUi.prototype.getElectricCanvasMenuItems = function(menu, parent)
+	{
+		parent = parent || menu;
+		var body = parent != null ? parent.tbody : null;
+		var children = body != null ? (body.children || body.childNodes) : [];
+		var items = [];
+
+		for (var i = 0; i < children.length; i++)
+		{
+			var item = children[i];
+
+			if (item != null && item.nodeName == 'TR' &&
+				item._electricEnabled !== false &&
+				(item._electricAction != null || item.div != null))
+			{
+				items.push(item);
+			}
+		}
+
+		return items;
+	};
+
+	EditorUi.prototype.focusElectricCanvasMenuItem = function(menu, item)
+	{
+		if (menu == null || item == null)
+		{
+			return false;
+		}
+
+		var previous = menu.electricActiveItem;
+
+		if (previous != null && previous != item)
+		{
+			previous.className = 'mxPopupMenuItem';
+			previous.setAttribute('tabindex', '-1');
+		}
+
+		menu.electricActiveItem = item;
+		item.className = 'mxPopupMenuItemHover';
+		item.setAttribute('tabindex', '0');
+
+		try
+		{
+			item.focus({preventScroll: true});
+		}
+		catch (e)
+		{
+			item.focus();
+		}
+
+		if (item.scrollIntoView != null)
+		{
+			item.scrollIntoView({block: 'nearest'});
+		}
+
+		return true;
+	};
+
+	EditorUi.prototype.handleElectricCanvasMenuKeyDown = function(menu, evt)
+	{
+		if (menu == null || evt == null)
+		{
+			return;
+		}
+
+		var item = menu.electricActiveItem;
+		var parent = item != null && item._electricParent != null ?
+			item._electricParent : menu;
+		var items = this.getElectricCanvasMenuItems(menu, parent);
+		var index = mxUtils.indexOf(items, item);
+		var handled = false;
+
+		if (evt.keyCode == 38 || evt.keyCode == 40 ||
+			evt.keyCode == 36 || evt.keyCode == 35)
+		{
+			if (items.length > 0)
+			{
+				if (evt.keyCode == 36)
+				{
+					index = 0;
+				}
+				else if (evt.keyCode == 35)
+				{
+					index = items.length - 1;
+				}
+				else if (evt.keyCode == 40)
+				{
+					index = (index + 1 + items.length) % items.length;
+				}
+				else
+				{
+					index = (index <= 0) ? items.length - 1 : index - 1;
+				}
+
+				this.focusElectricCanvasMenuItem(menu, items[index]);
+			}
+
+			handled = true;
+		}
+		else if ((evt.keyCode == 39 || evt.keyCode == 13 ||
+			evt.keyCode == 32) && item != null && item.div != null)
+		{
+			menu.showSubmenu(parent, item);
+			parent.activeRow = item;
+			item.setAttribute('aria-expanded', 'true');
+			var submenuItems = this.getElectricCanvasMenuItems(menu, item);
+
+			if (submenuItems.length > 0)
+			{
+				this.focusElectricCanvasMenuItem(menu, submenuItems[0]);
+			}
+
+			handled = true;
+		}
+		else if (evt.keyCode == 37 && parent != menu)
+		{
+			menu.hideSubmenu(parent._electricParent || menu);
+			parent.setAttribute('aria-expanded', 'false');
+			this.focusElectricCanvasMenuItem(menu, parent);
+			handled = true;
+		}
+		else if ((evt.keyCode == 13 || evt.keyCode == 32) &&
+			item != null && item._electricAction != null)
+		{
+			var action = item._electricAction;
+			menu.hideMenu();
+			action(evt);
+			handled = true;
+		}
+		else if (evt.keyCode == 27 || evt.keyCode == 9)
+		{
+			menu.hideMenu();
+			handled = true;
+		}
+
+		if (handled)
+		{
+			mxEvent.consume(evt);
+		}
+	};
+
+	EditorUi.prototype.showElectricCanvasMenu = function(evt, page, row)
+	{
+		if (page == null || this.editor == null ||
+			this.editor.graph == null)
+		{
+			return;
+		}
+
+		this.selectPage(page);
+		this.editor.graph.popupMenuHandler.hideMenu();
+		this.hideCurrentMenu();
+		var menu = new mxPopupMenu(this.createPageMenu(page));
+		var ui = this;
+		var addItem = menu.addItem;
+		var installKeyboardHandler = function(container)
+		{
+			if (container != null && container._electricKeyboardHandler !== true)
+			{
+				container._electricKeyboardHandler = true;
+				mxEvent.addListener(container, 'keydown', function(keyEvt)
+				{
+					ui.handleElectricCanvasMenuKeyDown(menu, keyEvt);
+				});
+			}
+		};
+		menu.addItem = function(title, image, funct, parent, iconCls,
+			enabled, active, noHover)
+		{
+			var itemParent = parent || menu;
+			var item = addItem.apply(menu, arguments);
+			item._electricAction = funct;
+			item._electricEnabled = enabled != false;
+			item._electricParent = itemParent;
+			item.setAttribute('role', 'menuitem');
+			item.setAttribute('tabindex', '-1');
+			item.setAttribute('aria-disabled', enabled == false ? 'true' : 'false');
+
+			if (itemParent != menu && itemParent.div != null)
+			{
+				itemParent.setAttribute('aria-haspopup', 'menu');
+				itemParent.setAttribute('aria-expanded', 'false');
+				itemParent.div.setAttribute('role', 'menu');
+				installKeyboardHandler(itemParent.div);
+			}
+
+			return item;
+		};
+		menu.smartSeparators = true;
+		menu.showDisabled = true;
+		menu.autoExpand = true;
+		menu.hideMenu = mxUtils.bind(this, function()
+		{
+			mxPopupMenu.prototype.hideMenu.apply(menu, arguments);
+			this.resetCurrentMenu();
+			menu.destroy();
+
+			if (row != null && row.parentNode != null)
+			{
+				try
+				{
+					row.focus({preventScroll: true});
+				}
+				catch (e)
+				{
+					row.focus();
+				}
+			}
+		});
+		var x = mxEvent.getClientX(evt);
+		var y = mxEvent.getClientY(evt);
+
+		if ((x == null || y == null || (x == 0 && y == 0)) && row != null)
+		{
+			var bounds = row.getBoundingClientRect();
+			x = bounds.left + Math.min(bounds.width, 24);
+			y = bounds.top + Math.min(bounds.height, 24);
+		}
+
+		menu.popup(x, y, null, evt);
+		menu.div.className += ' geElectricCanvasMenu';
+		menu.div.setAttribute('role', 'menu');
+		menu.div.setAttribute('aria-label', page.getName() ||
+			(mxResources.get('page') || 'Page'));
+		installKeyboardHandler(menu.div);
+		this.setCurrentMenu(menu, row);
+		var items = this.getElectricCanvasMenuItems(menu);
+
+		if (items.length > 0)
+		{
+			this.focusElectricCanvasMenuItem(menu, items[0]);
+		}
+
+		mxEvent.consume(evt);
+	};
+
 	EditorUi.prototype.createElectricLayersPanel = function()
 	{
 		var panel = document.createElement('div');
 		panel.className = 'geElectricLayersPanel';
 		panel.setAttribute('role', 'region');
 		panel.setAttribute('aria-label', mxResources.get('layers') || 'Layers');
+		panel.appendChild(this.createElectricCanvasesSection());
 
 		var header = document.createElement('div');
 		header.className = 'geElectricLayersHeader';
@@ -3977,6 +4620,13 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 			return;
 		}
 
+		if (this.electricBottomToolbar != null)
+		{
+			this.electricBottomToolbar.style.width =
+				this.getElectricBottomToolbarWidth() + 'px';
+			this.electricBottomToolbar.style.minWidth = '0';
+		}
+
 		for (var i = 0; i < this.electricBottomToolbarButtons.length; i++)
 		{
 			var entry = this.electricBottomToolbarButtons[i];
@@ -4019,6 +4669,60 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		}
 	};
 
+	EditorUi.prototype.updateElectricCursorStatus = function(me)
+	{
+		if (this.electricCursorStatus == null)
+		{
+			return;
+		}
+
+		var text = 'X -  Y -';
+
+		if (me != null && this.editor != null &&
+			this.editor.graph != null)
+		{
+			var view = this.editor.graph.view;
+			var scale = view.scale || 1;
+			var translate = view.translate || {x: 0, y: 0};
+			var x = me.getGraphX() / scale - translate.x;
+			var y = me.getGraphY() / scale - translate.y;
+			text = 'X ' + (Math.round(x * 100) / 100) + '  Y ' +
+				(Math.round(y * 100) / 100);
+		}
+
+		this.electricCursorStatus.textContent = text;
+	};
+
+	EditorUi.prototype.updateElectricPageStatus = function()
+	{
+		if (this.electricPageStatus == null)
+		{
+			return;
+		}
+
+		var pages = this.pages || [];
+		var index = mxUtils.indexOf(pages, this.currentPage);
+		var name = this.currentPage != null ?
+			(this.currentPage.getName() || mxResources.get('untitled') ||
+				'Untitled') : '';
+		this.electricPageStatus.textContent = index >= 0 ?
+			((index + 1) + ' / ' + pages.length + '  ' + name) : name;
+	};
+
+	EditorUi.prototype.attachElectricCursorLeaveHandler = function()
+	{
+		var graph = this.editor != null ? this.editor.graph : null;
+
+		if (graph != null && graph.container != null &&
+			this.electricCursorLeaveHandler != null &&
+			this.electricCursorLeaveTarget == null)
+		{
+			mxEvent.addListener(graph.container, 'mouseleave',
+				this.electricCursorLeaveHandler);
+			this.electricCursorLeaveTarget = graph.container;
+		}
+	};
+
 	EditorUi.prototype.installElectricBottomToolbar = function()
 	{
 		if (this.container == null || this.actions == null ||
@@ -4032,6 +4736,9 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		toolbar.setAttribute('role', 'toolbar');
 		toolbar.setAttribute('aria-label',
 			mxResources.get('toolbar') || 'Diagram controls');
+		var tools = document.createElement('div');
+		tools.className = 'geElectricBottomToolbarTools';
+		toolbar.appendChild(tools);
 		var fitActionName = (this.actions.get('fitWindow') != null) ?
 			'fitWindow' : 'smartFit';
 		var items = [
@@ -4059,7 +4766,7 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 				var separator = document.createElement('span');
 				separator.className = 'geElectricBottomToolbarSeparator';
 				separator.setAttribute('aria-hidden', 'true');
-				toolbar.appendChild(separator);
+				tools.appendChild(separator);
 				continue;
 			}
 
@@ -4094,7 +4801,7 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 						mxEvent.consume(evt);
 					}
 				});
-				toolbar.appendChild(button);
+				tools.appendChild(button);
 
 				var entry = {button: button, actionName: item.action,
 					action: action, stateHandler: null};
@@ -4110,6 +4817,20 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 			})(items[i], this);
 		}
 
+		var status = document.createElement('div');
+		status.className = 'geElectricBottomToolbarStatus';
+		this.electricCursorStatus = document.createElement('span');
+		this.electricCursorStatus.className = 'geElectricCursorStatus';
+		this.electricCursorStatus.setAttribute('aria-hidden', 'true');
+		status.appendChild(this.electricCursorStatus);
+		this.electricPageStatus = document.createElement('span');
+		this.electricPageStatus.className = 'geElectricPageStatus';
+		this.electricPageStatus.setAttribute('role', 'status');
+		this.electricPageStatus.setAttribute('aria-live', 'polite');
+		this.electricPageStatus.setAttribute('aria-atomic', 'true');
+		status.appendChild(this.electricPageStatus);
+		toolbar.appendChild(status);
+
 		this.electricBottomToolbarStateHandler = mxUtils.bind(this,
 			this.updateElectricBottomToolbar);
 		this.addListener('gridEnabledChanged',
@@ -4120,14 +4841,52 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 			this.electricBottomToolbarStateHandler);
 		this.container.appendChild(toolbar);
 		this.electricBottomToolbar = toolbar;
+		this.electricBottomToolbarTools = tools;
+
+		var ui = this;
+		this.electricCursorMouseListener = {
+			mouseDown: function(sender, me)
+			{
+				ui.updateElectricCursorStatus(me);
+			},
+			mouseMove: function(sender, me)
+			{
+				ui.updateElectricCursorStatus(me);
+			},
+			mouseUp: function(sender, me)
+			{
+				ui.updateElectricCursorStatus(me);
+			}
+		};
+		this.editor.graph.addMouseListener(this.electricCursorMouseListener);
+		this.electricCursorLeaveHandler = mxUtils.bind(this, function()
+		{
+			this.updateElectricCursorStatus(null);
+		});
+		this.attachElectricCursorLeaveHandler();
 
 		this.attachElectricConnectorToolbar();
 
 		this.updateElectricBottomToolbar();
+		this.updateElectricCursorStatus(null);
+		this.updateElectricPageStatus();
 	};
 
 	EditorUi.prototype.removeElectricBottomToolbar = function()
 	{
+		if (this.editor != null && this.editor.graph != null &&
+			this.electricCursorMouseListener != null)
+		{
+			this.editor.graph.removeMouseListener(this.electricCursorMouseListener);
+		}
+
+		if (this.electricCursorLeaveTarget != null &&
+			this.electricCursorLeaveHandler != null)
+		{
+			mxEvent.removeListener(this.electricCursorLeaveTarget, 'mouseleave',
+				this.electricCursorLeaveHandler);
+		}
+
 		if (this.electricBottomToolbarButtons != null)
 		{
 			for (var i = 0; i < this.electricBottomToolbarButtons.length; i++)
@@ -4154,8 +4913,14 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		}
 
 		this.electricBottomToolbar = null;
+		this.electricBottomToolbarTools = null;
 		this.electricBottomToolbarButtons = null;
 		this.electricBottomToolbarStateHandler = null;
+		this.electricCursorMouseListener = null;
+		this.electricCursorLeaveHandler = null;
+		this.electricCursorLeaveTarget = null;
+		this.electricCursorStatus = null;
+		this.electricPageStatus = null;
 	};
 
 	EditorUi.prototype.installElectricModePanel = function()
@@ -4167,30 +4932,6 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 
 		this.captureElectricShellInlineState();
 		Editor.ensureElectricModeStyles();
-		this.installElectricModeListeners();
-		this.installElectricFullscreenViewportGuard();
-		this.installElectricLayersActionGuard();
-		this.installElectricToolbarViewButton();
-		this.installElectricConnectorToolbar();
-		this.installElectricBottomToolbar();
-		this.syncElectricConnectorProjectStyle();
-		if (this.electricDeferredInstallTimer != null)
-		{
-			window.clearTimeout(this.electricDeferredInstallTimer);
-		}
-
-		this.electricDeferredInstallTimer = window.setTimeout(mxUtils.bind(this, function()
-		{
-			this.electricDeferredInstallTimer = null;
-
-			if (Editor.isElectricTheme() && this.electricModePanel != null &&
-				this.container != null &&
-				this.container.classList.contains('geElectricModes'))
-			{
-				this.installElectricToolbarViewButton();
-				this.installElectricConnectorToolbar();
-			}
-		}), 0);
 
 		if (this.electricLeftPanelCollapsed == null)
 		{
@@ -4202,8 +4943,6 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		{
 			this.electricLeftPanelView = Editor.defaultElectricPanelView;
 		}
-
-		this.container.classList.add('geElectricModes');
 
 		if (this.electricModePanel == null)
 		{
@@ -4217,6 +4956,37 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 			this.container.insertBefore(this.electricLayersPanel,
 				this.sidebarContainer);
 		}
+
+		if (!this.hideElectricNativePageTabsForCanvases())
+		{
+			return;
+		}
+
+		this.container.classList.add('geElectricModes');
+		this.installElectricModeListeners();
+		this.installElectricFullscreenViewportGuard();
+		this.installElectricLayersActionGuard();
+		this.installElectricToolbarViewButton();
+		this.installElectricConnectorToolbar();
+		this.installElectricBottomToolbar();
+		this.installElectricLibraryHeader();
+		this.syncElectricConnectorProjectStyle();
+
+		if (this.electricDeferredInstallTimer != null)
+		{
+			window.clearTimeout(this.electricDeferredInstallTimer);
+		}
+
+		this.electricDeferredInstallTimer = window.setTimeout(mxUtils.bind(this, function()
+		{
+			this.electricDeferredInstallTimer = null;
+
+			if (this.isElectricShellActive())
+			{
+				this.installElectricToolbarViewButton();
+				this.installElectricConnectorToolbar();
+			}
+		}), 0);
 
 		if (this.electricLeftPanelView == 'layers')
 		{
@@ -4237,6 +5007,7 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 
 		this.updateElectricModePanel();
 		this.updateElectricPanelViewButtons();
+		this.scheduleElectricCanvasesRefresh();
 		this.scheduleElectricLayersPanelRefresh();
 		this.updateElectricLeftPanelState();
 		this.updateElectricLeftOverlayGeometry(false);
@@ -4251,8 +5022,10 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		}
 
 		this.closeElectricConnectorStylePicker();
+		this.removeElectricLibraryHeader();
 		this.removeElectricModeListeners();
 		this.removeElectricBottomToolbar();
+		this.restoreElectricNativePageTabsState();
 		this.setElectricSurfaceAvailability(this.sidebarContainer, true);
 		this.setElectricSurfaceAvailability(this.electricLayersPanel, true);
 		this.setElectricSurfaceAvailability(this.electricModePanel, true);
@@ -4276,6 +5049,12 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		{
 			window.cancelAnimationFrame(this.electricLayersRefreshFrame);
 			this.electricLayersRefreshFrame = null;
+		}
+
+		if (this.electricCanvasesRefreshFrame != null)
+		{
+			window.cancelAnimationFrame(this.electricCanvasesRefreshFrame);
+			this.electricCanvasesRefreshFrame = null;
 		}
 
 		if (this.hsplit != null && this.electricShellInlineState != null)
@@ -4318,7 +5097,233 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 
 			this.electricLayersPanel = null;
 			this.electricLayersTree = null;
+			this.electricCanvasList = null;
 		}
+	};
+
+	EditorUi.prototype.updateElectricLibraryTabs = function(value)
+	{
+		value = value || this.electricLibraryTab || 'model';
+		this.electricLibraryTab = value;
+
+		if (this.electricLibraryTabs != null)
+		{
+			for (var i = 0; i < this.electricLibraryTabs.length; i++)
+			{
+				var tab = this.electricLibraryTabs[i];
+				var active = tab.getAttribute('data-electric-library-tab') == value;
+				tab.classList.toggle('geActive', active);
+				tab.setAttribute('aria-selected', active ? 'true' : 'false');
+				tab.setAttribute('tabindex', active ? '0' : '-1');
+			}
+		}
+	};
+
+	EditorUi.prototype.activateElectricLibraryTab = function(value)
+	{
+		this.updateElectricLibraryTabs(value);
+
+		if (value == 'find' && this.sidebarContainer != null)
+		{
+			var input = this.sidebarContainer.querySelector('#geOmniSearch');
+
+			if (input != null)
+			{
+				input.focus();
+
+				if (input.select != null)
+				{
+					input.select();
+				}
+			}
+		}
+	};
+
+	EditorUi.prototype.moveElectricLibraryTabFocus = function(tab, keyCode)
+	{
+		if (this.electricLibraryTabs == null ||
+			this.electricLibraryTabs.length == 0)
+		{
+			return false;
+		}
+
+		var index = mxUtils.indexOf(this.electricLibraryTabs, tab);
+
+		if (index < 0)
+		{
+			return false;
+		}
+
+		if (keyCode == 37)
+		{
+			index = (index + this.electricLibraryTabs.length - 1) %
+				this.electricLibraryTabs.length;
+		}
+		else if (keyCode == 39)
+		{
+			index = (index + 1) % this.electricLibraryTabs.length;
+		}
+		else if (keyCode == 36)
+		{
+			index = 0;
+		}
+		else if (keyCode == 35)
+		{
+			index = this.electricLibraryTabs.length - 1;
+		}
+		else
+		{
+			return false;
+		}
+
+		var target = this.electricLibraryTabs[index];
+		this.updateElectricLibraryTabs(
+			target.getAttribute('data-electric-library-tab'));
+		target.focus();
+
+		return true;
+	};
+
+	EditorUi.prototype.decorateElectricLibraryPalettes = function()
+	{
+		if (!Editor.isElectricTheme() || this.sidebarContainer == null)
+		{
+			return;
+		}
+
+		var palettes = this.sidebarContainer.querySelectorAll('.geSidebar');
+
+		for (var i = 0; i < palettes.length; i++)
+		{
+			var children = palettes[i].children;
+			var hasItems = false;
+
+			for (var j = 0; j < children.length; j++)
+			{
+				if (children[j].classList != null &&
+					children[j].classList.contains('geItem'))
+				{
+					hasItems = true;
+					break;
+				}
+			}
+
+			palettes[i].classList.toggle('geElectricLibraryGrid', hasItems);
+		}
+	};
+
+	EditorUi.prototype.installElectricLibraryHeader = function()
+	{
+		if (!Editor.isElectricTheme() || this.editor.chromeless ||
+			this.sidebarContainer == null)
+		{
+			return;
+		}
+
+		var wrapper = this.sidebarContainer.firstChild;
+
+		if (wrapper == null)
+		{
+			return;
+		}
+
+		if (this.electricLibraryHeader == null)
+		{
+			var ui = this;
+			var header = document.createElement('div');
+			header.className = 'geElectricLibraryTabs';
+			header.setAttribute('role', 'tablist');
+			header.setAttribute('aria-label',
+				Editor.getElectricResource('electricLibrary', 'Library'));
+
+			var createTab = function(value, label)
+			{
+				var tab = document.createElement('button');
+				tab.setAttribute('type', 'button');
+				tab.className = 'geElectricLibraryTab';
+				tab.setAttribute('role', 'tab');
+				tab.setAttribute('data-electric-library-tab', value);
+				mxUtils.write(tab, label);
+				mxEvent.addListener(tab, 'click', function(evt)
+				{
+					ui.activateElectricLibraryTab(value);
+					mxEvent.consume(evt);
+				});
+				mxEvent.addListener(tab, 'keydown', function(evt)
+				{
+					if (ui.moveElectricLibraryTabFocus(tab, evt.keyCode))
+					{
+						mxEvent.consume(evt);
+					}
+					else if (evt.keyCode == 13 || evt.keyCode == 32)
+					{
+						ui.activateElectricLibraryTab(value);
+						mxEvent.consume(evt);
+					}
+				});
+				header.appendChild(tab);
+				return tab;
+			};
+
+			this.electricLibraryTabs = [
+				createTab('model', Editor.getElectricResource(
+					'electricInModelShapes', 'In model shapes')),
+				createTab('find', Editor.getElectricResource(
+					'electricFindShapes', 'Find shapes'))
+			];
+			this.electricLibraryHeader = header;
+			wrapper.insertBefore(header, wrapper.firstChild);
+		}
+		else if (this.electricLibraryHeader.parentNode != wrapper)
+		{
+			wrapper.insertBefore(this.electricLibraryHeader, wrapper.firstChild);
+		}
+
+		this.updateElectricLibraryTabs(this.electricLibraryTab || 'model');
+		this.decorateElectricLibraryPalettes();
+
+		if (this.electricLibraryObserver == null &&
+			typeof MutationObserver !== 'undefined')
+		{
+			this.electricLibraryObserver = new MutationObserver(
+				mxUtils.bind(this, function()
+			{
+				this.installElectricLibraryHeader();
+			}));
+			this.electricLibraryObserver.observe(wrapper,
+				{childList: true, subtree: true});
+		}
+	};
+
+	EditorUi.prototype.removeElectricLibraryHeader = function()
+	{
+		if (this.electricLibraryObserver != null)
+		{
+			this.electricLibraryObserver.disconnect();
+			this.electricLibraryObserver = null;
+		}
+
+		if (this.sidebarContainer != null)
+		{
+			var palettes = this.sidebarContainer.querySelectorAll(
+				'.geElectricLibraryGrid');
+
+			for (var i = 0; i < palettes.length; i++)
+			{
+				palettes[i].classList.remove('geElectricLibraryGrid');
+			}
+		}
+
+		if (this.electricLibraryHeader != null &&
+			this.electricLibraryHeader.parentNode != null)
+		{
+			this.electricLibraryHeader.parentNode.removeChild(
+				this.electricLibraryHeader);
+		}
+
+		this.electricLibraryHeader = null;
+		this.electricLibraryTabs = null;
+		this.electricLibraryTab = null;
 	};
 
 	EditorUi.prototype.getElectricCanvasViewportState = function()
@@ -4558,6 +5563,7 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		}
 
 		this.updateElectricPanelViewButtons();
+		this.scheduleElectricCanvasesRefresh();
 		this.scheduleElectricLayersPanelRefresh();
 	};
 
@@ -4573,7 +5579,14 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 			this.updateElectricModePanel();
 			this.updateElectricLeftPanelState();
 			this.updateElectricLeftOverlayGeometry(false);
+			this.scheduleElectricCanvasesRefresh();
 			this.scheduleElectricLayersPanelRefresh();
+		});
+
+		this.electricCanvasesRefreshHandler = mxUtils.bind(this, function()
+		{
+			this.scheduleElectricCanvasesRefresh();
+			this.updateElectricPageStatus();
 		});
 
 		this.electricLayersModelHandler = mxUtils.bind(this, function()
@@ -4638,6 +5651,24 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		this.electricSidebarWidthHandler = mxUtils.bind(this, function()
 		{
 			this.updateElectricLeftOverlayGeometry(false);
+		});
+
+		this.electricWindowResizeHandler = mxUtils.bind(this, function()
+		{
+			if (this.electricWindowResizeFrame == null)
+			{
+				this.electricWindowResizeFrame = window.requestAnimationFrame(
+					mxUtils.bind(this, function()
+				{
+					this.electricWindowResizeFrame = null;
+
+					if (Editor.isElectricTheme())
+					{
+						this.updateElectricLeftOverlayGeometry(false);
+						this.updateElectricBottomToolbar();
+					}
+				}));
+			}
 		});
 
 		this.electricFullscreenHandler = mxUtils.bind(this, function(evt)
@@ -4707,11 +5738,16 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		});
 
 		this.editor.addListener('fileLoaded', this.electricModeRefreshHandler);
+		this.editor.addListener('fileLoaded', this.electricCanvasesRefreshHandler);
 		this.editor.addListener('fileLoaded', this.electricConnectorFileHandler);
 		this.editor.addListener('pageSelected', this.electricModeRefreshHandler);
+		this.editor.addListener('pageSelected', this.electricCanvasesRefreshHandler);
 		this.editor.addListener('pageRenamed', this.electricModeRefreshHandler);
+		this.editor.addListener('pageRenamed', this.electricCanvasesRefreshHandler);
 		this.editor.addListener('pageMoved', this.electricModeRefreshHandler);
+		this.editor.addListener('pageMoved', this.electricCanvasesRefreshHandler);
 		this.editor.addListener('pagesPatched', this.electricModeRefreshHandler);
+		this.editor.addListener('pagesPatched', this.electricCanvasesRefreshHandler);
 		this.editor.addListener('electricModeChanged', this.electricModeRefreshHandler);
 		this.addListener('currentThemeChanged', this.electricModeRefreshHandler);
 		this.addListener('styleChanged', this.electricConnectorStyleHandler);
@@ -4725,6 +5761,7 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 			this.electricLayersModelHandler);
 		document.addEventListener('fullscreenchange', this.electricFullscreenHandler);
 		document.addEventListener('keydown', this.electricFullscreenKeyHandler, true);
+		window.addEventListener('resize', this.electricWindowResizeHandler);
 		this.addListener('inlineFullscreenChanged', this.electricFullscreenHandler);
 		this.electricModeListenersInstalled = true;
 	};
@@ -4734,6 +5771,7 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		if (this.electricModeListenersInstalled && this.editor != null)
 		{
 			this.editor.removeListener(this.electricModeRefreshHandler);
+			this.editor.removeListener(this.electricCanvasesRefreshHandler);
 			this.editor.removeListener(this.electricConnectorFileHandler);
 			this.removeListener(this.electricShapesPanelHandler);
 			this.removeListener(this.electricSidebarWidthHandler);
@@ -4757,8 +5795,20 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 			document.removeEventListener('keydown', this.electricFullscreenKeyHandler, true);
 		}
 
+		if (this.electricWindowResizeHandler != null)
+		{
+			window.removeEventListener('resize', this.electricWindowResizeHandler);
+		}
+
+		if (this.electricWindowResizeFrame != null)
+		{
+			window.cancelAnimationFrame(this.electricWindowResizeFrame);
+			this.electricWindowResizeFrame = null;
+		}
+
 		this.electricModeListenersInstalled = false;
 		this.electricModeRefreshHandler = null;
+		this.electricCanvasesRefreshHandler = null;
 		this.electricShapesPanelHandler = null;
 		this.electricSidebarWidthHandler = null;
 		this.electricLayersModelHandler = null;
@@ -4766,6 +5816,7 @@ EditorUi.prototype.getElectricConnectorToolbarHost = function()
 		this.electricConnectorFileHandler = null;
 		this.electricFullscreenHandler = null;
 		this.electricFullscreenKeyHandler = null;
+		this.electricWindowResizeHandler = null;
 	};
 
 	if (typeof StyleFormatPanel != 'undefined' &&

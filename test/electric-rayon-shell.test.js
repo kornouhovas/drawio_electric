@@ -78,7 +78,7 @@ assert(electric.includes("if (entry.actionName == 'fullscreen')") &&
 	electric.includes('this.electricFullscreenHandler();'),
 	'Fullscreen state must cover document, inline, Escape, and asynchronous native runtimes');
 assert(electric.includes('overflow-x:auto;overflow-y:hidden') &&
-	electric.includes('flex:0 0 32px') &&
+	electric.includes('flex-basis:32px') &&
 	electric.includes('--ge-electric-visible-left-width:calc(') &&
 	electric.includes('100% - var(--ge-electric-visible-left-width) - var(--ge-electric-visible-format-width)') &&
 	electric.includes('max(44px,calc(') &&
@@ -118,8 +118,8 @@ assert(electric.includes('geElectricModes:not(.geElectricLegacyChrome)>.geMenuba
 	electric.includes('grid-template-rows:0 0 minmax(0,1fr) min-content') &&
 	electric.includes('grid-template-columns:var(--ge-electric-mode-width) minmax(0,1fr) var(--ge-electric-visible-format-width)'),
 	'The Electric workspace must hide legacy chrome by default without deleting it');
-assert(electric.includes('this.electricBottomToolbar.appendChild(') &&
-	electric.includes('this.electricConnectorToolbar'),
+assert(electric.includes('this.electricBottomToolbarTools ||') &&
+	electric.includes('host.appendChild(this.electricConnectorToolbar)'),
 	'The standard connector selector must remain available in the bottom toolbar');
 assert(electric.includes('this.toolbar.edgeStyleMenu') &&
 	electric.includes("wrapper.className = 'geElectricConnectorToolbar'") &&

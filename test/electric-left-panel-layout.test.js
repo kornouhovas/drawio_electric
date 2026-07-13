@@ -10,9 +10,9 @@ const editorUi = fs.readFileSync(path.join(root,
 
 assert(electric.includes('grid-template-columns:var(--ge-electric-mode-width) minmax(0,1fr) var(--ge-electric-visible-format-width);'),
 	'Electric must reserve stable grid columns for the mode panel and visible inspector');
-assert(electric.includes('--ge-electric-mode-width:56px') &&
-	electric.includes('--ge-electric-sidebar-width:360px') &&
-	electric.includes('--ge-electric-format-width:352px'),
+assert(electric.includes('--ge-electric-mode-width:44px') &&
+	electric.includes('--ge-electric-sidebar-width:264px') &&
+	electric.includes('--ge-electric-format-width:264px'),
 	'Electric must define the desktop Rayon shell dimensions');
 assert(electric.includes('grid-column:2/3;grid-row:3/4;position:absolute!important;left:0;top:0;bottom:0;z-index:6;'),
 	'The Shapes sidebar must overlay the diagram instead of taking layout space');
@@ -42,16 +42,16 @@ assert(editorUi.includes('if (elt.getSplitPosition != null)'),
 assert(electric.includes('@media(max-width:1280px)') &&
 	electric.includes('@media(max-width:960px)') &&
 	electric.includes('@media(max-width:700px)') &&
-	electric.includes('--ge-electric-mode-width:48px'),
+	electric.includes('--ge-electric-mode-width:44px'),
 	'Electric must provide compact shell rules at all required breakpoints');
-assert(electric.includes('--ge-electric-workspace:light-dark(#f7f7f8,#19191b)') &&
+assert(electric.includes('--ge-electric-workspace:light-dark(#f7f7f7,#19191b)') &&
 	electric.includes('background-color:var(--ge-electric-workspace)'),
 	'Electric must use the neutral Rayon workspace color');
 assert(electric.includes('EditorUi.prototype.getElectricDefaultLeftPanelWidth') &&
 	electric.includes('return this.getElectricAvailableLeftPanelWidth();') &&
 	electric.includes('minimumCanvasWidth = (viewportWidth <= 700) ? 96 : 0') &&
-	electric.includes('(viewportWidth <= 960) ? 320 :') &&
-	electric.includes('((viewportWidth <= 1280) ? 336 : 360);'),
+	electric.includes('(viewportWidth <= 960) ? 232 :') &&
+	electric.includes('((viewportWidth <= 1280) ? 248 : 264);'),
 	'Fresh Electric sessions must receive a nonzero responsive overlay width');
 assert(electric.includes('EditorUi.prototype.ensureElectricLeftPanelWidth') &&
 	electric.includes('this.ensureElectricLeftPanelWidth();') &&
