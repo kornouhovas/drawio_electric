@@ -8,8 +8,8 @@ const electric = fs.readFileSync(path.join(root,
 const editorUi = fs.readFileSync(path.join(root,
 	'src/main/webapp/js/grapheditor/EditorUi.js'), 'utf8');
 
-assert(electric.includes('grid-template-columns:var(--ge-electric-mode-width) minmax(0,1fr) min-content;'),
-	'Electric must reserve a stable grid column only for the mode panel');
+assert(electric.includes('grid-template-columns:var(--ge-electric-mode-width) minmax(0,1fr) var(--ge-electric-visible-format-width);'),
+	'Electric must reserve stable grid columns for the mode panel and visible inspector');
 assert(electric.includes('--ge-electric-mode-width:56px') &&
 	electric.includes('--ge-electric-sidebar-width:360px') &&
 	electric.includes('--ge-electric-format-width:352px'),
@@ -48,7 +48,8 @@ assert(electric.includes('--ge-electric-workspace:light-dark(#f7f7f8,#19191b)') 
 	electric.includes('background-color:var(--ge-electric-workspace)'),
 	'Electric must use the neutral Rayon workspace color');
 assert(electric.includes('EditorUi.prototype.getElectricDefaultLeftPanelWidth') &&
-	electric.includes('return Math.max(0, viewportWidth - 48);') &&
+	electric.includes('return this.getElectricAvailableLeftPanelWidth();') &&
+	electric.includes('minimumCanvasWidth = (viewportWidth <= 700) ? 96 : 0') &&
 	electric.includes('(viewportWidth <= 960) ? 320 :') &&
 	electric.includes('((viewportWidth <= 1280) ? 336 : 360);'),
 	'Fresh Electric sessions must receive a nonzero responsive overlay width');

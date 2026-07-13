@@ -67,6 +67,13 @@ assert(electric.includes('this.electricLeftPanelView == viewId &&') &&
 	electric.includes('this.electricLeftPanelCollapsed !== true') &&
 	electric.includes('this.electricLeftPanelCollapsed = true;'),
 	'Clicking the active rail view must collapse it while a collapsed view reopens');
+assert(electric.includes("panel.setAttribute('role', 'region')") &&
+	electric.includes("this.electricLayersTree.setAttribute('role', 'tree')") &&
+	electric.includes("this.electricLayersTree.setAttribute('aria-label'"),
+	'Layers header controls must remain outside the ARIA tree');
+assert(electric.includes("row.setAttribute('aria-expanded', expanded ? 'true' : 'false')") &&
+	!electric.includes("if (childCount > 0 && kind != 'device')\n\t\t{\n\t\t\trow.setAttribute('aria-expanded'"),
+	'Device rows with children must expose their expanded state');
 assert(electric.includes("row.setAttribute('tabindex', '0')") &&
 	electric.includes("row.setAttribute('tabindex', '-1')") &&
 	electric.includes('this.electricLayerKeyboardFocusId == id') &&
@@ -76,6 +83,7 @@ assert(electric.includes("row.setAttribute('tabindex', '0')") &&
 	electric.includes('evt.keyCode == 13 || evt.keyCode == 32') &&
 	electric.includes('evt.keyCode == 39 && !expanded') &&
 	electric.includes('evt.keyCode == 37 && expanded') &&
+	electric.includes("childCount > 0 &&\n\t\t\t\t((evt.keyCode == 39") &&
 	electric.includes('evt.keyCode == 38 || evt.keyCode == 40') &&
 	electric.includes('evt.keyCode == 36 || evt.keyCode == 35') &&
 	electric.includes('rows[targetIndex].focus();') &&

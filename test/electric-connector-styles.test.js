@@ -46,8 +46,19 @@ assert(electric.includes('StyleFormatPanel.prototype.addStyleOps = function(div)
 	!electric.includes('Format.prototype.immediateRefresh = function()'),
 	'Preset controls must extend native Style panels for selected and future connectors');
 assert(electric.includes('EditorUi.prototype.showElectricConnectorStylePicker') &&
+	electric.includes('EditorUi.prototype.closeElectricConnectorStylePicker') &&
 	electric.includes('geElectricConnectorStylePickerSearch') &&
 	electric.includes('geElectricConnectorStylePickerMenu') &&
+	electric.includes("list.setAttribute('role', 'list')") &&
+	electric.includes("item.setAttribute('role', 'listitem')") &&
+	electric.includes("var row = document.createElement('button')") &&
+	electric.includes("row.setAttribute('type', 'button')") &&
+	electric.includes('item.appendChild(row)') &&
+	electric.includes('item.appendChild(menuButton)') &&
+	electric.includes("row.setAttribute('aria-current', 'true')") &&
+	electric.includes("rows[i].setAttribute('tabindex', (i == index) ? '0' : '-1')") &&
+	electric.includes("focusRelativeRow(list.electricFirstRow.row, 'first')") &&
+	electric.includes('focusRelativeRow(row, evt.keyCode == 38 ? -1 : 1)') &&
 	electric.includes("mxResources.get('rename') || 'Rename'") &&
 	electric.includes("mxResources.get('delete') || 'Delete'") &&
 	electric.includes('EditorUi.prototype.getElectricConnectorPresetGroups') &&
@@ -58,6 +69,12 @@ assert(electric.includes('EditorUi.prototype.showElectricConnectorStylePicker') 
 	!electric.includes("mxResources.get('electricConnectorSaveProjectShort')") &&
 	!electric.includes('showElectricConnectorSaveMenu'),
 	'Connector presets must use a searchable picker and simple save/save-as actions');
+assert(electric.includes('this.showDialog(container, 320, 520, false, true, function()') &&
+	electric.includes("this.dialog.container.classList.add('geElectricConnectorStyleDialog')") &&
+	electric.includes('this.electricConnectorStyleDialog = this.dialog') &&
+	electric.includes('this.closeElectricConnectorStylePicker();') &&
+	electric.includes('.geDialog.geElectricConnectorStyleDialog'),
+	'The Rayon connector picker must be a lifecycle-managed non-modal inspector-side popover');
 assert(electric.includes('graph.setCellStyles(key, clean[key] != null ? clean[key] : null,') &&
 	electric.includes('graph.getModel().beginUpdate()'),
 	'Applying a preset to selected connectors must use a single model transaction');

@@ -255,6 +255,10 @@ if (!window.DRAWIO_PUBLIC_BUILD)
 	mxscript(drawDevUrl + 'js/diagramly/vsdx/VsdxExport.js');
 }
 
+mxscript(drawDevUrl + 'js/diagramly/Electric.js');
+mxscript(drawDevUrl + 'electric/shapes/catalog.js');
+mxscript(drawDevUrl + 'js/diagramly/ElectricShapes.js');
+
 mxscript(drawDevUrl + 'js/mermaid/mermaid2drawio.js');	
 
 // Vsdx/vssx support

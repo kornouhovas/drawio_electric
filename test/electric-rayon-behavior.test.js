@@ -63,6 +63,9 @@ const context = vm.createContext({
 
 for (const name of [
 	'getElectricShellViewportWidth',
+	'getElectricFormatPanelWidth',
+	'getElectricAvailableLeftPanelWidth',
+	'getElectricLeftPanelWidth',
 	'getElectricDefaultLeftPanelWidth',
 	'ensureElectricLeftPanelWidth',
 	'captureElectricInlineProperty',
@@ -94,6 +97,19 @@ responsiveUi.hsplitPosition = 300;
 responsiveUi.ensureElectricLeftPanelWidth();
 assert.strictEqual(responsiveUi.hsplitPosition, 300,
 	'A user-resized panel width must be preserved');
+
+const narrowUi = new EditorUi();
+narrowUi.container = {clientWidth: 700};
+narrowUi.hsplitPosition = 652;
+narrowUi.format = {};
+narrowUi.formatWidth = 240;
+assert.strictEqual(narrowUi.getElectricFormatPanelWidth(), 280);
+assert.strictEqual(narrowUi.getElectricAvailableLeftPanelWidth(), 276);
+assert.strictEqual(narrowUi.getElectricLeftPanelWidth(), 276,
+	'The left overlay must preserve the inspector and a usable canvas gap');
+narrowUi.format = null;
+assert.strictEqual(narrowUi.getElectricLeftPanelWidth(), 556,
+	'A closed inspector must release width while preserving the canvas gap');
 
 const hiddenButton = {
 	style: {},
@@ -157,4 +173,3 @@ assert.strictEqual(shellUi.hsplitPosition, 280);
 assert.strictEqual(shellUi.sidebarContainer.style.value('width'), '280px');
 assert.strictEqual(shellUi.formatContainer.style.value('width'), '240px');
 assert.strictEqual(shellUi.hsplit.style.value('left'), '280px');
-
