@@ -22,6 +22,7 @@ PAGES = {
     "EKF — дифавтоматы 2M": "ekf_rcbo_2m",
     "EKF — клеммы UT (винтовые)": "ekf_ut",
     "MW — устройства": "mw_hdr",
+    "IEK — сигнализация": "iek_signalling",
     "Wiren Board — контроллеры": "wb_controllers",
     "Wiren Board — устройства": "wb_devices",
 }
@@ -37,6 +38,8 @@ RCBO_LEAKAGE_ORDER = ["10мА", "30мА", "100мА", "300мА"]
 MW_VOLTAGE_ORDER = ["12V", "24V", "48V"]
 WB_LIBRARY_ID = "electric-wb-devices"
 WB_LIBRARY_TITLE = "Wiren Board устройства"
+IEK_SIGNALLING_LIBRARY_ID = "electric-iek-signalling"
+IEK_SIGNALLING_LIBRARY_TITLE = "IEK сигнализация"
 WB_PREVIEW_MAX_SIZE = 360
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
@@ -45,6 +48,7 @@ PAGE_VENDOR = {
     "ekf_rcbo_2m": "EKF",
     "ekf_ut": "EKF",
     "mw_hdr": "MEAN WELL",
+    "iek_signalling": "IEK",
     "wb_controllers": "Wiren Board",
     "wb_devices": "Wiren Board",
 }
@@ -54,8 +58,14 @@ SOURCE_URLS = {
     "ekf_rcbo_2m": "https://ekfgroup.com/ru/catalog/differencialnye-avtomaty",
     "ekf_ut": "https://ekfgroup.com/ru/catalog/klemmnye-kolodki-ut-vintovye",
     "mw_hdr": "https://www.meanwell.com/Upload/PDF/HDR%20DIN%20rail%20power%20supply.pdf",
+    "iek_signalling": "https://www.iek.ru/products/catalog/modulnoe_oborudovanie/modulnoe_oborudovanie_karat/dopolnitelnye_ustroystva_karat/",
     "wb_controllers": "https://wirenboard.com/",
     "wb_devices": "https://wirenboard.com/",
+}
+
+IEK_SIGNALLING_SOURCE_URLS = {
+    "MLS10-230-K04": "https://www.iek.ru/products/catalog/modulnoe_oborudovanie/modulnoe_oborudovanie_karat/dopolnitelnye_ustroystva_karat/signalnye_lampy/lampa_signalnaya_ls_47_neon_krasnaya_iek",
+    "MZD10-230": "https://www.iek.ru/products/catalog/modulnoe_oborudovanie/modulnoe_oborudovanie_karat/dopolnitelnye_ustroystva_karat/prochie_dopolnitelnye_ustroystva/zvonok_zd_47_na_din_reyku_iek",
 }
 
 MW_TERMINAL_LAYOUTS = {
@@ -491,6 +501,7 @@ def item_kind(page_key):
         "ekf_rcbo_2m": "rcbo",
         "ekf_ut": "terminal",
         "mw_hdr": "psu",
+        "iek_signalling": "signalling",
         "wb_controllers": "wb",
         "wb_devices": "wb",
     }[page_key]
@@ -536,11 +547,22 @@ def library_for_item(page_key, section, data):
 
         return "electric-mw-hdr-other", "MW устройства прочие"
 
+    if page_key == "iek_signalling":
+        return IEK_SIGNALLING_LIBRARY_ID, IEK_SIGNALLING_LIBRARY_TITLE
+
     if page_key in ("wb_controllers", "wb_devices"):
         return WB_LIBRARY_ID, WB_LIBRARY_TITLE
 
     safe = slug(section or page_key)
     return f"electric-{safe}", section or page_key
+
+
+def source_url_for_item(page_key, data):
+    if page_key == "iek_signalling":
+        return IEK_SIGNALLING_SOURCE_URLS.get(
+            data.get("Артикул"), SOURCE_URLS[page_key])
+
+    return SOURCE_URLS[page_key]
 
 
 def tags_for_item(entry, data):
@@ -657,10 +679,10 @@ def parse_items(base_drawio):
                 "original": original_file,
                 "section": section,
                 "data": data,
-                "sourceUrl": SOURCE_URLS[page_key],
+                "sourceUrl": source_url_for_item(page_key, data),
                 "sourceKey": data.get("Артикул") or data.get("Модель") or card_id,
             }
-            if page_key in ("wb_controllers", "wb_devices"):
+            if page_key in ("iek_signalling", "wb_controllers", "wb_devices"):
                 preview_png = png_image_for_preview(device, by_parent)
 
                 if preview_png is not None:
@@ -672,6 +694,7 @@ def parse_items(base_drawio):
                 device, by_parent, page_key, data,
                 force_root_connectable=page_key in (
                     "ekf_breakers", "ekf_rcbo_2m",
+                    "iek_signalling",
                     "wb_controllers", "wb_devices",
                 ),
             )
@@ -715,6 +738,7 @@ def write_manifest(entries, output_dir, source_hash):
         "electric-mw-hdr-12v",
         "electric-mw-hdr-24v",
         "electric-mw-hdr-48v",
+        IEK_SIGNALLING_LIBRARY_ID,
         WB_LIBRARY_ID,
     ]
     sorted_libraries = [libraries[key] for key in order if key in libraries]
@@ -747,6 +771,11 @@ def write_manifest(entries, output_dir, source_hash):
                 "vendor": "MEAN WELL",
                 "url": "https://www.meanwell.com/Upload/PDF/HDR%20DIN%20rail%20power%20supply.pdf",
                 "covers": "MEAN WELL HDR DIN rail power supplies",
+            },
+            {
+                "vendor": "IEK",
+                "url": "https://www.iek.ru/products/catalog/modulnoe_oborudovanie/modulnoe_oborudovanie_karat/dopolnitelnye_ustroystva_karat/",
+                "covers": "IEK LS-47 signal lamp and ZD-47 DIN rail bell",
             },
             {
                 "vendor": "Wiren Board",
