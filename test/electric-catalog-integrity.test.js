@@ -26,6 +26,18 @@ assert.strictEqual(manifest.assetVersion, sourceHash.slice(0, 16));
 
 const items = manifest.libraries.flatMap((library) => library.items);
 const titles = new Set();
+const iekLibrary = manifest.libraries.find((library) =>
+	library.id === 'electric-iek-signalling');
+
+assert(iekLibrary, 'IEK signalling library must be present');
+assert.deepStrictEqual(
+	iekLibrary.items.map((item) => item.id).sort(),
+	[
+		'electric-iek-signalling-mls10-230-k04',
+		'electric-iek-signalling-mzd10-230',
+	],
+	'IEK signalling library must expose the lamp and bell',
+);
 
 for (const item of items)
 {

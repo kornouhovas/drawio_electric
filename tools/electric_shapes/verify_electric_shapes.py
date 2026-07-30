@@ -26,6 +26,7 @@ EXPECTED_COUNTS = {
     "electric-mw-hdr-12v": 6,
     "electric-mw-hdr-24v": 6,
     "electric-mw-hdr-48v": 6,
+    "electric-iek-signalling": 2,
     "electric-wb-devices": 57,
 }
 
@@ -160,22 +161,26 @@ def main():
         if item.get("kind") == "terminal" and "_marking" in text:
             return fail(f"UT original contains a canvas label: {item['id']}")
 
-        if item.get("kind") == "wb":
+        if item.get("kind") in ("wb", "signalling"):
             if item.get("libraryId") != "electric-wb-devices":
-                return fail(f"Wiren Board item is outside merged library: {item['id']} {item.get('libraryId')}")
+                if item.get("kind") == "wb":
+                    return fail(f"Wiren Board item is outside merged library: {item['id']} {item.get('libraryId')}")
+
+            if item.get("kind") == "signalling" and item.get("libraryId") != "electric-iek-signalling":
+                return fail(f"IEK signalling item is outside its library: {item['id']} {item.get('libraryId')}")
 
             preview = item.get("preview")
 
             if not preview:
-                return fail(f"Missing Wiren Board preview for {item['id']}")
+                return fail(f"Missing image preview for {item['id']}")
 
             preview_path = args.shape_dir / preview
 
             if not preview_path.exists():
-                return fail(f"Missing Wiren Board preview file for {item['id']}: {preview_path}")
+                return fail(f"Missing image preview file for {item['id']}: {preview_path}")
 
             if preview_path.stat().st_size >= original.stat().st_size:
-                return fail(f"Wiren Board preview is not lighter than original: {item['id']}")
+                return fail(f"Image preview is not lighter than original: {item['id']}")
 
     terminal_libraries = [library for library in libraries if library["id"].startswith("electric-ekf-ut")]
 
