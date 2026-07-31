@@ -32,8 +32,8 @@ function readOriginal(item)
 }
 
 for (const [item, dimensions] of [
-	[lamp, [18, 65]],
-	[bell, [18, 68.5]],
+	[lamp, [70.866, 255.905]],
+	[bell, [70.866, 269.685]],
 ])
 {
 	assert.strictEqual(item.kind, 'signalling');
@@ -45,6 +45,12 @@ for (const [item, dimensions] of [
 	assert.match(readOriginal(item), /shape=image/,
 		`${item.id} original must be an image-backed device`);
 }
+
+// Canvas geometry uses the same scale as the existing 18 mm / 1M DIN devices.
+assert.strictEqual(lamp.data['Модульность'], '18 мм / 1M');
+assert.strictEqual(bell.data['Модульность'], '18 мм / 1M');
+assert.strictEqual(lamp.data['Размер'], '18×65×78 мм');
+assert.strictEqual(bell.data['Размер'], '18×68.5×84 мм');
 
 assert.strictEqual(lamp.data['Артикул'], 'MLS10-230-K04');
 assert.strictEqual(bell.data['Артикул'], 'MZD10-230');
