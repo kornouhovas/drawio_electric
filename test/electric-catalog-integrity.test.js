@@ -28,6 +28,8 @@ const items = manifest.libraries.flatMap((library) => library.items);
 const titles = new Set();
 const iekLibrary = manifest.libraries.find((library) =>
 	library.id === 'electric-iek-signalling');
+const ekf3pCharacteristicCLibrary = manifest.libraries.find((library) =>
+	library.id === 'electric-ekf-breakers-3p-c');
 
 assert(iekLibrary, 'IEK signalling library must be present');
 assert.deepStrictEqual(
@@ -38,6 +40,15 @@ assert.deepStrictEqual(
 	],
 	'IEK signalling library must expose the lamp and bell',
 );
+
+assert(ekf3pCharacteristicCLibrary,
+	'EKF 3P characteristic C library must be present');
+const ekf3pC6 = ekf3pCharacteristicCLibrary.items.find((item) =>
+	item.id === 'electric-ekf-breakers-3p-c-mcb4763-6-3-06c-pro');
+assert(ekf3pC6, 'EKF 3P C6 breaker must be present');
+assert.strictEqual(ekf3pC6.title, 'ВА 47-63 3P C6');
+assert.strictEqual(ekf3pC6.data['Артикул'], 'mcb4763-6-3-06C-pro');
+assert.strictEqual(ekf3pC6.data['Модульность'], '54 мм / 3M');
 
 for (const item of items)
 {

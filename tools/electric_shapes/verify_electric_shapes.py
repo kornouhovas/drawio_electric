@@ -16,7 +16,7 @@ EXPECTED_COUNTS = {
     "electric-ekf-breakers-2p-c": 6,
     "electric-ekf-breakers-2p-d": 1,
     "electric-ekf-breakers-3p-b": 3,
-    "electric-ekf-breakers-3p-c": 6,
+    "electric-ekf-breakers-3p-c": 7,
     "electric-ekf-breakers-3p-d": 5,
     "electric-ekf-rcbo-2m-10ma": 40,
     "electric-ekf-rcbo-2m-30ma": 46,
