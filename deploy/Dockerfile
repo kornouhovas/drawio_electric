@@ -6,13 +6,12 @@ RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3 \
     && rm -rf /var/lib/apt/lists/*
 COPY . .
-RUN node --check src/main/webapp/js/diagramly/Electric.js \
-    && node --check src/main/webapp/js/diagramly/ElectricShapes.js \
+RUN node --check src/main/webapp/js/diagramly/ElectricShapes.js \
     && node --check src/main/webapp/js/diagramly/App.js \
     && node --check src/main/webapp/js/diagramly/Menus.js \
     && node --check src/main/webapp/js/bootstrap.js \
     && node --check deploy/PreConfig.js \
-    && node --test test/electric-*.test.js \
+    && node --test test/electric-*.test.js test/standard-ui.test.js \
     && python3 tools/electric_shapes/verify_electric_shapes.py src/main/webapp/electric/shapes \
     && python3 tools/electric_shapes/generate_electric_shapes.py \
         tools/electric_shapes/source/base.drawio.gz /tmp/electric-shapes \
@@ -34,7 +33,7 @@ RUN find src/main/webapp/stencils src/main/webapp/electric/shapes/items \
         -exec gzip -9 -k -f {} +
 
 FROM jgraph/drawio@sha256:b0791d8f4cd4e50600ad2ff4e0c5ea51bc7adb59c782da50214db0511db03106
-ARG ELECTRIC_ASSET_VERSION=local
+ARG DRAWIO_ASSET_VERSION=local
 USER root
 RUN rm -rf /usr/local/tomcat/webapps/draw /usr/local/tomcat/webapps/draw.war \
     && sed -i '/<load-on-startup>1<\/load-on-startup>/i\
@@ -43,9 +42,9 @@ RUN rm -rf /usr/local/tomcat/webapps/draw /usr/local/tomcat/webapps/draw.war \
             <param-value>gzip=.gz</param-value>\
         </init-param>' /usr/local/tomcat/conf/web.xml
 COPY --chown=tomcat:tomcat --from=builder /workspace/src/main/webapp/ /usr/local/tomcat/webapps/draw/
-COPY --chown=tomcat:tomcat deploy/PreConfig.js /opt/drawio-electric/PreConfig.js
-RUN sed -i "s/@ELECTRIC_ASSET_VERSION@/${ELECTRIC_ASSET_VERSION}/g" \
-        /opt/drawio-electric/PreConfig.js
-COPY --chmod=0755 --chown=tomcat:tomcat deploy/electric-start.sh /usr/local/bin/electric-start.sh
+COPY --chown=tomcat:tomcat deploy/PreConfig.js /opt/drawio-standard/PreConfig.js
+RUN sed -i "s/@DRAWIO_ASSET_VERSION@/${DRAWIO_ASSET_VERSION}/g" \
+        /opt/drawio-standard/PreConfig.js
+COPY --chmod=0755 --chown=tomcat:tomcat deploy/standard-start.sh /usr/local/bin/standard-start.sh
 USER tomcat
-CMD ["/usr/local/bin/electric-start.sh", "catalina.sh", "run"]
+CMD ["/usr/local/bin/standard-start.sh", "catalina.sh", "run"]

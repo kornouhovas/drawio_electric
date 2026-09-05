@@ -552,7 +552,6 @@ OUTPUT FILES (in src/main/webapp/js/):
 				<file name="mxFreehand.js" />
 				<file name="P2PCollab.js" />
 				<file name="Simple.js" />
-				<file name="Electric.js" />
 				<file name="../../electric/shapes/catalog.js" />
 				<file name="ElectricShapes.js" />
 			</sources>
@@ -617,7 +616,6 @@ OUTPUT FILES (in src/main/webapp/js/):
 		<jscomp compilationLevel="simple" debug="false" forceRecompile="true" output="${basedir}/.tmp-simple.js">
 			<sources dir="${war.dir}/js/diagramly">
 				<file name="Simple.js" />
-				<file name="Electric.js" />
 				<file name="../../electric/shapes/catalog.js" />
 				<file name="ElectricShapes.js" />
 			</sources>

@@ -1,4 +1,4 @@
-draw-electric-dev.109.235.118.132.nip.io {
+draw-dev.109.235.118.132.nip.io {
     encode zstd gzip
 
     header {
@@ -29,5 +29,5 @@ draw-electric-dev.109.235.118.132.nip.io {
     }
     header @applicationAssets Cache-Control "public, max-age=0, must-revalidate"
 
-    reverse_proxy drawio-electric:8080
+    reverse_proxy drawio-standard:8080
 }

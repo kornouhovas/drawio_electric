@@ -327,12 +327,6 @@ App.publicPlugin = [
  * Loads all given scripts and invokes onload after
  * all scripts have finished loading.
  */
-App.getAssetUrl = function(url)
-{
-	return (typeof window.DRAWIO_ASSET_URL === 'function') ?
-		window.DRAWIO_ASSET_URL(url) : url;
-};
-
 App.loadScripts = function(scripts, onload, onerror)
 {
 	var n = scripts.length;
@@ -340,9 +334,7 @@ App.loadScripts = function(scripts, onload, onerror)
 	
 	for (var i = 0; i < scripts.length; i++)
 	{
-		var script = App.getAssetUrl(scripts[i]);
-
-		mxscript(script, function()
+		mxscript(scripts[i], function()
 		{
 			if (--n == 0 && !failed && onload != null)
 			{
@@ -1117,12 +1109,8 @@ App.main = function(callback, createUi)
 					// Note: Lazy loading stencils.min.js in viewer.diagrams.net
 					// has no impact as stencils.min.js is pre-cached in PWA
 					mxStencilRegistry.allowEval = false;
-					var startupScripts = Editor.isElectricTheme() ?
-						['js/shapes-14-6-5.min.js'] :
-						['js/shapes-14-6-5.min.js', 'js/stencils.min.js',
-							'js/extensions.min.js'];
-
-					App.loadScripts(startupScripts, realMain, function(e)
+					App.loadScripts(['js/shapes-14-6-5.min.js', 'js/stencils.min.js',
+						'js/extensions.min.js'], realMain, function(e)
 						{
 							document.body.innerHTML = '';
 							var pre = document.createElement('pre');

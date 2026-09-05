@@ -6054,11 +6054,6 @@ EditorUi.prototype.addSplitHandler = function(elt, horizontal, dx, onChange)
 	
 	var getValue = mxUtils.bind(this, function()
 	{
-		if (elt.getSplitPosition != null)
-		{
-			return elt.getSplitPosition();
-		}
-
 		var result = parseInt(((horizontal) ?
 			elt.offsetLeft : elt.offsetTop));
 		

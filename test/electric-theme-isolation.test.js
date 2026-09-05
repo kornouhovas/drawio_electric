@@ -6,8 +6,6 @@ const vm = require('vm');
 const root = path.join(__dirname, '..');
 const source = fs.readFileSync(path.join(root,
 	'src/main/webapp/js/diagramly/ElectricShapes.js'), 'utf8');
-const electricUi = fs.readFileSync(path.join(root,
-	'src/main/webapp/js/diagramly/Electric.js'), 'utf8');
 const manifest = JSON.parse(fs.readFileSync(path.join(root,
 	'src/main/webapp/electric/shapes/manifest.json'), 'utf8'));
 
@@ -16,6 +14,7 @@ function EditorUi() {}
 
 Sidebar.prototype = {
 	configuration: [{id: 'general', libs: ['general']}],
+	defaultEntries: 'general;basic',
 	updateEntries() { this.entries = [{title: 'Standard', entries: []}]; },
 	initPalettes() {},
 	createTooltip() {},
@@ -60,21 +59,14 @@ assert(Sidebar.prototype.configuration.some((entry) =>
 Editor.currentTheme = 'kennedy';
 const standardSidebar = new Sidebar();
 standardSidebar.updateEntries();
-assert(!standardSidebar.entries.some((entry) => entry.title == 'Electric'));
-assert(!Sidebar.prototype.configuration.some((entry) =>
+assert(standardSidebar.entries.some((entry) => entry.title == 'Electric'));
+assert(Sidebar.prototype.configuration.some((entry) =>
 	String(entry.id).startsWith('electric-')),
-	'Electric configuration must not leak into standard themes');
-assert(electricUi.includes('.geEditor.geElectricModes>.geElectricBottomToolbar') &&
-	electricUi.includes('.geEditor.geElectricModes>.geSidebarContainer.geFormatContainer') &&
-	electricUi.includes('.geEditor.geElectricModes>.geDiagramContainer'),
-	'Rayon shell visuals must be rooted in the Electric editor class');
-assert(!electricUi.includes("'.geElectricBottomToolbar") &&
-	!electricUi.includes("'.geDiagramContainer{background-color:light-dark(#f7f7f8"),
-	'New shell and workspace selectors must not affect non-Electric themes');
-assert(electricUi.includes('this.removeElectricModeListeners();') &&
-	electricUi.includes('this.removeElectricBottomToolbar();'),
-	'Theme removal must clean Electric-only listeners and DOM');
-assert(electricUi.includes("'--ge-electric-sidebar-width', state.sidebarToken") &&
-	electricUi.includes("'--ge-electric-visible-format-width', state.formatToken") &&
-	electricUi.includes('this.hsplitPosition = state.hsplitPosition;'),
-	'Theme removal must restore Electric custom properties and native split state');
+	'Device libraries must be available in the standard interface');
+for (const library of manifest.libraries)
+{
+	assert(Sidebar.prototype.defaultEntries.split(';').includes(library.id),
+		'Device libraries must be visible on a fresh installation');
+}
+assert.strictEqual(typeof Editor.markElectricShapeCells, 'function',
+	'Original device insertion must not depend on the custom Electric interface');

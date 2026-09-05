@@ -326,12 +326,24 @@
 		});
 	};
 
-	Editor.prefetchElectricShape = function(entry)
+	// Keep device metadata and native connection handles independent of the UI theme.
+	Editor.markElectricShapeCells = function(cells, entry)
 	{
-		return Editor.getElectricShapeTemplate(entry).catch(function()
+		for (var i = 0; cells != null && i < cells.length; i++)
 		{
-			return null;
-		});
+			cells[i].style = mxUtils.setStyle(cells[i].style, 'electricDevice', '1');
+
+			if (entry != null)
+			{
+				cells[i].style = mxUtils.setStyle(cells[i].style, 'electricShapeId', entry.id);
+
+				if ((entry.kind == 'breaker' || entry.kind == 'rcbo' || entry.kind == 'wb') &&
+					cells[i].setConnectable != null)
+				{
+					cells[i].setConnectable(true);
+				}
+			}
+		}
 	};
 
 	Editor.showElectricShapeLoadError = function(sidebar, error)
@@ -1704,18 +1716,6 @@
 		elt.setAttribute('data-electric-shape-tooltip',
 			Editor.getElectricShapeTooltipText(entry));
 
-		var prefetchOriginal = function()
-		{
-			Editor.prefetchElectricShape(entry);
-		};
-
-		if (elt.addEventListener != null)
-		{
-			elt.addEventListener('pointerenter', prefetchOriginal, {passive: true});
-			elt.addEventListener('focus', prefetchOriginal, {passive: true});
-			elt.addEventListener('touchstart', prefetchOriginal, {passive: true});
-		}
-
 		return elt;
 		};
 
@@ -1783,47 +1783,44 @@
 	{
 		updateEntries.apply(this, arguments);
 
-		if (Editor.isElectricTheme())
-		{
-			var catalog = Editor.loadElectricShapeCatalog();
-			Editor.addElectricShapeConfigurations(catalog);
-			var entries = [];
+		var catalog = Editor.loadElectricShapeCatalog();
+		Editor.addElectricShapeConfigurations(catalog);
+		var entries = [];
 
-			for (var i = 0; i < catalog.libraries.length; i++)
+		for (var i = 0; i < catalog.libraries.length; i++)
+		{
+			(mxUtils.bind(this, function(library)
 			{
-				(mxUtils.bind(this, function(library)
-				{
-					entries.push({
-						title: library.title,
-						id: library.id,
-						imageCallback: function(preview)
-						{
-							preview.appendChild(
-								Editor.createElectricLibraryPreviewImage(library));
-						}
-					});
-				}))(catalog.libraries[i]);
-			}
+				entries.push({
+					title: library.title,
+					id: library.id,
+					imageCallback: function(preview)
+					{
+						preview.appendChild(
+							Editor.createElectricLibraryPreviewImage(library));
+					}
+				});
+			}))(catalog.libraries[i]);
+		}
 
-			this.entries.unshift({title: 'Electric', entries: entries});
-		}
-		else
-		{
-			Editor.removeElectricShapeConfigurations();
-		}
+		this.entries.unshift({title: 'Electric', entries: entries});
 	};
 
 	Sidebar.prototype.initPalettes = function()
 	{
 		initPalettes.apply(this, arguments);
 
-		if (Editor.isElectricTheme())
-		{
-			var catalog = Editor.loadElectricShapeCatalog();
-			Editor.addElectricShapeConfigurations(catalog);
-			this.addElectricShapePalettes(catalog);
-		}
+		var catalog = Editor.loadElectricShapeCatalog();
+		Editor.addElectricShapeConfigurations(catalog);
+		this.addElectricShapePalettes(catalog);
 	};
+
+	// Native saved library choices still take precedence over these fresh-install defaults.
+	if (Sidebar.prototype.defaultEntries != null)
+	{
+		Sidebar.prototype.defaultEntries += ';' + Editor.loadElectricShapeCatalog().libraries.map(
+			function(library) { return library.id; }).join(';');
+	}
 
 	Sidebar.prototype.createTooltip = function(elt, cells, w, h, title, showLabel,
 		off, maxSize, mouseDown, closable, applyAllStyles)

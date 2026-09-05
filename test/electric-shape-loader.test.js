@@ -13,8 +13,8 @@ assert(/Editor\.getElectricShapeTemplate/.test(source),
 	'Electric originals must cache decoded templates');
 assert(/electricShapeTemplateCacheLimit\s*=\s*24/.test(source),
 	'Electric decoded template cache must be bounded');
-assert(/addEventListener\('pointerenter', prefetchOriginal/.test(source),
-	'Electric originals must prefetch without blocking pointerdown');
+assert(!/addEventListener\('(pointerenter|focus|touchstart)', prefetchOriginal/.test(source),
+	'Browsing device previews must not download original XML');
 assert(!/addEventListener\('pointerdown', ensureOriginal/.test(source),
 	'Electric pointerdown must not synchronously replace preview cells');
 assert(/getElectricShapeCells\(entry, graph\)\.then/.test(source),

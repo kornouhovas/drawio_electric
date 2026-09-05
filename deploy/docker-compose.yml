@@ -1,12 +1,14 @@
+name: drawio-standard
+
 services:
-  drawio-electric:
+  drawio-standard:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
       args:
-        ELECTRIC_ASSET_VERSION: ${DRAWIO_ELECTRIC_TAG:-local}
-    image: drawio-electric:${DRAWIO_ELECTRIC_TAG:-local}
-    container_name: drawio-electric
+        DRAWIO_ASSET_VERSION: ${DRAWIO_STANDARD_TAG:-local}
+    image: drawio-standard:${DRAWIO_STANDARD_TAG:-local}
+    container_name: drawio-standard
     restart: unless-stopped
     stop_grace_period: 30s
     cpus: 1.25
@@ -15,9 +17,9 @@ services:
     expose:
       - "8080"
     environment:
-      EXPORT_URL: "http://drawio-electric-export:8000"
+      EXPORT_URL: "http://drawio-standard-export:8000"
     depends_on:
-      drawio-electric-export:
+      drawio-standard-export:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/ -o /dev/null || exit 1"]
@@ -33,12 +35,12 @@ services:
     networks:
       - drawio_default
 
-  drawio-electric-export:
+  drawio-standard-export:
     build:
       context: .
       dockerfile: export-server.Dockerfile
-    image: drawio-electric-export:${DRAWIO_ELECTRIC_TAG:-local}
-    container_name: drawio-electric-export
+    image: drawio-standard-export:${DRAWIO_STANDARD_TAG:-local}
+    container_name: drawio-standard-export
     restart: unless-stopped
     stop_grace_period: 30s
     cpus: 1.25
