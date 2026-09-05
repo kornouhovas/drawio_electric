@@ -26,6 +26,8 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 COPY . .
 RUN cd etc/build && ant -f build.xml war
+RUN javap -verbose src/main/webapp/WEB-INF/classes/com/mxgraph/online/ExportProxyServlet.class \
+    | grep -q 'major version: 55'
 RUN find src/main/webapp/stencils src/main/webapp/electric/shapes/items \
         -type f -name '*.xml' -size +1024c -exec gzip -9 -k -f {} + \
     && find src/main/webapp/js src/main/webapp/styles \

@@ -699,7 +699,7 @@ OUTPUT FILES (in src/main/webapp/js/):
 	-->
 	<target name="javac" description="Java compilation">
 		<mkdir dir="${javac.dir}"/>
-		<javac includeantruntime="false" srcdir="${src.dir}" destdir="${javac.dir}">
+		<javac includeantruntime="false" srcdir="${src.dir}" destdir="${javac.dir}" release="11">
 			<classpath refid="javac.class.path" />
 		</javac>
 		<copy todir="${javac.dir}" file="${src.dir}/log4j.properties" />

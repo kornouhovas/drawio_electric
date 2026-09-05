@@ -6,6 +6,10 @@ const {test} = require('node:test');
 const root = path.join(__dirname, '..');
 const read = name => fs.readFileSync(path.join(root, name), 'utf8');
 
+test('servlets target the Java 11 runtime in the pinned Docker image', () => {
+	assert.match(read('etc/build/build.xml'), /<javac[^>]*release="11"/);
+});
+
 test('production and development builds do not load the custom interface', () => {
 	const build = read('etc/build/build.xml');
 	const devel = read('src/main/webapp/js/diagramly/Devel.js');
